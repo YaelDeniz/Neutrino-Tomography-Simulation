@@ -14,7 +14,7 @@ ROOTMATH_LIB=/home/dehy0499/root/lib
 ROOTMATH_INCLUDE=/home/dehy0499/root/include/Math
 
 
-test: test.cpp $(OBJECTS)
+MC_Events: MC_Events.cpp $(OBJECTS)
 	@echo " "
 	@echo "Generating Application"
 	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
@@ -47,6 +47,6 @@ PhyTools.o: PhyTools.C
 
 clean:
 	@echo "Removing Objects"
-	rm *.o test
+	rm *.o MC_Events
 
 
