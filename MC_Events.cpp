@@ -42,7 +42,7 @@ int main()
 
     // Number of bins
     int nbinsx = 100; // # of Bins of Energy
-    int nbinsy = 200; // # of Bins of cosThetaZ
+    int nbinsy = 10; // # of Bins of cosThetaZ
 
     //Range in Theta and E for Event Oscillogram
 
