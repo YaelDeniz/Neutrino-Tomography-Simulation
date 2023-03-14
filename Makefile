@@ -24,7 +24,7 @@ test: test.cpp $(OBJECTS)
 
 NuRateGenerator.o: NuRateGenerator.C MathTools.o PhyTools.o
 	@echo "  "
-	@echo "Creating NuRateGenerator Objects"
+	@echo "Creating NuRate Generator Objects"
 	$(CC)  -c $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
 
 ## SYNTAX:  "@" indicates the parameters before ":", "@" indicates the parameters after ":"
