@@ -1,6 +1,8 @@
 #ifndef NURATEGENERATOR_H
 #define NURATEGENERATOR_H
 
-double Nflvf_ij(int flvf, double CosT[] , double Energy[]);
+#include "TH2.h"
+
+TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int nbinsy);
 
 #endif
