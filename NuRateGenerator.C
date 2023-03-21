@@ -80,7 +80,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     //double cosT = (ctmax + ctmin)/(2.0); // Mind Point
     double dcT = (ctmax - ctmin)/(2.0*nbinsy); //< Bin width/2
     
-
+ std::cout << "E: " << Em <<"-"<< EM <<" : "<< ctmin <<"-"<< ctmax << std::endl; 
     // CONSTANTS
     //Detector properties
     double DetMass = 10*MTon;
@@ -106,8 +106,23 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     
      //Create Energy vectors with  Logarithmic spaced points from Emin GeV to Emax GeV
     std::vector<double> xbins = logspace(log10(Em),log10(EM),nbinsx + 1);
+    std::cout << " --- " <<  log10(Em) << "   " << log10(EM) << std::endl;
     double Energies[nbinsx + 1];
-    for (int i = 0; i < nbinsx + 1; ++i){ Energies[i] = xbins[i]; }
+
+    for (int i = 0; i < nbinsx + 1; ++i)
+
+    { 
+
+    //Energies[i] = xbins[i]; 
+
+    Energies[i] = Em + i*(EM-Em)/(nbinsx + 1); 
+
+    std::cout << "Check" << Energies[i] << std::endl; 
+
+    }
+
+
+    std::cout<<" Azimuth angle averaged flux "<<std::endl;
 
     //Create 2D histogram for Event Oscillogram
     TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx, Energies ,nbinsy,ctmin,ctmax); // xbins correspond to energy values and ybins to zenith angle cost
@@ -129,9 +144,19 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
         //NEUTRINO FLUX: Avarged over all Azimuth angles
 
         // Set Avarege flux for a range of cosT
+        /*
+
         TDirectory *Zen;
         Zen = (TDirectory*) HF->Get("cosZ_-9_-8"); // Avg Flux for -0.9 <~ CosT < -0.8
-        if(cosT >= -0.8 && cosT < -0.7) { Zen = (TDirectory*) HF->Get("cosZ_-8_-7"); /* Avg Flux for -0.8 <~ CosT < -0.7*/ } 
+        if(cosT >= -0.8 && cosT < -0.7) { Zen = (TDirectory*) HF->Get("cosZ_-8_-7"); } // Avg Flux for -0.8 <~ CosT < -0.7
+
+        */
+
+        //NEUTRINO FLUX: Avarged over all directions
+        TFile *HF = new TFile("Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
+        // Set Avarege flux for a range of cosT
+        TDirectory *Zen;
+        Zen = (TDirectory*) HF->Get("CosZ_all"); // Avg Flux for -0.9 <~ CosT < -0.8
 
          
         prem.FillPath(cosT); // Fill paths from PREM model
@@ -215,7 +240,13 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
 
             hTrue->SetBinContent(e,ct, Nij_sim );
 
-            std::cout <<"Bin id (" << ct << "," << e << "): " << N_ij << " sim: "<< Nij_sim<<std::endl;
+            //hTrue->SetBinContent(e,ct, N_ij );
+
+
+            
+             std::cout <<"Bin id (" << ct << "," << e << "): E:("<< Energies[e-1] << "-" << Energies[e] << ") N= "  << N_ij << " sim: "<< Nij_sim<<std::endl;
+                /* code */
+            
 
         } // loop e
 

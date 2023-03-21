@@ -27,7 +27,7 @@ double factorial(const int& n)
 double  Sample_Pois(double lambda, double u)
 { 
 
-	std::cout << "Integration" << std::endl;
+	//std::cout << "Integration" << std::endl;
 
 	const int N = 100; // Max Number of Occurances
 
