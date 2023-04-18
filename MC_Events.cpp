@@ -30,8 +30,8 @@ int main()
     // Plot and Histogram2D settings
 
     // Number of bins
-    int nbinsx =100; // # of Bins of Energy
-    int nbinsy =100; // # of Bins of cosThetaZ
+    int nbinsx =101; // # of Bins of Energy
+    int nbinsy =101; // # of Bins of cosThetaZ
 
     //Range in Theta and E for Event Oscillogram
 
@@ -63,11 +63,12 @@ int main()
     TCanvas *c = new TCanvas();
     
     //EventOsc->Draw("colz");    
-    EventOsc->Draw("SURF2");
+    EventOsc->Draw("SURF1 Z");
+    
     gStyle->SetPalette(55);
 
-    gPad->SetTheta(45.0); // default is 30
-    gPad->SetPhi(120.0); // default is 30 --Azimuthal
+    gPad->SetTheta(30.0); // default is 30
+    gPad->SetPhi(30.0); // default is 30 --Azimuthal
     gPad->Update();
     
     //gPad->SetLogx();
