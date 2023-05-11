@@ -68,7 +68,7 @@ int main()
     gStyle->SetPalette(55);
 
     gPad->SetTheta(30.0); // default is 30
-    gPad->SetPhi(30.0); // default is 30 --Azimuthal
+    gPad->SetPhi(330.0); // default is 30 --Azimuthal
     gPad->Update();
     
     //gPad->SetLogx();

@@ -6,7 +6,9 @@
 */
 #include "NuRateGenerator.h"
 
+//C++
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <cmath>
 #include <vector>
@@ -63,6 +65,9 @@ using namespace std;
 // Make oscillogram for given final flavour and MH
 TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int nbinsy)
 {
+
+    ofstream myfile("events_std_exp.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    
     //Simulation Variables
     srand ( time(NULL) ); // Random Uniform Draw
     double u       = 0;
@@ -75,7 +80,8 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
 
     //Limits of Phi/Azimuthal angle
     double Phim    = 0.0;
-    double PhiM    = 80.0;
+    //double PhiM    = 80.0;
+    double PhiM    = 360 ; //DOlivo Azimuthal?
     //Integration limits of E
     double Emin      = Energy[0];
     double Emax      = Energy[1];
@@ -109,6 +115,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     // Model Set up: 
     OscProb::PMNS_Fast PMNS_Ho; // Create PMNS objects
     
+    /*
     // Set parameters to PDG
     double dm21 = 7.42e-5;
     double dm31 = 2.533e-3;
@@ -123,8 +130,9 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     PMNS_Ho.SetAngle(1,3, th13);
     PMNS_Ho.SetAngle(2,3, th23);
     PMNS_Ho.SetDelta(1,3, dcp);
+    */
 
-    //PMNS_Ho.SetStdPars(); // Set PDG 3-flavor parameters
+    PMNS_Ho.SetStdPars(); // Set PDG 3-flavor parameters
 
     // Create PREM Model
     string file_test;
@@ -153,10 +161,10 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     //TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx, Energies ,nbinsy,ctmin,ctmax); // xbins correspond to energy values and ybins to zenith angle cost
     TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx,thmin,thmax,nbinsy,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
     
-    //TFile *HF = new TFile("Honda2014_spl-solmin-avgaz.root","read"); //South Pole (IC telescope)
-    //TFile *HF = new TFile("TestFlux.root","read"); //Flux Test
+    //TFile *HF = new TFile("Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
     
     TFile *HF = new TFile("TestFlux.root","read"); //Flux Test
+   
     // Set Avarege flux for a range of cosT
     TDirectory *Zen;
     Zen = (TDirectory*) HF->Get("CosZ_all"); // Avg Flux for -0.9 <~ CosT < -0.8
@@ -192,7 +200,8 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kLINEAR );         // Electron Neutrino Flux Interpolation
     ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kLINEAR );   // Electron Antineutrino Flux Interpolation
     //END OF INTERPOLATION
-        
+    
+    //Pseucdo Experiment  
     for(int ct=1; ct<= nbinsx ; ct++) //Loop in cosT
     {    
 
@@ -271,7 +280,8 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
             //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
             double N_ij=Nn*T*dN_Ho_dOm*DOm;
             Ntot += N_ij;
-            fij_exp = N_ij/(4726.68*2*dE*2*dth);
+            fij_exp = N_ij;
+            //fij_exp = N_ij;
             //double N_ij=f;
 
 
@@ -284,6 +294,8 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
 
             //if(N_ij < 0) { N_ij = 0; }
 
+            myfile << t << ", " << ene << ", "<< fij_exp << "\n";
+
             hTrue->SetBinContent(ct,e,fij_exp);      //Expected Events
             std::cout <<"Bin id (" << ct << "," << e << "): E[ " << ene-dE <<"-"<< ene+dE <<" ] th[" << t-dth <<"-"<< t+dth << "] " << " DeltaC: "<< cTmax-cTmin << "- DeltaE: " << deltaE << "| N= "  << N_ij << std::endl;
             //std::cout <<"Bin id (" << ct << "," << e << "): E:("<< Energies[e-1] << "-" << Energies[e] << ") N= "  << N_ij << std::endl;
@@ -291,6 +303,10 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
         } // loop e
 
     } // Loop ct
+
+    myfile.close();
+
+
 
     //Total Events
 
@@ -327,7 +343,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
 
 
     std::cout << "N total= " << Ntot<< " -- " << Nn*T*dN_tot_dOm*Dotot<< std::endl; 
-
+    //hTrue->Scale(1. / hTrue->Integral(), "width");
     hTrue->SetTitle("Expected events for #nu_{#mu} and #bar{#nu}_#mu ");
     //hTrue->GetYaxis()->SetTitle("E (GeV)");
     //hTrue->GetXaxis()->SetTitle("eta");
