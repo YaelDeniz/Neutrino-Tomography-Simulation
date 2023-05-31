@@ -1,13 +1,13 @@
 #Variable names
 CC= g++
 CFLAGS=`root-config  --cflags`
-LDFLAGS=`root-config --glibs`
+LDFLAGS=`root-config --glibs `
 ROOTLIBS = `root-config --libs `
 
 ROOT_FLAGS = `root-config  --cflags --glibs --libs`
 
-CFILES = MathTools.C PhyTools.C  NuRateGenerator.C
-OBJECTS = MathTools.o PhyTools.o NuRateGenerator.o
+CFILES = MathTools.C PhyTools.C  GetObservedEvents.C 
+OBJECTS = MathTools.o PhyTools.o NuRateGenerator.o 
 OSCPROB_PATH = /home/dehy0499/Desktop/Tomography/Simulation/OscProb
 
 ROOTMATH_LIB=/home/dehy0499/root/lib
@@ -22,7 +22,7 @@ MC_Events: MC_Events.cpp $(OBJECTS)
 	@echo " "
 	@echo "Done"
 
-NuRateGenerator.o: NuRateGenerator.C MathTools.o PhyTools.o
+NuRateGenerator.o: GetObservedEvents.C MathTools.o PhyTools.o
 	@echo "  "
 	@echo "Creating NuRate Generator Objects"
 	$(CC)  -c $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
