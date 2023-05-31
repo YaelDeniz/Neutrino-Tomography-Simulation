@@ -85,7 +85,6 @@ double ncquad(std::vector<double> xdat, std::vector<double> ydat){
     int n = 2*m; //Number of intervals
     double f[n + 1],x[n + 1]; // Value of f at x_i
 
-
     for(int k=0; k < n + 1 ; ++k)
     {
 
@@ -94,8 +93,7 @@ double ncquad(std::vector<double> xdat, std::vector<double> ydat){
     
     }
 
-
-// Numerical Integration Composite Simpson's Rule
+	// Numerical Integration Composite Simpson's Rule
 
     double I_f = 0;
     I_f += f[0];
@@ -106,8 +104,6 @@ double ncquad(std::vector<double> xdat, std::vector<double> ydat){
         I_f += 4*f[2*j-1]; //odd index
 
     }
-
-
     for (int j = 1; j <= m-1 ; ++j)
     {
 
@@ -117,8 +113,22 @@ double ncquad(std::vector<double> xdat, std::vector<double> ydat){
 
     I_f += f[n+1];;
     I_f = (h/3)*I_f;
-
     return I_f;
+}
+
+double simpson(std::vector<double> x, std::vector<double> f) //Simpsons Rule 1/3
+
+{
+  
+
+  double I = 0;
+
+  double h = (x[2]-x[0])/2;
+
+  I = (h/3)*( f[0] + 4*f[1] + f[2] ); // Simpsons Rule 1/3
+
+  return I;
+
 
 }
 

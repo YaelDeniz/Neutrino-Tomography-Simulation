@@ -29,9 +29,11 @@ int main()
 {
     // Plot and Histogram2D settings
 
+    
+
     // Number of bins
-    int nbinsx =101; // # of Bins of Energy
-    int nbinsy =101; // # of Bins of cosThetaZ
+    int Ebins =1; // # of Bins of Energy
+    int Tbins =1; // # of Bins of cosThetaZ
 
     //Range in Theta and E for Event Oscillogram
 
@@ -42,7 +44,7 @@ int main()
     double ctmin = cos(170.0*myPi/180); 
     double ctmax = cos(150*myPi/180);
     
-    double dcT = (ctmax - ctmin)/(2.0*nbinsy); //< Bin width/2
+    double dcT = (ctmax - ctmin)/(2.0*Tbins); //< Bin width/2
 
     //Energy interval (in GeV):
     //double Emin = 1.0; 
@@ -58,7 +60,9 @@ int main()
 
     int flvf = 1;
 
-    TH2D* EventOsc = GetTrueEvents(flvf, Es, cts , nbinsx, nbinsy);
+    TH2D* EventOsc = ObservedEvents(flvf, Es, cts , Ebins, Tbins);
+
+    //TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int Tbins)
 
     TCanvas *c = new TCanvas();
     
@@ -75,8 +79,30 @@ int main()
     
     gPad->SetRightMargin(0.18);
 
-    c->Print("True_Events.png");
+    
+/*
+    int flvi = 0 ;
+    int flvf = 1 ;
+
+    double Emin = 1;
+    double Emax = 100;
+
+    double L =  1000; // Neutrino Baseline in Km
+
+    double rho = 0; // Vacuum;  
+ 
+    TGraph* Pem =  Matter_Osc(int flvi, int flvf, double Emin , double Emax,double rho , double L);
+
+    TCanvas *c = new TCanvas();
+
+    Pem->Draw();
+
+    c->Print("Pem_test.png");
+    */
   
     return 0;
+    
+
+
 
 }
