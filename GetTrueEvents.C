@@ -4,7 +4,7 @@
     2.-Events account for neutrinos and Antineutrinos
 
 */
-#include "NuRateGenerator.h"
+#include "GetTrueEvents.h"
 
 //C++
 #include <iostream>
@@ -64,9 +64,9 @@ using namespace std;
 
 // Make oscillogram for given final flavour and MH
 TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int nbinsy)
-{
+{  
 
-    ofstream myfile("Sim_data/events_meeting2.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    ofstream TrueEvents("SimulationResults/TrueEventsNCotes.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
     
     //Simulation Variables
     srand ( time(NULL) ); // Random Uniform Draw
@@ -157,13 +157,13 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
         // std::cout << "Check" << Energies[i] << std::endl; 
     //}
 
-    std::cout<<" Azimuth angle averaged flux "<<std::endl;
+    std::cout<<" Azimuth angle averaged flux : Integration using Simpsons rule 1/3"<<std::endl;
 
     // Create 2D histogram for Event Oscillogram
     //TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx, Energies ,nbinsy,ctmin,ctmax); // xbins correspond to energy values and ybins to zenith angle cost
     TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx,thmin,thmax,nbinsy,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
     
-    TFile *HF = new TFile("Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
+    TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
     
     //TFile *HF = new TFile("TestFlux.root","read"); //Flux Test
    
@@ -237,7 +237,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
             double ene = hTrue->GetYaxis()->GetBinCenter(e); //< This will defined a constant L por different values of ct provided Dct is Small
 
             //INTEGRATION IN ENERGY
-            int nstep = 1000; //Steps for Integration of E
+            int nstep = 100; //Steps for Integration of E
 
             double deltaE =2*dE;
 
@@ -296,7 +296,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
 
             //if(N_ij < 0) { N_ij = 0; }
 
-            myfile << t << ", " << ene << ", "<< fij_exp << "\n";
+            TrueEvents << t << ", " << ene << ", "<< fij_exp << "\n";
 
             hTrue->SetBinContent(ct,e,fij_exp);      //Expected Events
             //std::cout <<"Bin id (" << ct << "," << e << "): E[ " << ene-dE <<"-"<< ene+dE <<" ] th[" << t-dth <<"-"<< t+dth << "] " << " DeltaC: "<< cTmax-cTmin << "- DeltaE: " << deltaE << "| N= "  << N_ij << std::endl;
@@ -306,7 +306,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
 
     } // Loop ct
 
-    myfile.close();
+    TrueEvents.close();
 
 
 

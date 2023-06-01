@@ -1,4 +1,4 @@
-#include "NuRateGenerator.h"
+#include "GetObservedEvents.h"
 
 //C++
 #include <iostream>

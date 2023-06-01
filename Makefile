@@ -6,25 +6,45 @@ ROOTLIBS = `root-config --libs `
 
 ROOT_FLAGS = `root-config  --cflags --glibs --libs`
 
-CFILES = MathTools.C PhyTools.C  GetObservedEvents.C 
-OBJECTS = MathTools.o PhyTools.o NuRateGenerator.o 
+CFILES = MathTools.C PhyTools.C  GetObservedEvents.C GetTrueEvents.C
+
+OBJECTStrue = MathTools.o PhyTools.o GetTrueEvents.o
+OBJECTSobs  = MathTools.o PhyTools.o GetObservedEvents.o 
 OSCPROB_PATH = /home/dehy0499/Desktop/Tomography/Simulation/OscProb
 
 ROOTMATH_LIB=/home/dehy0499/root/lib
 ROOTMATH_INCLUDE=/home/dehy0499/root/include/Math
 
+all: ObservedEvents TrueEvents
 
-MC_Events: MC_Events.cpp $(OBJECTS)
+
+ObservedEvents: ObservedEvents.cpp $(OBJECTSobs)
 	@echo " "
-	@echo "Generating Application"
+	@echo "Generating Application for Observed Events"
 	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
 	$(CC)  $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
 	@echo " "
 	@echo "Done"
 
-NuRateGenerator.o: GetObservedEvents.C MathTools.o PhyTools.o
+TrueEvents: TrueEvents.cpp $(OBJECTStrue)
+	@echo " "
+	@echo "Generating Application for True Events"
+	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	$(CC)  $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	@echo " "
+	@echo "Done"
+
+
+
+GetObservedEvents.o: GetObservedEvents.C MathTools.o PhyTools.o
 	@echo "  "
-	@echo "Creating NuRate Generator Objects"
+	@echo "Creating Observed Events Generator Objects"
+	$(CC)  -c $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+
+
+GetTrueEvents.o: GetTrueEvents.C MathTools.o PhyTools.o
+	@echo "  "
+	@echo "Creating True Events Objects"
 	$(CC)  -c $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
 
 ## SYNTAX:  "@" indicates the parameters before ":", "@" indicates the parameters after ":"
@@ -47,6 +67,5 @@ PhyTools.o: PhyTools.C
 
 clean:
 	@echo "Removing Objects"
-	rm *.o MC_Events
-
+	rm *.o ObservedEvents TrueEvents
 
