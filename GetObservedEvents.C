@@ -59,7 +59,7 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
 
     
 
-    ofstream ObservedData("SimulationResults/ObservedEvents1.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    ofstream ObservedData("SimulationResults/ObservedEventsNEW.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
     
     //DETECTOR PROPERTIES
     double DetMass = 10*MTon; //Mass in megaton units
@@ -95,8 +95,8 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
     //double dcT = (ctmax - ctmin)/(2.0*nbinsx); //< Bin width/2
 
     //True Bins:
-    int ibins = 10; // Number of  angular bins of True event distribution
-    int jbins = 10; // Number of  energy bins of True event distribution
+    int ibins = 50; // Number of  angular bins of True event distribution
+    int jbins = 50; // Number of  energy bins of True event distribution
     double dth = (thmax - thmin)/(2.0*ibins); //< Bin width/2
     double dE = (Emax - Emin)/(2.0*jbins); //< Bin width/2
     TH2D* hTrue = new TH2D("hTrue","True Events",jbins,thmin,thmax,ibins,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
@@ -150,8 +150,8 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
     OscProb::PremModel prem(file_test);
 
     // Atmospheric Neutrino Flux data:
-    TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope) Averaged all directions
-    //TFile *HF = new TFile("TestFlux.root","read"); //Flux Test
+    //TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope) Averaged all directions
+    TFile *HF = new TFile("./NuFlux/TestFlux.root","read"); //Flux Test
     TDirectory *Zen;
     Zen = (TDirectory*) HF->Get("CosZ_all"); // Avg Flux for -0.9 <~ CosT < -0.8
     TTree *flux= (TTree*) Zen->Get("FluxData"); //Opens data file      
@@ -177,11 +177,11 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
     }
 
     //Interpolate Muon-neutrino flux
-    ROOT::Math::Interpolator dPsiMudE(EPsi,PsiNuMu, ROOT::Math::Interpolation::kCSPLINE   );       // Muon Neutrino Flux Interpolation
-    ROOT::Math::Interpolator dPsiMubardE(EPsi,PsiNuMubar, ROOT::Math::Interpolation::kCSPLINE   ); // Muon Antineutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiMudE(EPsi,PsiNuMu, ROOT::Math::Interpolation::kLINEAR   );       // Muon Neutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiMubardE(EPsi,PsiNuMubar, ROOT::Math::Interpolation::kLINEAR   ); // Muon Antineutrino Flux Interpolation
     //Interplate Electron-neutrinos flux
-    ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kCSPLINE   );         // Electron Neutrino Flux Interpolation
-    ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE   );   // Electron Antineutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kLINEAR   );         // Electron Neutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kLINEAR   );   // Electron Antineutrino Flux Interpolation
     //END OF INTERPOLATION
     
     // Calculation of Observed events:
@@ -251,10 +251,10 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
                         //std::cout<< "testerf"<< ROOT::Math::erf ( 1 ) << " "<< ROOT::Math::erf ( -1 ) << std::endl;
                         //std::cout<< "test of points "<<Th[0] << " " << Th[1] << " " << Th[2]<< " : " << th << std::endl;
 
-//                        double res = w_E(Et[l],E_o)*( (2.0*dth/3.0)*( w_th(Th[0],Et[l],Th_o)*sin(Th[0]) + 4*w_th(Th[1],Et[l],Th_o)*sin(Th[1]) +  w_th(Th[2],Et[l],Th_o)*sin(Th[2]) ) );
+                        //double res = w_E(Et[l],E_o)*( (-2.0*dth/3.0)*( w_th(Th[0],Et[l],Th_o)*sin(Th[0]) + 4*w_th(Th[1],Et[l],Th_o)*sin(Th[1]) +  w_th(Th[2],Et[l],Th_o)*sin(Th[2]) ) );
 
-                       //double res = w_E(Et[l],E_o)*( (2.0*dth/3.0)*( w_th(Th[0],Et[l],Th_o) + 4*w_th(Th[1],Et[l],Th_o) +  w_th(Th[2],Et[l],Th_o) ) );
-                        double res = 1.0;
+                       double res = w_E(Et[l],E_o)*( (2.0*dth/3.0)*( w_th(Th[0],Et[l],Th_o) + 4*w_th(Th[1],Et[l],Th_o) +  w_th(Th[2],Et[l],Th_o) ) );
+                       
                         
 
 
@@ -277,7 +277,18 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
 
                     //Integration in negery variables using NC quadrature
                     double NdTdM  =  simpson(Et,dN); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
-                    std::cout  << i << "," << j << " : "<<  NdTdM <<std::endl;
+
+                                // INTEGRATION IN THETA AND PHI (Solid Angle):
+                   // double cTmin =cos( (180-(th-dth))*TMath::Pi()/180 );
+                   //double cTmax =cos( (180-(th+dth))*TMath::Pi()/180 );
+                   // double DOm = (cTmax-cTmin)*(PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
+
+                    //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
+                    double N_ij=Nn*T*NdTdM;
+                    
+
+
+                    //std::cout  << i << "," << j << " : "<<  N_ij <<std::endl;
 
                     // INTEGRATION IN THETA AND PHI (Solid Angle):
                     /*
@@ -290,10 +301,10 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
 
 
                     //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
-                    double N_ij=Nn*T*NdTdM;
+                    
                     Ntot += N_ij;
 
-                    ObservedData << th << ", " << E << ", "<< N_ij << "\n";
+                    //ObservedData << th << ", " << E << ", "<< N_ij << "\n";
                     //fij_exp = N_ij;
                     //fij_exp = N_ij;
                     //double N_ij=f;
@@ -307,9 +318,10 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
             } // Loop th
 
             std::cout << " *** "<<m << "," << n << ","<< Ntot<<std::endl;
-
+            //ObservedData.close();
             No_mn = Ntot;
-            //ObservedData << tho << ", " << Eo << ", "<< No_mn << "\n";
+
+            ObservedData << tho << ", " << Eo << ", "<< No_mn << "\n";
             hTrue->SetBinContent(m,n,No_mn);      //Observed Events 
 
         } // loop in eo
@@ -356,7 +368,7 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
 
     //std::cout << "N total= " << Ntot<< " -- " << Nn*T*dN_tot_dOm*Dotot<< std::endl; 
     //hTrue->Scale(1. / hTrue->Integral(), "width");
-    hTrue->SetTitle("Expected events for #nu_{#mu} and #bar{#nu}_#mu ");
+    hTrue->SetTitle("Observed events for #nu_{#mu} and #bar{#nu}_#mu ");
     //hTrue->GetYaxis()->SetTitle("E (GeV)");
     //hTrue->GetXaxis()->SetTitle("eta");
     //hTrue->GetZaxis()->SetTitle("Events per bin");
@@ -370,14 +382,14 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
 double w_E(double E , std::vector<double> Eo ) 
 {
 
-double aE = 0.67;
+double aE = 0.1;
 
 double sdE = aE*E;
 
 //std::cout<< " inside function energy "<< (Eo[0] - E)/sdE   << std::endl;
 
-//double wE = (0.5)*( ROOT::Math::erf (  (Eo[2] - E)/sdE  ) - ROOT::Math::erf (  (Eo[0] - E)/sdE  ) );    
- double wE = 1.0;
+double wE = (0.5)*( ROOT::Math::erf (  (Eo[2] - E)/sdE  ) - ROOT::Math::erf (  (Eo[0] - E)/sdE  ) );    
+//double wE = 1.0;
 //std::cout<< " wE* "<< ( ROOT::Math::erf (  (Eo[0] - E)/sdE  ))  << std::endl;
 //std::cout<< " wE** "<< ( ROOT::Math::erf (  (Eo[2] - E)/sdE  ))  << std::endl;
 //std::cout<< " wE =  "<<  wE  << std::endl;
@@ -391,15 +403,15 @@ return wE;
 double w_th(double th, double E, std::vector<double> tho)
 {
 
-double ath = 0.61;
+double ath = 0.1;
 
 double sdth = ath/(sqrt(E));
 
 //std::cout<< " inside function angle "<< (tho[0] - th)  << std::endl;
 
-//double wth = (0.5)*( ROOT::Math::erf (  (tho[2] - th)/sdth  ) - ROOT::Math::erf (  (tho[0] - th)/sdth  ) );   
+double wth = (0.5)*( ROOT::Math::erf (  (tho[2] - th)/sdth  ) - ROOT::Math::erf (  (tho[0] - th)/sdth  ) );   
 
- double wth = 1.0;
+ //double wth = 1.0;
 
 
 //std::cout<< " wth' "<< ROOT::Math::erf (  (tho[0] - th)/sdth  )  << std::endl;

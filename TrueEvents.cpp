@@ -60,7 +60,7 @@ int main()
 
     int flvf = 1;
 
-    TH2D* EventOsc = GetTrueEvents(flvf, Es, cts , 20, 20);
+    TH2D* EventOsc = GetTrueEvents(flvf, Es, cts , 200, 200);
     
     //TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int Tbins)
 

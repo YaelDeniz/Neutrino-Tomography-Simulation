@@ -99,7 +99,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     std::cout << "Region- E=( " << Emin <<"-"<< Emax <<" ), th=( "<< thmin <<"-"<< thmax <<" )" <<std::endl; 
     
     //DETECTOR PROPERTIES
-    double DetMass = 10*MTon; //Mass in megaton units
+    double DetMass = 100*MTon; //Mass in megaton units
     double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
     double T       = 10*years2sec; //Detector Exposure time in sec: One Year
     
