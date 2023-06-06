@@ -29,27 +29,20 @@ int main()
 {
     // Plot and Histogram2D settings
 
-    
+    std::cout << " Neutrino Oscillation tomography. " << std::endl;
+    std::cout << " Detector response." << std::endl;
+    std::cout << " Generating Observed  Mu-like Events. "<< std::endl; 
 
     // Number of bins
-    int Ebins =50; // # of Bins of Energy
-    int Tbins =50; // # of Bins of cosThetaZ
+    int Ebins =10; // # of Bins of Energy
+    int Tbins =10; // # of Bins of cosThetaZ
 
     //Range in Theta and E for Event Oscillogram
 
     //Zenith angle interval:
-    //double ctmin = cos(147.0*myPi/180); 
-    //double ctmax = cos(142*myPi/180);
-
+  
     double ctmin = cos(170.0*myPi/180); 
     double ctmax = cos(150*myPi/180);
-    
-    double dcT = (ctmax - ctmin)/(2.0*Tbins); //< Bin width/2
-
-    //Energy interval (in GeV):
-    //double Emin = 1.0; 
-    //double Emax = 20.0;
-
 
     //Energy interval (in GeV):
     double Emin = 4.0; 
@@ -62,11 +55,10 @@ int main()
 
     TH2D* EventOsc = ObservedEvents(flvf, Es, cts , Ebins, Tbins);
 
-    //TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int Tbins)
+    std::cout << "Observed data is stored inside './SimulationResults' as ObservedEvents.csv " << std::endl;
 
     TCanvas *c = new TCanvas();
     
-    //EventOsc->Draw("colz");    
     EventOsc->Draw("SURF1 Z");
     
     gStyle->SetPalette(55);
@@ -74,35 +66,9 @@ int main()
     gPad->SetTheta(30.0); // default is 30
     gPad->SetPhi(330.0); // default is 30 --Azimuthal
     gPad->Update();
-    
-    //gPad->SetLogx();
-    
     gPad->SetRightMargin(0.18);
 
-    
-/*
-    int flvi = 0 ;
-    int flvf = 1 ;
 
-    double Emin = 1;
-    double Emax = 100;
-
-    double L =  1000; // Neutrino Baseline in Km
-
-    double rho = 0; // Vacuum;  
- 
-    TGraph* Pem =  Matter_Osc(int flvi, int flvf, double Emin , double Emax,double rho , double L);
-
-    TCanvas *c = new TCanvas();
-
-    Pem->Draw();
-
-    c->Print("Pem_test.png");
-    */
-  
     return 0;
-    
-
-
 
 }
