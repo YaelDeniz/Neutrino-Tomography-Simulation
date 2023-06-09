@@ -66,7 +66,7 @@ using namespace std;
 TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int nbinsy)
 {  
 
-    ofstream TrueEvents("SimulationResults/TrueEventsNCotes.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    ofstream TrueEvents("SimulationResults/TrueEvents.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
     
     //Simulation Variables
     srand ( time(NULL) ); // Random Uniform Draw
@@ -99,7 +99,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     std::cout << "Region- E=( " << Emin <<"-"<< Emax <<" ), th=( "<< thmin <<"-"<< thmax <<" )" <<std::endl; 
     
     //DETECTOR PROPERTIES
-    double DetMass = 100*MTon; //Mass in megaton units
+    double DetMass = 10*MTon; //Mass in megaton units
     double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
     double T       = 10*years2sec; //Detector Exposure time in sec: One Year
     
@@ -163,9 +163,9 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     //TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx, Energies ,nbinsy,ctmin,ctmax); // xbins correspond to energy values and ybins to zenith angle cost
     TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx,thmin,thmax,nbinsy,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
     
-    TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
+    //TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
     
-    //TFile *HF = new TFile("TestFlux.root","read"); //Flux Test
+    TFile *HF = new TFile("./NuFlux/TestFlux.root","read"); //Flux Test
    
     // Set Avarege flux for a range of cosT
     TDirectory *Zen;
@@ -196,11 +196,11 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     //Interpolate Neutrino flux data
 
     //Interpolate Muon-neutrino flux
-    ROOT::Math::Interpolator dPsiMudE(EPsi,PsiNuMu, ROOT::Math::Interpolation::kCSPLINE   );       // Muon Neutrino Flux Interpolation
-    ROOT::Math::Interpolator dPsiMubardE(EPsi,PsiNuMubar, ROOT::Math::Interpolation::kCSPLINE   ); // Muon Antineutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiMudE(EPsi,PsiNuMu, ROOT::Math::Interpolation::kLINEAR   );       // Muon Neutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiMubardE(EPsi,PsiNuMubar, ROOT::Math::Interpolation::kLINEAR   ); // Muon Antineutrino Flux Interpolation
     //Interplate Electron-neutrinos flux
-    ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kCSPLINE   );         // Electron Neutrino Flux Interpolation
-    ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE   );   // Electron Antineutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kLINEAR   );         // Electron Neutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kLINEAR   );   // Electron Antineutrino Flux Interpolation
     //END OF INTERPOLATION
     
     //Pseucdo Experiment  
@@ -277,7 +277,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
             // INTEGRATION IN THETA AND PHI (Solid Angle):
             double cTmin =cos( (180-(t-dth))*TMath::Pi()/180 );
             double cTmax =cos( (180-(t+dth))*TMath::Pi()/180 );
-            double DOm = (cTmax-cTmin)*(PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
+            double DOm = TMath::Pi()*(cTmax-cTmin)*(PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
 
             //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
             double N_ij=Nn*T*dN_Ho_dOm*DOm;
@@ -338,7 +338,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
             // INTEGRATION IN THETA AND PHI (Solid Angle):
             double ctmim =cos(170*TMath::Pi()/180 );
             double ctmaxm =cos(150*TMath::Pi()/180 );
-            double Dotot = (ctmaxm-ctmim)*(PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
+            double Dotot = TMath::Pi()*(ctmaxm-ctmim)*(PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
 
 
 
