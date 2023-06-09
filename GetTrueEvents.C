@@ -68,8 +68,6 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
 
     ofstream TrueEvents("SimulationResults/TrueEvents.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
     
-    //Simulation Variables
-    srand ( time(NULL) ); // Random Uniform Draw
     double u       = 0;
     double N_ij    = 0;   //Mean number of events at bin ij.
     double Nij_sim = 0;   //Random Sample from Poisson dist.
@@ -85,17 +83,17 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     //Integration limits of E
     double Emin      = Energy[0];
     double Emax      = Energy[1];
+
     double dE = (Emax - Emin)/(2.0*nbinsy); //< Bin width/2
     //Range in Theta and E for Event Oscillogram
-    //double ctmin = CosT[0]; 
-    //double ctmax = CosT[1];
     double thmin   = 10.0;
     double thmax   = 30.0;
+
     double dth = (thmax - thmin)/(2.0*nbinsx); //< Bin width/2
+
     double ctmin   = cos(thmax*TMath::Pi()/180); 
     double ctmax   = cos(thmin*TMath::Pi()/180);
-    //double cosT = (ctmax + ctmin)/(2.0); // Mind Point
-    //double dcT = (ctmax - ctmin)/(2.0*nbinsx); //< Bin width/2
+
     std::cout << "Region- E=( " << Emin <<"-"<< Emax <<" ), th=( "<< thmin <<"-"<< thmax <<" )" <<std::endl; 
     
     //DETECTOR PROPERTIES
@@ -142,22 +140,6 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     OscProb::PremModel prem(file_test);
 
     //OscProb::PremModel prem; //Default PREM table
-    
-     //Create Energy vectors with  Logarithmic spaced points from Emin GeV to Emax GeV
-   // std::vector<double> xbins = logspace(log10(Em),log10(EM),nbinsx + 1);
-    //std::cout << " --- " <<  log10(Em) << "   " << log10(EM) << std::endl;
-    //double Energies[nbinsx + 1];
-
-    //for (int i = 0; i < nbinsx + 1; ++i)
-    //{ 
-        //Energies[i] = xbins[i]; 
-
-    //    Energies[i] = Em + i*(EM-Em)/(nbinsx + 1); 
-
-        // std::cout << "Check" << Energies[i] << std::endl; 
-    //}
-
-    std::cout<<" Azimuth angle averaged flux : Integration using Simpsons rule 1/3"<<std::endl;
 
     // Create 2D histogram for Event Oscillogram
     //TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx, Energies ,nbinsy,ctmin,ctmax); // xbins correspond to energy values and ybins to zenith angle cost
@@ -219,16 +201,6 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
         // Set paths in OscProb  
         PMNS_Ho.SetPath(prem.GetNuPath()); //STANDARD EARTH (DESCRIBED BY PREM MODEL)
     
-        //NEUTRINO FLUX: Avarged over all Azimuth angles
-        // Set Avarege flux for a range of cosT
-        /*
-        TDirectory *Zen;
-        Zen = (TDirectory*) HF->Get("cosZ_-9_-8"); // Avg Flux for -0.9 <~ CosT < -0.8
-        if(cosT >= -0.8 && cosT < -0.7) { Zen = (TDirectory*) HF->Get("cosZ_-8_-7"); } // Avg Flux for -0.8 <~ CosT < -0.7
-        */
-
-        //NEUTRINO FLUX: Avarged over all directions
-        //TFile *HF = new TFile("Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
 
         for (int e = 1; e <=nbinsy; ++e)
         { 
@@ -260,16 +232,6 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
 
             }
             
-            /*
-
-            PMNS_Ho.SetIsNuBar(false);
-            double r_nobar = XSec(ene,nu)*( PMNS_Ho.Prob(numu, flvf, ene)*dPsiMudE.Eval(ene) + PMNS_Ho.Prob(nue,flvf,ene)*dPsiEdE.Eval(ene) );
-            //Antineutrino contribution
-            PMNS_Ho.SetIsNuBar(true);
-            double r_bar = XSec(ene,nubar)*( PMNS_Ho.Prob(numu,flvf,ene)*dPsiMubardE.Eval(ene) + PMNS_Ho.Prob(nue,flvf,ene)*dPsiEbardE.Eval(ene) ); 
-            double f = r_nobar + r_bar;
-            
-            */
 
             //Integration in negery variables using NC quadrature
             double dN_Ho_dOm =  ncquad(Ei, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
@@ -283,24 +245,12 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
             double N_ij=Nn*T*dN_Ho_dOm*DOm;
             Ntot += N_ij;
             fij_exp = N_ij;
-            //fij_exp = N_ij;
-            //double N_ij=f;
 
-
-            //Random Sample from Pois(N_ij)
-            //u = static_cast<double>(rand()) / RAND_MAX; //Uniform Distributed?
-            //Nij_sim = Sample_Pois(N_ij, u);
-
-            //hTrue->SetBinContent(e,ct, Nij_sim ); //Sample Events
-            //std::cout <<"Bin id (" << ct << "," << e << "): E:("<< Energies[e-1] << "-" << Energies[e] << ") N= "  << N_ij << " sim: "<< Nij_sim<<std::endl;
-
-            //if(N_ij < 0) { N_ij = 0; }
 
             TrueEvents << t << ", " << ene << ", "<< fij_exp << "\n";
 
             hTrue->SetBinContent(ct,e,fij_exp);      //Expected Events
-            //std::cout <<"Bin id (" << ct << "," << e << "): E[ " << ene-dE <<"-"<< ene+dE <<" ] th[" << t-dth <<"-"<< t+dth << "] " << " DeltaC: "<< cTmax-cTmin << "- DeltaE: " << deltaE << "| N= "  << N_ij << std::endl;
-            //std::cout <<"Bin id (" << ct << "," << e << "): E:("<< Energies[e-1] << "-" << Energies[e] << ") N= "  << N_ij << std::endl;
+        
             
         } // loop e
 
@@ -310,42 +260,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
 
 
 
-    //Total Events
-
-    //INTEGRATION IN ENERGY
-            int nstep = 1000; //Steps for Integration of E
-            double deltaE =Emax - Emin;
-            double hE = deltaE/nstep; //Step size for Integration of E
-            std::vector<double>  Etot, R_tot; // R= event rate d^2( N )/ (dtheta dE)
-            for (int i = 0; i <= nstep ; ++i)
-            {   
-                Etot.push_back(Emin + i*hE);
-                //Calculate the Interaction Rate at E for neutrinos passing trough lower mantle of Standar Earth
-                //Neutrino contribution
-                PMNS_Ho.SetIsNuBar(false); 
-                double r_tot = XSec(Etot[i],nu)*( PMNS_Ho.Prob(numu, flvf, Etot[i])*dPsiMudE.Eval(Etot[i]) + PMNS_Ho.Prob(nue,flvf,Etot[i])*dPsiEdE.Eval(Etot[i]) );
-                //Antineutrino contribution
-                PMNS_Ho.SetIsNuBar(true); 
-                double r_totbar = XSec(Etot[i],nubar)*( PMNS_Ho.Prob(numu,flvf, Etot[i])*dPsiMubardE.Eval(Etot[i]) + PMNS_Ho.Prob(nue,flvf,Etot[i])*dPsiEbardE.Eval(Etot[i]) ); 
-                //store data
-                R_tot.push_back(r_tot + r_totbar);
-            }
-
-
-            //Integration in negery variables using NC quadrature
-            double dN_tot_dOm =  ncquad(Etot, R_tot); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
-
-            // INTEGRATION IN THETA AND PHI (Solid Angle):
-            double ctmim =cos(170*TMath::Pi()/180 );
-            double ctmaxm =cos(150*TMath::Pi()/180 );
-            double Dotot = TMath::Pi()*(ctmaxm-ctmim)*(PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
-
-
-
-
-
-    std::cout << "N total= " << Ntot<< " -- " << Nn*T*dN_tot_dOm*Dotot<< std::endl; 
-    //hTrue->Scale(1. / hTrue->Integral(), "width");
+  
     hTrue->SetTitle("Expected events for #nu_{#mu} and #bar{#nu}_#mu ");
     //hTrue->GetYaxis()->SetTitle("E (GeV)");
     //hTrue->GetXaxis()->SetTitle("eta");
