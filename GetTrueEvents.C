@@ -37,18 +37,6 @@ bool isCINT = false;
 bool isCINT = true;
 #endif
 
-
-//Delete later
-
-// Define the PREM tables path
-//#include "../prem_default.hpp"
-
-// Macro to load OscProb library
-//#include "LoadOscProb.C"
-
-// Some functions to make nice plots
-//#include "SetNiceStyle.C"
-
 // My Math Tools
 #include "MathTools.h"
 #include "PhyTools.h"
@@ -57,7 +45,6 @@ using namespace std;
 
 
 // Some Constants i need
-//# define myPi 3.14159265358979323846  /* pi */
 # define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
 # define MTon  1E9  //Metric MegaTon
 # define years2sec 3.154E7 // Years in Seconds
@@ -70,9 +57,12 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     
     double u       = 0;
     double N_ij    = 0;   //Mean number of events at bin ij.
-    double Nij_sim = 0;   //Random Sample from Poisson dist.
     double Ntot    = 0;   // Total number of events.
-    double fij_exp = 0;   // Probability Density function.
+
+    //DETECTOR PROPERTIES
+    double DetMass = 10.0*MTon; //Mass in megaton units
+    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
 
     //INTERVAL LIMITS FOR INTEGRATION:
 
@@ -84,22 +74,17 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     double Emin      = Energy[0];
     double Emax      = Energy[1];
 
-    double dE = (Emax - Emin)/(2.0*nbinsy); //< Bin width/2
     //Range in Theta and E for Event Oscillogram
     double thmin   = 10.0;
     double thmax   = 30.0;
 
+    double ctmin   = cos((180-thmax)*TMath::Pi()/180); 
+    double ctmax   = cos((180-thmin)*TMath::Pi()/180);
+
+    // Create 2D histogram for Event Oscillogram
     double dth = (thmax - thmin)/(2.0*nbinsx); //< Bin width/2
-
-    double ctmin   = cos(thmax*TMath::Pi()/180); 
-    double ctmax   = cos(thmin*TMath::Pi()/180);
-
-    std::cout << "Region- E=( " << Emin <<"-"<< Emax <<" ), th=( "<< thmin <<"-"<< thmax <<" )" <<std::endl; 
-    
-    //DETECTOR PROPERTIES
-    double DetMass = 10*MTon; //Mass in megaton units
-    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    double T       = 10*years2sec; //Detector Exposure time in sec: One Year
+    double dE = (Emax - Emin)/(2.0*nbinsy); //< Bin width/2
+    TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx,thmin,thmax,nbinsy,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
     
     //NEUTRINO OSCILLATION PROB
 
@@ -131,7 +116,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     PMNS_Ho.SetAngle(2,3, th23);
     PMNS_Ho.SetDelta(1,3, dcp);
     */
-
+    
     PMNS_Ho.SetStdPars(); // Set PDG 3-flavor parameters
 
     // Create PREM Model
@@ -141,13 +126,9 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
 
     //OscProb::PremModel prem; //Default PREM table
 
-    // Create 2D histogram for Event Oscillogram
-    //TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx, Energies ,nbinsy,ctmin,ctmax); // xbins correspond to energy values and ybins to zenith angle cost
-    TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx,thmin,thmax,nbinsy,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
-    
-    //TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
-    
-    TFile *HF = new TFile("./NuFlux/TestFlux.root","read"); //Flux Test
+    // Atmospheric Neutrino Flux data:
+    TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
+    //TFile *HF = new TFile("./NuFlux/TestFlux.root","read"); //Flux Test
    
     // Set Avarege flux for a range of cosT
     TDirectory *Zen;
@@ -178,22 +159,22 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     //Interpolate Neutrino flux data
 
     //Interpolate Muon-neutrino flux
-    ROOT::Math::Interpolator dPsiMudE(EPsi,PsiNuMu, ROOT::Math::Interpolation::kLINEAR   );       // Muon Neutrino Flux Interpolation
-    ROOT::Math::Interpolator dPsiMubardE(EPsi,PsiNuMubar, ROOT::Math::Interpolation::kLINEAR   ); // Muon Antineutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiMudE(EPsi,PsiNuMu, ROOT::Math::Interpolation::kCSPLINE    );       // Muon Neutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiMubardE(EPsi,PsiNuMubar, ROOT::Math::Interpolation::kCSPLINE    ); // Muon Antineutrino Flux Interpolation
+
     //Interplate Electron-neutrinos flux
-    ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kLINEAR   );         // Electron Neutrino Flux Interpolation
-    ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kLINEAR   );   // Electron Antineutrino Flux Interpolation
-    //END OF INTERPOLATION
-    
-    //Pseucdo Experiment  
-    for(int ct=1; ct<= nbinsx ; ct++) //Loop in cosT
+    ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kCSPLINE    );         // Electron Neutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE    );   // Electron Antineutrino Flux Interpolation
+  
+
+    for(int i=1; i<= nbinsx ; i++) //Loop in cosT
     {    
 
         // Get cos(theta_z) from bin center, It fix a value of L
 
         //double cosT = hTrue->GetYaxis()->GetBinCenter(ct); //< This will defined a constant L por different values of ct provided Dct is Small
-        double t = hTrue->GetXaxis()->GetBinCenter(ct); //< This will defined a constant L por different values of ct provided Dct is Small
-        double cosT =cos( (180-t)*TMath::Pi()/180 );
+        double th = hTrue->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+        double cosT =cos( (180-th)*TMath::Pi()/180 );
 
         if(cosT < -1 || cosT > 1) break; // Skip if cosT is unphysical 
         double L_Ho = prem.GetTotalL(cosT); // Set total path length L  
@@ -202,31 +183,33 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
         PMNS_Ho.SetPath(prem.GetNuPath()); //STANDARD EARTH (DESCRIBED BY PREM MODEL)
     
 
-        for (int e = 1; e <=nbinsy; ++e)
+        for (int j = 1; j <=nbinsy; ++j)
         { 
             //NUMERICAL INTEGRATION
 
-            double ene = hTrue->GetYaxis()->GetBinCenter(e); //< This will defined a constant L por different values of ct provided Dct is Small
+            double e = hTrue->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
 
             //INTEGRATION IN ENERGY
-            int nstep = 100; //Steps for Integration of E
+            int nstep = 2; //Steps for Integration of E
 
             double deltaE =2*dE;
 
             double hE = deltaE/nstep; //Step size for Integration of E
 
-            std::vector<double>  Ei, R_Ho; // R= event rate d^2( N )/ (dtheta dE)
-            for (int i = 0; i <= nstep ; ++i)
+            std::vector<double>  E, R_Ho; // R= event rate d^2( N )/ (dtheta dE)
+            for (int l = 0; l <= nstep ; ++l)
             {   
                 
-                Ei.push_back( (ene-dE) + i*hE);
+                E.push_back( e + (l-1)*dE);
+               
                 //Calculate the Interaction Rate at E for neutrinos passing trough lower mantle of Standar Earth
+               
                 //Neutrino contribution
                 PMNS_Ho.SetIsNuBar(false); 
-                double r_ho = XSec(Ei[i],nu)*( PMNS_Ho.Prob(numu, flvf, Ei[i])*dPsiMudE.Eval(Ei[i]) + PMNS_Ho.Prob(nue,flvf,Ei[i])*dPsiEdE.Eval(Ei[i]) );
+                double r_ho = XSec(E[l],nu)*( PMNS_Ho.Prob(numu, flvf, E[l])*dPsiMudE.Eval(E[l]) + PMNS_Ho.Prob(nue,flvf,E[l])*dPsiEdE.Eval(E[l]) );
                 //Antineutrino contribution
                 PMNS_Ho.SetIsNuBar(true); 
-                double r_hobar = XSec(Ei[i],nubar)*( PMNS_Ho.Prob(numu,flvf, Ei[i])*dPsiMubardE.Eval(Ei[i]) + PMNS_Ho.Prob(nue,flvf,Ei[i])*dPsiEbardE.Eval(Ei[i]) ); 
+                double r_hobar = XSec(E[l],nubar)*( PMNS_Ho.Prob(numu,flvf, E[l])*dPsiMubardE.Eval(E[l]) + PMNS_Ho.Prob(nue,flvf,E[l])*dPsiEbardE.Eval(E[l]) ); 
                 //store data
                 R_Ho.push_back(r_ho + r_hobar);
 
@@ -234,38 +217,24 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
             
 
             //Integration in negery variables using NC quadrature
-            double dN_Ho_dOm =  ncquad(Ei, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
+            double dN_Ho_dOm =  simpson(E, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
 
             // INTEGRATION IN THETA AND PHI (Solid Angle):
-            double cTmin =cos( (180-(t-dth))*TMath::Pi()/180 );
-            double cTmax =cos( (180-(t+dth))*TMath::Pi()/180 );
-            double DOm = TMath::Pi()*(cTmax-cTmin)*(PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
+            double DOm = (180/TMath::Pi())*( cos( (180-(th+dth))*TMath::Pi()/180 ) - cos( (180-(th-dth))*TMath::Pi()/180 ) )*(PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
 
             //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
             double N_ij=Nn*T*dN_Ho_dOm*DOm;
-            Ntot += N_ij;
-            fij_exp = N_ij;
+            
+            TrueEvents << th << ", " << e << ", "<< N_ij << "\n";
 
-
-            TrueEvents << t << ", " << ene << ", "<< fij_exp << "\n";
-
-            hTrue->SetBinContent(ct,e,fij_exp);      //Expected Events
+            hTrue->SetBinContent(i,j,N_ij);      //Expected Events
         
             
-        } // loop e
+        } // loop energy
 
-    } // Loop ct
+    } // Loop eta
 
     TrueEvents.close();
-
-
-
-  
-    hTrue->SetTitle("Expected events for #nu_{#mu} and #bar{#nu}_#mu ");
-    //hTrue->GetYaxis()->SetTitle("E (GeV)");
-    //hTrue->GetXaxis()->SetTitle("eta");
-    //hTrue->GetZaxis()->SetTitle("Events per bin");
-    hTrue->SetStats(0);
             
              
     return hTrue;

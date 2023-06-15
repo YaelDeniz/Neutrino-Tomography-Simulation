@@ -30,12 +30,11 @@ int main()
     // Plot and Histogram2D settings
 
     std::cout << " Neutrino Oscillation tomography. " << std::endl;
-    std::cout << " Detector response." << std::endl;
     std::cout << " Generating Observed  Mu-like Events. "<< std::endl; 
 
     // Number of bins
-    int Ebins =10; // # of Bins of Energy
-    int Tbins =10; // # of Bins of cosThetaZ
+    int Ebins =101; // # of Bins of Energy
+    int Tbins =101; // # of Bins of cosThetaZ
 
     //Range in Theta and E for Event Oscillogram
 

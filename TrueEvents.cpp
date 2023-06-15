@@ -29,7 +29,8 @@ int main()
 {
     // Plot and Histogram2D settings
 
-    
+    std::cout << " Neutrino Oscillation tomography. " << std::endl;
+    std::cout << " Generating True/Expected  Mu-like Events. "<< std::endl; 
 
     // Number of bins
     int Ebins =1; // # of Bins of Energy
@@ -46,10 +47,6 @@ int main()
     
     double dcT = (ctmax - ctmin)/(2.0*Tbins); //< Bin width/2
 
-    //Energy interval (in GeV):
-    //double Emin = 1.0; 
-    //double Emax = 20.0;
-
 
     //Energy interval (in GeV):
     double Emin = 4.0; 
@@ -60,13 +57,12 @@ int main()
 
     int flvf = 1;
 
-    TH2D* EventOsc = GetTrueEvents(flvf, Es, cts , 200, 200);
-    
-    //TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int Tbins)
+    TH2D* EventOsc = GetTrueEvents(flvf, Es, cts , 101, 101);
+
+     std::cout << "Observed data is stored inside './SimulationResults' as TrueEvents.csv " << std::endl;
 
     TCanvas *c = new TCanvas();
     
-    //EventOsc->Draw("colz");    
     EventOsc->Draw("SURF1 Z");
     
     gStyle->SetPalette(55);
@@ -75,30 +71,9 @@ int main()
     gPad->SetPhi(330.0); // default is 30 --Azimuthal
     gPad->Update();
     
-    //gPad->SetLogx();
+   
     
     gPad->SetRightMargin(0.18);
-
-    
-/*
-    int flvi = 0 ;
-    int flvf = 1 ;
-
-    double Emin = 1;
-    double Emax = 100;
-
-    double L =  1000; // Neutrino Baseline in Km
-
-    double rho = 0; // Vacuum;  
- 
-    TGraph* Pem =  Matter_Osc(int flvi, int flvf, double Emin , double Emax,double rho , double L);
-
-    TCanvas *c = new TCanvas();
-
-    Pem->Draw();
-
-    c->Print("Pem_test.png");
-    */
   
     return 0;
     

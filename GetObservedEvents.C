@@ -60,20 +60,21 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
     ofstream ObservedData("SimulationResults/ObservedEvents.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
     
     //DETECTOR PROPERTIES
-    double DetMass = 10*MTon; //Mass in megaton units
+    double DetMass = 10.0*MTon; //Mass in megaton units
     double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    double T       = 10*years2sec; //Detector Exposure time in sec: One Year
+    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
 
     //Simulation Variables
-    double N_ij    = 0;   //Mean number of events at bin ij. True distribution.
-    double No_mn = 0;     //Mean number of events at bin mn. Observed distribution.
+    double N_ij    = 0.0;   //Mean number of events at bin ij. True distribution.
+    double No_mn = 0.0;     //Mean number of events at bin mn. Observed distribution.
     double Ntot;
+    double Ntrue;
 
     //INTERVAL LIMITS FOR INTEGRATION:
 
     //Limits of Phi/Azimuthal angle
     double Phim    = 0.0;
-    double PhiM    = 360 ; //DOlivo Azimuthal? for LLSVPs set 80
+    double PhiM    = 360.0 ; //DOlivo Azimuthal? for LLSVPs set 80
     
     //Integration limits of E
     double Emin      = Energy[0];
@@ -83,8 +84,8 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
     double thmin   = 10.0;
     double thmax   = 30.0;
     
-    double ctmin   = cos(thmax*TMath::Pi()/180); 
-    double ctmax   = cos(thmin*TMath::Pi()/180);
+    double ctmin   = cos((180.0-thmax)*TMath::Pi()/180); 
+    double ctmax   = cos((180.0-thmin)*TMath::Pi()/180);
 
 
     //True Bins:
@@ -101,7 +102,7 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
     double dEo = (Emax - Emin)/(2.0*nbins); //< Bin width/2
     TH2D* hObs = new TH2D("hObs","Observed Events",mbins,thmin,thmax,nbins,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
 
-    
+    //std::cout << "deltaE " << 2*dE <<" deltaTh"<< 2*dth <<std::endl; 
     
     //NEUTRINO OSCILLATION PROB
 
@@ -117,6 +118,7 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
     
     
     // Set specific Oscillation Parameters
+    
     
     double dm21 = 7.42e-5;
     double dm31 = 2.533e-3;
@@ -181,12 +183,43 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
     ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kLINEAR);         // Electron Neutrino Flux Interpolation
     ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kLINEAR);   // Electron Antineutrino Flux Interpolation
     
-    // Calculation of Observed events:
-
-   // std::vector<double> Th_o, Th, E_o, Et, dN;
-
+   // Total Number of True Events 
     
+    //INTEGRATION IN ENERGY
+    int nstep = 200; //Steps for Integration of E
+    
+    double hE = (Emax - Emin)/nstep; //Step size for Integration of E
 
+    std::vector<double>  Ei, R_Ho; // R= event rate d^2( N )/ (dtheta dE)
+    
+    for (int i = 0; i <= nstep ; ++i)
+    {   
+
+        Ei.push_back(Emin + i*hE);
+        //Calculate the Interaction Rate at E for neutrinos passing trough lower mantle of Standar Earth
+        //Neutrino contribution
+        PMNS_Ho.SetIsNuBar(false); 
+        double r_ho = XSec(Ei[i],nu)*( PMNS_Ho.Prob(numu, flvf, Ei[i])*dPsiMudE.Eval(Ei[i]) + PMNS_Ho.Prob(nue,flvf,Ei[i])*dPsiEdE.Eval(Ei[i]) );
+        //Antineutrino contribution
+        PMNS_Ho.SetIsNuBar(true); 
+        double r_hobar = XSec(Ei[i],nubar)*( PMNS_Ho.Prob(numu,flvf, Ei[i])*dPsiMubardE.Eval(Ei[i]) + PMNS_Ho.Prob(nue,flvf,Ei[i])*dPsiEbardE.Eval(Ei[i]) ); 
+        //store data
+        R_Ho.push_back(r_ho + r_hobar);
+    }
+
+    //Integration in negery variables using NC quadrature
+    double dN_Ho_dOm =  ncquad(Ei, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
+
+    // INTEGRATION IN THETA AND PHI (Solid Angle):
+    double DOm = (180/TMath::Pi())*( cos((180.0-thmax)*TMath::Pi()/180)-cos((180.0-thmin)*TMath::Pi()/180) )* (PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
+              
+    //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
+
+    Ntrue= Nn*T*(dN_Ho_dOm)*DOm;
+
+    //std::cout << "Total number of True events: " << Ntrue << std::endl;
+
+   // Observed Events 
     for (int m = 1; m <= mbins; ++m) //Observed Angular bins
     {
 
@@ -195,8 +228,6 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
         Th_o.push_back(tho - dtho);
         Th_o.push_back(tho);
         Th_o.push_back(tho + dtho);
-
-        std::cout << "* Th_o1: " << Th_o[0] << " Th_o2 **: " << Th_o[1] << " Th_o3: " << Th_o[2] <<std::endl;  
 
         for (int n = 1; n <=nbins ; ++n) //Observed Energy bins
         {
@@ -207,98 +238,88 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
             E_o.push_back(Eo);
             E_o.push_back(Eo + dEo);
 
-            std::cout << "  ** E_o1: " << E_o[0] << " E_o2: " << E_o[1] << " E_o3: " << E_o[2] <<std::endl;
-
             Ntot = 0;   // Reset total number of events.
   
 
 //----------------------------------------------------------------------------------------------
             
-    for(int i=1; i<= ibins ; i++) //Loop in cosT
-    {    
+            for(int i=1; i<= ibins ; i++) //Loop in cosT
+            {    
 
-        // Get cos(theta_z) from bin center, It fix a value of L
+                // Get cos(theta_z) from bin center, It fix a value of L
 
-        //double cosT = hTrue->GetYaxis()->GetBinCenter(ct); //< This will defined a constant L por different values of ct provided Dct is Small
-        double th = hTrue->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-        double cosT =cos( (180-th)*TMath::Pi()/180 );
-
-        if(cosT < -1 || cosT > 1) break; // Skip if cosT is unphysical 
-        double L_Ho = prem.GetTotalL(cosT); // Set total path length L  
-        prem.FillPath(cosT); // Fill paths from PREM model
-        // Set paths in OscProb  
-        PMNS_Ho.SetPath(prem.GetNuPath()); //STANDARD EARTH (DESCRIBED BY PREM MODEL)
-
-        std::vector<double> Th;
-        Th.push_back(th - dth);
-        Th.push_back(th);
-        Th.push_back(th + dth);
-        //std::cout << "*** Th1: " << Th[0] << " Th2: " << Th[1] << " Th3: " << Th[2] <<std::endl;  
-
-
-    
-
-        for (int j = 1; j <= jbins; ++j)
-        { 
-            //NUMERICAL INTEGRATION
-
-            double ene = hTrue->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
-
-            //INTEGRATION IN ENERGY
-            int nstep = 2; //Steps for Integration of E
-
-            //double deltaE =2*dE;
-
-            //double hE = deltaE/nstep; //Step size for Integration of E
-
-            std::vector<double>  Et, R_Ho; // R= event rate d^2( N )/ (dtheta dE)
-
-            for (int l = 0; l <= nstep ; ++l)
-            {   
-                Et.push_back( ene + (l-1)*dE );
+                double th = hTrue->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
                 
-                //Th.push_back(th + (l-1)*dth);
+                double cosT =cos( (180.0-th)*TMath::Pi()/180.0 );
 
-                double res = 2*TMath::Pi()*w_E(Et[l],E_o)*(dth/3.0)*(  w_th(Th[0],Et[l],Th_o)*sin( (180-Th[0])*TMath::Pi()/180 )+ 4*w_th(Th[1],Et[l],Th_o)*sin( (180-Th[1])*TMath::Pi()/180 ) +  w_th(Th[2],Et[l],Th_o)*sin( (180-Th[2])*TMath::Pi()/180 )  );
-                //double res = w_E(Et[l],E_o)*(dth/3.0)*( w_th(Th[0],Et[l],Th_o) + 4*w_th(Th[1],Et[l],Th_o) +  w_th(Th[2],Et[l],Th_o) );
+                if(cosT < -1 || cosT > 1) break; // Skip if cosT is unphysical 
                 
-                //Calculate the Interaction Rate at E for neutrinos passing trough lower mantle of Standar Earth
-                //Neutrino contribution
-                PMNS_Ho.SetIsNuBar(false); 
-                double r_ho = XSec(Et[l],nu)*( PMNS_Ho.Prob(numu, flvf, Et[l])*dPsiMudE.Eval(Et[l]) + PMNS_Ho.Prob(nue,flvf,Et[l])*dPsiEdE.Eval(Et[l]) );
-                //Antineutrino contribution
-                PMNS_Ho.SetIsNuBar(true); 
-                double r_hobar = XSec(Et[l],nubar)*( PMNS_Ho.Prob(numu,flvf, Et[l])*dPsiMubardE.Eval(Et[l]) + PMNS_Ho.Prob(nue,flvf,Et[l])*dPsiEbardE.Eval(Et[l]) ); 
-                //store data
-                R_Ho.push_back(res*(r_ho + r_hobar));
+                double L_Ho = prem.GetTotalL(cosT); // Set total path length L  
+                
+                prem.FillPath(cosT); // Fill paths from PREM model
+                
+                // Set paths in OscProb  
+                PMNS_Ho.SetPath(prem.GetNuPath()); //STANDARD EARTH (DESCRIBED BY PREM MODEL)
 
-            }
+                std::vector<double> Th;
+                Th.push_back(th - dth);
+                Th.push_back(th);
+                Th.push_back(th + dth);
+
+
+                for (int j = 1; j <= jbins; ++j)
+                { 
+                    //NUMERICAL INTEGRATION
+
+                    double ene = hTrue->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
+
+                    //INTEGRATION IN ENERGY
+                    int nstep = 2; //Steps for Integration of E
+
+                    //double deltaE =2*dE;
+
+                    //double hE = deltaE/nstep; //Step size for Integration of E
+
+                    std::vector<double>  Et, R_Ho; // R= event rate d^2( N )/ (dtheta dE)
+
+                    for (int l = 0; l <= nstep ; ++l)
+                    {   
+                        Et.push_back( ene + (l-1)*dE );
+                        
+                        //Th.push_back(th + (l-1)*dth);
+
+                        double res = w_E(Et[l],E_o)*(dth/3.0)*(  w_th(Th[0],Et[l],Th_o)*sin( (180.0-Th[0])*TMath::Pi()/180.0 )+ 4.0*w_th(Th[1],Et[l],Th_o)*sin( (180.0-Th[1])*TMath::Pi()/180.0 ) +  w_th(Th[2],Et[l],Th_o)*sin( (180.0-Th[2])*TMath::Pi()/180.0 )  );
+                        
+                        //Calculate the Interaction Rate at E for neutrinos passing trough lower mantle of Standar Earth
+
+                        //Neutrino contribution
+                        PMNS_Ho.SetIsNuBar(false); 
+                        double r_ho = XSec(Et[l],nu)*( PMNS_Ho.Prob(numu, flvf, Et[l])*dPsiMudE.Eval(Et[l]) + PMNS_Ho.Prob(nue,flvf,Et[l])*dPsiEdE.Eval(Et[l]) );
+                        
+                        //Antineutrino contribution
+                        PMNS_Ho.SetIsNuBar(true); 
+                        double r_hobar = XSec(Et[l],nubar)*( PMNS_Ho.Prob(numu,flvf, Et[l])*dPsiMubardE.Eval(Et[l]) + PMNS_Ho.Prob(nue,flvf,Et[l])*dPsiEbardE.Eval(Et[l]) ); 
+                        
+                        //store data
+                        R_Ho.push_back(res*(r_ho + r_hobar));
+
+                    }
+                    
             
-    
-            //Integration in negery variables using NC quadrature
-            double dN_Ho_dOm = simpson(Et, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
+                    //Integration in negery variables using NC quadrature
+                    double dN_Ho_dOm = simpson(Et, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
 
-            // INTEGRATION IN THETA AND PHI (Solid Angle):
-            //double cTmin =cos( (180-(th-dth))*TMath::Pi()/180 );
-            //double cTmax =cos( (180-(th+dth))*TMath::Pi()/180 );
-            //double DOm = (cTmax-cTmin)*(PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
+                    //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
+                    double N_ij=(Nn*T*(PhiM - Phim)*(TMath::Pi()/180.0) )*dN_Ho_dOm;
+                    Ntot += N_ij;
 
-            //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
-            double N_ij=Nn*T*dN_Ho_dOm/5.4800e+04;
-            Ntot += N_ij;
-
-            //ObservedData << th << ", " << ene << ", "<< N_ij << "\n";
+                    //ObservedData << th << ", " << ene << ", "<< N_ij << "\n";
 
 
-            
-        } // loop e
+                    
+                } // loop e
 
-    } // Loop ct
-
-    //ObservedData.close();
-
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------
+            } // Loop ct
             
             No_mn = Ntot;
 
@@ -306,26 +327,33 @@ TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int T
             
             hTrue->SetBinContent(m,n,No_mn); // Set events in Observed histogram. 
 
-          //  E_o.clear();
-
         } // loop in eo
 
-        //Th_o.clear();
-
     } // loop in tho
-
-    //E_o.clear();
-    //Et.clear();
-    //Th_o.clear();
-    //Th.clear();
 
    ObservedData.close();
        
   
-    hObs->SetTitle("Observed events for #nu_{#mu} and #bar{#nu}_#mu ");
+   hObs->SetTitle("Observed events for #nu_{#mu} and #bar{#nu}_#mu ");
     
-    hObs->SetStats(0);
-            
+   hObs->SetStats(0);
+
+  /*
+    //**Normlization  test
+
+   std::vector <double> Thtest, Etest;
+   Thtest.push_back(10);
+   Thtest.push_back(15);
+   Thtest.push_back(30);
+   Etest.push_back(4);
+   Etest.push_back(5);
+   Etest.push_back(6);
+
+   double Itest = w_E( 4.5 , Etest )*w_th(15, 4.5, Thtest);
+
+   std::cout << "Normal Integral Test: " << Itest << std::endl; 
+    */
+
     return hObs;
 }
 
@@ -337,9 +365,10 @@ double aE = 0.2;
 
 double sdE = aE*E;
 
+double AE = (0.5)*( ROOT::Math::erf (  (E - 4.0 )/( sqrt(2)*sdE )  ) - ROOT::Math::erf (  (E - 6.0)/( sqrt(2)*sdE )  ) );  
 double wE = (0.5)*( ROOT::Math::erf (  (E - Eo[0] )/( sqrt(2)*sdE )  ) - ROOT::Math::erf (  (E - Eo[2])/( sqrt(2)*sdE )  ) );    
 
-return wE;
+return wE/AE;
 
 }
 
@@ -350,9 +379,11 @@ double ath = 0.25;
 
 double sdth = ath/(sqrt(E));
 
-double wth = (0.5)*( ROOT::Math::erf (  (TMath::Pi()/180)*(th - tho[0])/( sqrt(2)*sdth )  ) - ROOT::Math::erf (  (TMath::Pi()/180)*(th - tho[2])/( sqrt(2)*sdth )  ) );   
+double ATh = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - 10.0)/( sqrt(2)*sdth )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - 30.0)/( sqrt(2)*sdth )  ) );
 
-return wth;
+double wth = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - tho[0])/( sqrt(2)*sdth )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - tho[2])/( sqrt(2)*sdth )  ) );   
+
+return wth/ATh;
     
 }
 
