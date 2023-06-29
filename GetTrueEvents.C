@@ -50,41 +50,58 @@ using namespace std;
 # define years2sec 3.154E7 // Years in Seconds
 
 // Make oscillogram for given final flavour and MH
-TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int nbinsy)
+TH2D*  GetTrueEvents(int flvf, double E_GeV[], double Eta[], double dAz ,int Ebins, int Tbins)
 {  
 
-    ofstream TrueEvents("SimulationResults/TrueEvents.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+
+
+    ofstream TrueEvents("SimulationResults/Model1e.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
     
     double u       = 0;
     double N_ij    = 0;   //Mean number of events at bin ij.
     double Ntot    = 0;   // Total number of events.
 
     //DETECTOR PROPERTIES
-    double DetMass = 10.0*MTon; //Mass in megaton units
+    double DetMass = 1.0*MTon; //Mass in megaton units
     double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
+    double T       = 1.0*years2sec; //Detector Exposure time in sec: One Year
+
+
+    std::cout << "Detector expousre :" << DetMass*T << "MTon-Year" << std::endl; 
+
 
     //INTERVAL LIMITS FOR INTEGRATION:
 
     //Limits of Phi/Azimuthal angle
+    /*
     double Phim    = 0.0;
-    //double PhiM    = 80.0;
+    double PhiM    = 80.0;
     double PhiM    = 360 ; //DOlivo Azimuthal?
+    */
+
     //Integration limits of E
-    double Emin      = Energy[0];
-    double Emax      = Energy[1];
+    double Emin      = E_GeV[0];
+    double Emax      = E_GeV[1];
 
     //Range in Theta and E for Event Oscillogram
-    double thmin   = 10.0;
-    double thmax   = 30.0;
+    //double thmin   = 10.0;
+    //double thmax   = 30.0;
+
+    double thmin   = Eta[0];
+    double thmax   = Eta[1];
 
     double ctmin   = cos((180-thmax)*TMath::Pi()/180); 
     double ctmax   = cos((180-thmin)*TMath::Pi()/180);
 
+    int ibins = Tbins; // Number of  angular bins of True event distribution
+    int jbins = Ebins; // Number of  energy bins of True event distribution
+
+
+
     // Create 2D histogram for Event Oscillogram
-    double dth = (thmax - thmin)/(2.0*nbinsx); //< Bin width/2
-    double dE = (Emax - Emin)/(2.0*nbinsy); //< Bin width/2
-    TH2D* hTrue = new TH2D("hTrue","True Events",nbinsx,thmin,thmax,nbinsy,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
+    double dth = (thmax - thmin)/(2.0*ibins); //< Bin width/2
+    double dE = (Emax - Emin)/(2.0*jbins); //< Bin width/2
+    TH2D* hTrue = new TH2D("hTrue","True Events",ibins,thmin,thmax,jbins,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
     
     //NEUTRINO OSCILLATION PROB
 
@@ -120,11 +137,17 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     PMNS_Ho.SetStdPars(); // Set PDG 3-flavor parameters
 
     // Create PREM Model
-    string file_test;
-    file_test   = "/home/dehy0499/OscProb/PremTables/prem_test.txt"; //Specify PREM table from OscProb
-    OscProb::PremModel prem(file_test);
+    //string file_test;
+    //file_test   = "/home/dehy0499/OscProb/PremTables/prem_lbl.txt"; //Specify PREM table from OscProb
+    //OscProb::PremModel prem(file_test);
+    
+    /*
+    std::string prem_llsvp;
+    prem_llsvp   = "/home/dehy0499/OscProb/PremTables/Prem_LLSVPhigh.txt"; //Specify PREM table from OscProb
+    OscProb::PremModel prem(prem_llsvp);
+    */
 
-    //OscProb::PremModel prem; //Default PREM table
+    OscProb::PremModel prem; //Default PREM table
 
     // Atmospheric Neutrino Flux data:
     TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
@@ -167,7 +190,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
     ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE    );   // Electron Antineutrino Flux Interpolation
   
 
-    for(int i=1; i<= nbinsx ; i++) //Loop in cosT
+    for(int i=1; i<= ibins ; i++) //Loop in cosT
     {    
 
         // Get cos(theta_z) from bin center, It fix a value of L
@@ -183,7 +206,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
         PMNS_Ho.SetPath(prem.GetNuPath()); //STANDARD EARTH (DESCRIBED BY PREM MODEL)
     
 
-        for (int j = 1; j <=nbinsy; ++j)
+        for (int j = 1; j <=jbins; ++j)
         { 
             //NUMERICAL INTEGRATION
 
@@ -220,7 +243,7 @@ TH2D*  GetTrueEvents(int flvf, double Energy[], double CosT[] ,int nbinsx, int n
             double dN_Ho_dOm =  simpson(E, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
 
             // INTEGRATION IN THETA AND PHI (Solid Angle):
-            double DOm = (180/TMath::Pi())*( cos( (180-(th+dth))*TMath::Pi()/180 ) - cos( (180-(th-dth))*TMath::Pi()/180 ) )*(PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
+            double DOm = (180/TMath::Pi())*( cos( (180-(th+dth))*TMath::Pi()/180 ) - cos( (180-(th-dth))*TMath::Pi()/180 ) )*(dAz)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
 
             //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
             double N_ij=Nn*T*dN_Ho_dOm*DOm;

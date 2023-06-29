@@ -4,7 +4,7 @@
 #include "TH2.h"
 
 
-TH2D*  ObservedEvents(int flvf, double Energy[], double CosT[] ,int Ebins, int Tbins);
+TH2D*  ObservedEvents(int flvf, double E_GeV[], double Eta[],double dAz ,int Ebins, int Tbins);
 
 
 //Generate energy dependent Oscillation Probabilities  (fixed Baseline) 

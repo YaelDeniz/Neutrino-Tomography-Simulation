@@ -33,31 +33,45 @@ int main()
     std::cout << " Generating True/Expected  Mu-like Events. "<< std::endl; 
 
     // Number of bins
-    int Ebins =1; // # of Bins of Energy
-    int Tbins =1; // # of Bins of cosThetaZ
+    int Ebins =101; // # of Bins of Energy
+    int Tbins =101; // # of Bins of cosThetaZ
 
     //Range in Theta and E for Event Oscillogram
 
-    //Zenith angle interval:
-    //double ctmin = cos(147.0*myPi/180); 
-    //double ctmax = cos(142*myPi/180);
-
-    double ctmin = cos(170.0*myPi/180); 
-    double ctmax = cos(150*myPi/180);
-    
-    double dcT = (ctmax - ctmin)/(2.0*Tbins); //< Bin width/2
-
-
     //Energy interval (in GeV):
+    double Emin = 1.0; 
+    double Emax = 20.0;
+
+    //Zenith Angle Interval:
+    double Etamin = 33.0;
+    double Etamax = 38.0;
+
+    double Phim = 0.0;
+    double PhiM = 80.0 ; 
+
+
+    /*  
     double Emin = 4.0; 
     double Emax = 6.0;
 
-    double Es[] = {Emin,Emax};
-    double cts[] = {ctmin,ctmax};
+    double Etamin = 10.0;
+    double Etamax = 30.0;
+    
+    double Phim    = 0.0;
+    double PhiM    = 360.0 ;
+    */
 
-    int flvf = 1;
+    double dAz = PhiM-Phim;
 
-    TH2D* EventOsc = GetTrueEvents(flvf, Es, cts , 101, 101);
+
+    double E_GeV[] = {Emin,Emax};
+    double Eta[] = {Etamin,Etamax};
+
+
+    // neutrino state options nue (0), numu (1) or nutau (2)
+    int flvf = 0;
+
+    TH2D* EventOsc = GetTrueEvents(flvf, E_GeV, Eta , dAz , Ebins, Tbins);
 
      std::cout << "Observed data is stored inside './SimulationResults' as TrueEvents.csv " << std::endl;
 

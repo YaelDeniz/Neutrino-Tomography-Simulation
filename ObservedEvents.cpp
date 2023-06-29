@@ -36,25 +36,43 @@ int main()
     int Ebins =101; // # of Bins of Energy
     int Tbins =101; // # of Bins of cosThetaZ
 
-    //Range in Theta and E for Event Oscillogram
-
-    //Zenith angle interval:
-  
-    double ctmin = cos(170.0*myPi/180); 
-    double ctmax = cos(150*myPi/180);
 
     //Energy interval (in GeV):
+    double Emin = 3.0; 
+    double Emax = 5.0;
+
+    //Zenith Angle Interval:
+    double Etamin = 33.0;
+    double Etamax = 38.0;
+
+    double Phim = 0.0;
+    double PhiM = 80.0 ; 
+
+
+    /*
     double Emin = 4.0; 
     double Emax = 6.0;
 
-    double Es[] = {Emin,Emax};
-    double cts[] = {ctmin,ctmax};
+    double Etamin = 10.0;
+    double Etamax = 30.0;
+    
+    double Phim    = 0.0;
+    double PhiM    = 360.0 ;
+    */
+
+    
+
+    double dAz = PhiM-Phim;
+
+
+    double E[] = {Emin,Emax};
+    double Eta[] = {Etamin,Etamax};
 
     int flvf = 1;
 
-    TH2D* EventOsc = ObservedEvents(flvf, Es, cts , Ebins, Tbins);
+    TH2D* EventOsc = ObservedEvents(flvf, E, Eta , dAz , Ebins, Tbins);
 
-    std::cout << "Observed data is stored inside './SimulationResults' as ObservedEvents.csv " << std::endl;
+    std::cout << "Observed data is stored inside './SimulationResults' " << std::endl;
 
     TCanvas *c = new TCanvas();
     
