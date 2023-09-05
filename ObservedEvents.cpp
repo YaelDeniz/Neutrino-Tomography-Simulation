@@ -21,6 +21,10 @@
 
 
 # define myPi 3.14159265358979323846  /* pi */
+// Some Constants i need
+# define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
+# define MTon  1E9  //Metric MegaTon
+# define years2sec 3.154E7 // Years in Seconds
 
 using namespace std;
 
@@ -38,8 +42,8 @@ int main()
 
 
     //Energy interval (in GeV):
-    double Emin = 3.0; 
-    double Emax = 5.0;
+    double Emin = 1.0; 
+    double Emax = 25.0;
 
     //Zenith Angle Interval:
     double Etamin = 33.0;
@@ -58,19 +62,37 @@ int main()
     
     double Phim    = 0.0;
     double PhiM    = 360.0 ;
-    */
 
-    
+    */
 
     double dAz = PhiM-Phim;
 
 
     double E[] = {Emin,Emax};
+
+
     double Eta[] = {Etamin,Etamax};
+
+    //Detector Parameters:
+
+    double aE = 0.2;
+
+    double aTh = 0.25;
+
+    double Det_par[] = {aE,aTh};
 
     int flvf = 1;
 
-    TH2D* EventOsc = ObservedEvents(flvf, E, Eta , dAz , Ebins, Tbins);
+    //std::string prem_llsvp;
+
+    //prem_llsvp   = "/home/dehy0499/OscProb/PremTables/Prem_LLSVPhigh.txt"; //Specify PREM table from OscProb
+
+
+    std::string prem_default;
+            
+    prem_default   = "/home/dehy0499/OscProb/PremTables/prem_default.txt"; //Specify PREM table from OscProb
+
+    TH2D* EventOsc = GetObservedEvents(prem_default, flvf, E, Eta , dAz , Ebins, Tbins, Det_par);
 
     std::cout << "Observed data is stored inside './SimulationResults' " << std::endl;
 

@@ -50,24 +50,21 @@ using namespace std;
 # define years2sec 3.154E7 // Years in Seconds
 
 // Make oscillogram for given final flavour and MH
-TH2D*  GetTrueEvents(int flvf, double E_GeV[], double Eta[], double dAz ,int Ebins, int Tbins)
+TH2D*  GetTrueEvents(std::string model, int flvf, double E_GeV[], double Eta[], double dAz ,int Ebins, int Tbins, double NnT)
 {  
 
 
 
-    ofstream TrueEvents("SimulationResults/Model1e.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    ofstream TrueEvents("SimulationResults/test2.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
     
     double u       = 0;
     double N_ij    = 0;   //Mean number of events at bin ij.
     double Ntot    = 0;   // Total number of events.
 
-    //DETECTOR PROPERTIES
-    double DetMass = 1.0*MTon; //Mass in megaton units
-    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    double T       = 1.0*years2sec; //Detector Exposure time in sec: One Year
+   
 
 
-    std::cout << "Detector expousre :" << DetMass*T << "MTon-Year" << std::endl; 
+    //std::cout << "Detector expousre :" << DetMass*T << "MTon-Year" << std::endl; 
 
 
     //INTERVAL LIMITS FOR INTEGRATION:
@@ -141,13 +138,12 @@ TH2D*  GetTrueEvents(int flvf, double E_GeV[], double Eta[], double dAz ,int Ebi
     //file_test   = "/home/dehy0499/OscProb/PremTables/prem_lbl.txt"; //Specify PREM table from OscProb
     //OscProb::PremModel prem(file_test);
     
-    /*
-    std::string prem_llsvp;
-    prem_llsvp   = "/home/dehy0499/OscProb/PremTables/Prem_LLSVPhigh.txt"; //Specify PREM table from OscProb
-    OscProb::PremModel prem(prem_llsvp);
-    */
+    
 
-    OscProb::PremModel prem; //Default PREM table
+    OscProb::PremModel prem(model);
+    
+
+    //OscProb::PremModel prem; //Default PREM table
 
     // Atmospheric Neutrino Flux data:
     TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
@@ -246,7 +242,7 @@ TH2D*  GetTrueEvents(int flvf, double E_GeV[], double Eta[], double dAz ,int Ebi
             double DOm = (180/TMath::Pi())*( cos( (180-(th+dth))*TMath::Pi()/180 ) - cos( (180-(th-dth))*TMath::Pi()/180 ) )*(dAz)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
 
             //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
-            double N_ij=Nn*T*dN_Ho_dOm*DOm;
+            double N_ij=NnT*dN_Ho_dOm*DOm;
             
             TrueEvents << th << ", " << e << ", "<< N_ij << "\n";
 
@@ -258,6 +254,8 @@ TH2D*  GetTrueEvents(int flvf, double E_GeV[], double Eta[], double dAz ,int Ebi
     } // Loop eta
 
     TrueEvents.close();
+
+    delete HF;
             
              
     return hTrue;

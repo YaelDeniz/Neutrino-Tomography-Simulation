@@ -36,7 +36,7 @@ int main()
 
     //Energy interval (in GeV):
     double Emin = 1.0; 
-    double Emax = 20.0;
+    double Emax = 10.0;
 
     //Zenith Angle Interval:
     double Etamin = 33.0;
@@ -50,7 +50,7 @@ int main()
 
      // neutrino state options nue (0), numu (1) or nutau (2)
     int flvi = 1;
-    int flvf = 1;
+    int flvf = 0;
 
     TH2D* Pab = GetProbPREM( flvi, flvf, E_GeV, Eta, Ebins, Tbins);
 

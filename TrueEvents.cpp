@@ -21,6 +21,10 @@
 
 
 # define myPi 3.14159265358979323846  /* pi */
+// Some Constants i need
+# define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
+# define MTon  1E9  //Metric MegaTon
+# define years2sec 3.154E7 // Years in Seconds
 
 using namespace std;
 
@@ -40,7 +44,7 @@ int main()
 
     //Energy interval (in GeV):
     double Emin = 1.0; 
-    double Emax = 20.0;
+    double Emax = 25.0;
 
     //Zenith Angle Interval:
     double Etamin = 33.0;
@@ -48,6 +52,13 @@ int main()
 
     double Phim = 0.0;
     double PhiM = 80.0 ; 
+
+     //DETECTOR PROPERTIES
+    double DetMass = 10.0*MTon; //Mass in megaton units
+    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+    double T       = 20.0*years2sec; //Detector Exposure time in sec: One Year
+
+    double NnT = Nn*T; 
 
 
     /*  
@@ -69,11 +80,21 @@ int main()
 
 
     // neutrino state options nue (0), numu (1) or nutau (2)
-    int flvf = 0;
+    int flvf = 1;
 
-    TH2D* EventOsc = GetTrueEvents(flvf, E_GeV, Eta , dAz , Ebins, Tbins);
+    std::string prem_llsvp;
+    
+    prem_llsvp   = "/home/dehy0499/OscProb/PremTables/Prem_LLSVPhigh.txt"; //Specify PREM table from OscProb
 
-     std::cout << "Observed data is stored inside './SimulationResults' as TrueEvents.csv " << std::endl;
+
+    std::string prem_default;
+            
+    prem_default   = "/home/dehy0499/OscProb/PremTables/prem_default.txt"; //Specify PREM table from OscProb
+
+
+    TH2D* EventOsc = GetTrueEvents(prem_llsvp, flvf, E_GeV, Eta , dAz , Ebins, Tbins ,NnT);
+
+     std::cout << "Observed data is stored inside './SimulationResults" << std::endl;
 
     TCanvas *c = new TCanvas();
     

@@ -47,22 +47,26 @@ using namespace std;
 
 //Resolution functions
 
-double w_E(double E , std::vector<double> Eo, double E_GeV[] );
+double w_E(double aE, double E , std::vector<double> Eo, double E_GeV[] );
 
-double w_th(double th, double E,std::vector<double> tho, double Eta[]);
+double w_th(double aTh, double th, double E,std::vector<double> tho, double Eta[]);
 
 // Make oscillogram for given final flavour and MH
-TH2D*  ObservedEvents(int flvf, double E_GeV[], double Eta[],double dAz ,int Ebins, int Tbins)
+TH2D*  GetObservedEvents(std::string model, int flvf, double E_GeV[], double Eta[],double dAz ,int Ebins, int Tbins, double Det_par[] )
 {   
 
-    ofstream ObservedData("SimulationResults/Events_Obs_LLSVPlow.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    //ofstream ObservedData("SimulationResults/NmuObs_extend.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
     
     //DETECTOR PROPERTIES
-    double DetMass = 1.0*MTon; //Mass in megaton units
-    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    double T       = 1.0*years2sec; //Detector Exposure time in sec: One Year
+    //double DetMass = 10.0*MTon; //Mass in megaton units
+    //double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+    //double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
 
-    std::cout << "Detector expousre :" << DetMass*T << "MTon-Year" << std::endl;
+    double aE =  Det_par[0] ;
+    double aTh = Det_par[1] ;
+    double NnT = Det_par[2] ; //Exposure in MegaTon*Years
+
+    //std::cout << "Detector expousre :" << DetMass*T << "MTon-Year" << std::endl;
 
     //Simulation Variables
     double N_ij    = 0.0;   //Mean number of events at bin ij. True distribution.
@@ -71,11 +75,6 @@ TH2D*  ObservedEvents(int flvf, double E_GeV[], double Eta[],double dAz ,int Ebi
     double Ntrue;
 
     //INTERVAL LIMITS FOR INTEGRATION:
-
-    //Limits of Phi/Azimuthal angle
-    //double Phim    = 0.0;
-    //double PhiM    = 360.0 ; //DOlivo Azimuthal? for LLSVPs set 80
-    //double PhiM    = 80.0 ; //LSVPs 80
     
     //Integration limits of E
     double Emin      = E_GeV[0];
@@ -140,29 +139,15 @@ TH2D*  ObservedEvents(int flvf, double E_GeV[], double Eta[],double dAz ,int Ebi
 
     PMNS_Ho.SetStdPars(); // Set PDG 3-flavor parameters
 
-    // Create PREM Model
-    //string test_profile;
-
-    //test_profile   = "/home/dehy0499/OscProb/PremTables/prem_test.txt"; //Specify PREM table from OscProb
-    
-    //OscProb::PremModel prem(test_profile);
-
-    
-    std::string prem_llsvp;
-    prem_llsvp   = "/home/dehy0499/OscProb/PremTables/Prem_LLSVPlow.txt"; //Specify PREM table from OscProb
-    OscProb::PremModel prem(prem_llsvp);
-    
-
-
-    //OscProb::PremModel prem; //Default PREM table
+    OscProb::PremModel prem(model);
 
     // Atmospheric Neutrino Flux data:
     
     TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope) Averaged all directions
     
     //TFile *HF = new TFile("./NuFlux/TestFlux.root","read"); // Specific flux V. Agrawal, et al. (1996)
-    TDirectory *Zen;
-    Zen = (TDirectory*) HF->Get("CosZ_all"); // Avg Flux for -0.9 <~ CosT < 0
+    //TDirectory *Zen;
+    TDirectory *Zen = (TDirectory*) HF->Get("CosZ_all"); // Avg Flux for -0.9 <~ CosT < 0
     TTree *flux= (TTree*) Zen->Get("FluxData"); //Opens data file      
     
     double Enu,NuMu,NuMubar,NuE,NuEbar;
@@ -192,44 +177,6 @@ TH2D*  ObservedEvents(int flvf, double E_GeV[], double Eta[],double dAz ,int Ebi
     //Interplate Electron-neutrinos flux
     ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kCSPLINE);         // Electron Neutrino Flux Interpolation
     ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE);   // Electron Antineutrino Flux Interpolation
-    
-   // Total Number of True Events 
-    
-     /*
-    //INTEGRATION IN ENERGY
-    int nstep = 200; //Steps for Integration of E
-    
-    double hE = (Emax - Emin)/nstep; //Step size for Integration of E
-
-    std::vector<double>  Ei, R_Ho; // R= event rate d^2( N )/ (dtheta dE)
-    
-    for (int i = 0; i <= nstep ; ++i)
-    {   
-
-        Ei.push_back(Emin + i*hE);
-        //Calculate the Interaction Rate at E for neutrinos passing trough lower mantle of Standar Earth
-        //Neutrino contribution
-        PMNS_Ho.SetIsNuBar(false); 
-        double r_ho = XSec(Ei[i],nu)*( PMNS_Ho.Prob(numu, flvf, Ei[i])*dPsiMudE.Eval(Ei[i]) + PMNS_Ho.Prob(nue,flvf,Ei[i])*dPsiEdE.Eval(Ei[i]) );
-        //Antineutrino contribution
-        PMNS_Ho.SetIsNuBar(true); 
-        double r_hobar = XSec(Ei[i],nubar)*( PMNS_Ho.Prob(numu,flvf, Ei[i])*dPsiMubardE.Eval(Ei[i]) + PMNS_Ho.Prob(nue,flvf,Ei[i])*dPsiEbardE.Eval(Ei[i]) ); 
-        //store data
-        R_Ho.push_back(r_ho + r_hobar);
-    }
-    
-    //Integration in negery variables using NC quadrature
-    double dN_Ho_dOm =  ncquad(Ei, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
-
-    // INTEGRATION IN THETA AND PHI (Solid Angle):
-    double DOm = (180/TMath::Pi())*( cos((180.0-thmax)*TMath::Pi()/180)-cos((180.0-thmin)*TMath::Pi()/180) )* (PhiM - Phim)*(TMath::Pi()/180) ; //Solid Angle =  DeltaCosT*DeltaPhi
-              
-    //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
-
-    Ntrue= Nn*T*(dN_Ho_dOm)*DOm;
-
-    //std::cout << "Total number of True events: " << Ntrue << std::endl;
-    */
 
 
    // Observed Events 
@@ -300,7 +247,7 @@ TH2D*  ObservedEvents(int flvf, double E_GeV[], double Eta[],double dAz ,int Ebi
                         Et.push_back( ene + (l-1)*dE );
                         
 
-                        double res = w_E(Et[l],E_o,E_GeV)*(dth/3.0)*(  w_th(Th[0],Et[l],Th_o,Eta)*sin( (180.0-Th[0])*TMath::Pi()/180.0 )+ 4.0*w_th(Th[1],Et[l],Th_o,Eta)*sin( (180.0-Th[1])*TMath::Pi()/180.0 ) +  w_th(Th[2],Et[l],Th_o,Eta)*sin( (180.0-Th[2])*TMath::Pi()/180.0 )  );
+                        double res = w_E( aE, Et[l],E_o,E_GeV)*(dth/3.0)*(  w_th( aTh, Th[0],Et[l],Th_o,Eta)*sin( (180.0-Th[0])*TMath::Pi()/180.0 )+ 4.0*w_th( aTh, Th[1],Et[l],Th_o,Eta)*sin( (180.0-Th[1])*TMath::Pi()/180.0 ) +  w_th( aTh, Th[2], Et[l], Th_o, Eta)*sin( (180.0-Th[2])*TMath::Pi()/180.0 )  );
                         
                         //Calculate the Interaction Rate at E for neutrinos passing trough lower mantle of Standar Earth
 
@@ -322,12 +269,10 @@ TH2D*  ObservedEvents(int flvf, double E_GeV[], double Eta[],double dAz ,int Ebi
                     double dN_Ho_dOm = simpson(Et, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
 
                     //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
-                    double N_ij=(Nn*T*(dAz)*(TMath::Pi()/180.0) )*dN_Ho_dOm;
+                    double N_ij=(NnT*(dAz)*(TMath::Pi()/180.0) )*dN_Ho_dOm;
                     Ntot += N_ij;
 
                     //ObservedData << th << ", " << ene << ", "<< N_ij << "\n";
-
-
                     
                 } // loop e
 
@@ -335,45 +280,36 @@ TH2D*  ObservedEvents(int flvf, double E_GeV[], double Eta[],double dAz ,int Ebi
             
             No_mn = Ntot;
 
-            ObservedData << tho << ", " << Eo << ", "<< No_mn << "\n"; //Write im file.
+
+
+            //ObservedData << tho << ", " << Eo << ", "<< No_mn << "\n"; //Write im file.
             
-            hTrue->SetBinContent(m,n,No_mn); // Set events in Observed histogram. 
+            hObs->SetBinContent(m,n,No_mn); // Set events in Observed histogram. 
+            
 
         } // loop in eo
 
     } // loop in tho
 
-   ObservedData.close();
+   //ObservedData.close();
        
-  
    hObs->SetTitle("Observed events for #nu_{#mu} and #bar{#nu}_#mu ");
     
    hObs->SetStats(0);
 
-  /*
-    //**Normlization  test
+   //Delete 
 
-   std::vector <double> Thtest, Etest;
-   Thtest.push_back(10);
-   Thtest.push_back(15);
-   Thtest.push_back(30);
-   Etest.push_back(4);
-   Etest.push_back(5);
-   Etest.push_back(6);
+   delete HF;
+   delete hTrue;
 
-   double Itest = w_E( 4.5 , Etest )*w_th(15, 4.5, Thtest);
-
-   std::cout << "Normal Integral Test: " << Itest << std::endl; 
-    */
-
-    return hObs;
+   return hObs;
 }
 
 
-double w_E(double E , std::vector<double> Eo, double E_GeV[] ) 
+double w_E(double aE, double E , std::vector<double> Eo, double E_GeV[] ) 
 {
 
-double aE = 0.2;
+//double aE = 0.2;
 
 double sdE = aE*E;
 
@@ -385,12 +321,12 @@ return wE/AE;
 
 }
 
-double w_th(double th, double E, std::vector<double> tho, double Eta[])
+double w_th(double aTh, double th, double E, std::vector<double> tho, double Eta[])
 {
 
-double ath = 0.25;
+//double ath = 0.25;
 
-double sdth = ath/(sqrt(E));
+double sdth = aTh/(sqrt(E));
 
 double ATh = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - Eta[0])/( sqrt(2)*sdth )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - Eta[1])/( sqrt(2)*sdth )  ) );
 
@@ -399,27 +335,3 @@ double wth = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*
 return wth/ATh;
     
 }
-
-/*
-double GaussNorm(double E,double th, double E_GeV[] ,double Eta[])
-{
-
-
-double ath = 0.25;
-
-double sdth = ath/(sqrt(E));
-
-double ATh = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - Eta[0])/( sqrt(2)*sdth )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - Eta[1])/( sqrt(2)*sdth )  ) );
-
-double aE = 0.2;
-
-double sdE = aE*E;
-
-double AE = (0.5)*( ROOT::Math::erf (  (E - E_GeV[0] )/( sqrt(2)*sdE )  ) - ROOT::Math::erf (  (E - E_GeV[2])/( sqrt(2)*sdE )  ) );
-
-return AE*ATh;
-
-
-
-}
-*/
