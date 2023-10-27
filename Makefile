@@ -6,11 +6,11 @@ ROOTLIBS = `root-config --libs `
 
 ROOT_FLAGS = `root-config  --cflags --glibs --libs`
 
-CFILES = MathTools.C PhyTools.C  GetObservedEvents.C GetTrueEvents.C GetProbPREM.C
+CFILES = MathTools.C PhyTools.C  GetObservedEvents.C GetObservedEventsMC.C GetTrueEvents.C GetProbPREM.C
 
 OBJECTStrue = MathTools.o PhyTools.o GetTrueEvents.o
-OBJECTSobs  = MathTools.o PhyTools.o GetObservedEvents.o
-OBJECTSana  = MathTools.o PhyTools.o GetObservedEvents.o #GetTrueEvents.o
+OBJECTSobs  = MathTools.o PhyTools.o GetObservedEvents.o 
+OBJECTSobsMC =MathTools.o PhyTools.o GetObservedEventsMC.o GetTrueEvents.o
 OBJECTSProb = GetProbPREM.o
 
 OSCPROB_PATH = /home/dehy0499/Desktop/Tomography/Simulation/OscProb
@@ -19,7 +19,10 @@ ROOTMATH_LIB=/home/dehy0499/root/lib
 ROOTMATH_INCLUDE=/home/dehy0499/root/include/Math
 
 
-all: ObservedEvents TrueEvents ProbPREM StatsAna
+#all: ObservedEvents TrueEvents ProbPREM StatsAnaTrue
+
+
+all:  TrueEvents ProbPREM ObservedEvents StatsAnaObs StatsAnaTrue StatsRes #ObservedEventsMC 
 
 ProbPREM: ProbPREM.cpp $(OBJECTSProb)
 	@echo " "
@@ -36,7 +39,16 @@ ObservedEvents: ObservedEvents.cpp $(OBJECTSobs)
 	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
 	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
 	@echo " "
-	@echo "Done"
+	@echo "Done" 
+
+#ObservedEventsMC: ObservedEventsMC.cpp $(OBJECTSobsMC)
+	#@echo " "
+	#@echo "Generating Application for Observed Events: Monte Carlo"
+	#@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	#$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	#@echo " "
+	#@echo "Done" 
+
 
 TrueEvents: TrueEvents.cpp $(OBJECTStrue)
 	@echo " "
@@ -46,13 +58,33 @@ TrueEvents: TrueEvents.cpp $(OBJECTStrue)
 	@echo " "
 	@echo "Done"
 
-StatsAna: StatsAna.cpp $(OBJECTStrue)
+StatsAnaTrue: StatsAnaTrue.cpp $(OBJECTStrue)
 	@echo " "
-	@echo "Generating Application for Statistical Analysis"
+	@echo "Generating Application for Statistical Analysis of True Events"
 	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
 	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
 	@echo " "
 	@echo "Done"
+
+StatsAnaObs: StatsAnaObs.cpp $(OBJECTSobs)
+	@echo " "
+	@echo "Generating Application for Statistical Analysis of Observed Events"
+	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	@echo " "
+	@echo "Done"
+
+StatsRes: StatsRes.cpp $(OBJECTSobs)
+	@echo " "
+	@echo "Generating Application for Statistical Analysis for different parameters"
+	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	@echo " "
+	@echo "Done"
+
+
+
+
 
 
 GetProbPREM.o: GetProbPREM.C
@@ -60,6 +92,11 @@ GetProbPREM.o: GetProbPREM.C
 	@echo "Creating Probability Generator Objects"
 	$(CC)  -c -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
 
+
+GetObservedEventsMC.o: GetObservedEventsMC.C MathTools.o PhyTools.o
+	@echo "  "
+	@echo "Creating Observed Events Generator Objects MC"
+	$(CC)  -c -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
 
 GetObservedEvents.o: GetObservedEvents.C MathTools.o PhyTools.o
 	@echo "  "
@@ -92,4 +129,4 @@ PhyTools.o: PhyTools.C
 
 clean:
 	@echo "Removing Objects"
-	rm *.o ObservedEvents TrueEvents ProbPREM StatsAna
+	rm *.o ObservedEventsMC ObservedEvents TrueEvents ProbPREM 

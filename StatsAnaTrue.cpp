@@ -1,6 +1,6 @@
 #define _USE_MATH_DEFINES
-#include <cmath>
 
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -19,7 +19,6 @@
 //My Libraries
 #include "MathTools.h"
 #include "PhyTools.h"
-//#include "GetObservedEvents.h"
 #include "GetTrueEvents.h"
 
 
@@ -43,14 +42,38 @@ int main()
     std::cout << " Generating Log-Likelihood Ratio Test (LLRT) / Chi^2 test. "<< std::endl; 
 
     
-    // Alternative Earth Model:-------------------------------------------------------------
+     // Number of bins
+    //int K = 1000; //Number of Pseudo experiments.
+    int Ebins=50; // # of Bins of Energy
+    int Etabins=50; // # of Bins of cosEta
+
+    int Bins[]={Etabins, Ebins};
+
+    //Range in Theta and E for Event Oscillogram
+
+    //Energy interval (in GeV):
+    double Emin=1.0 ; 
+    double Emax=10.0 ;
+
+    // Alternative Earth Model:
 
     double h_llsvp = 700; //km
-    double R_cmb = 3500.0; //Km
-    double R_llsvp = R_cmb + h_llsvp; //Km
+    double R_cmb = 3500.0;
+    double R_llsvp = R_cmb + h_llsvp; //km
 
-    double rho_min = -2;
-    double rho_max = 2;
+    double R_min = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
+    //double R_llsvp = R_cmb + h_llsvp; //Km
+    double R_max = 4500; // Distance from the center of the Earth
+
+    double Etamin = TMath::ASin( (R_min)/R_earth )*(180.0/TMath::Pi()) ;
+    //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
+    double Etamax = TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ;
+
+    //LLSVP hypothesis
+
+
+    double rho_min = -2; //More thermal hypothesis
+    double rho_max = 2;  //More thermochemical hypothesis
 
     int m = 10; // # Number of points
 
@@ -70,62 +93,60 @@ int main()
 
 
 
-    //Detector-------------------------------------------------------------------------------
-
-    //Energy interval (in GeV):
-    double Emin = 3.0; //GeV
-    double Emax = 7.0; //GeV
-
-    //Zenith and Azimuthal Angle Intervals (deg):
-
-    double Etamin = TMath::ASin( (R_cmb)/R_earth )*(180.0/TMath::Pi()) ;
-    double Etamax = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
+    //--------------------------------------------------------------------------------------------
 
     double Phim = 0.0;
-    double PhiM = 80.0 ; 
+    double PhiM = 80.0 ;
+    //double PhiM = 360.0 ; 
+
+    //DETECTOR PROPERTIES
+    double DetMass = 10.0*MTon; //Mass in megaton units
+    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+
+
+    //double NnT = Nn*T; 
+
     double dAz = PhiM-Phim;
 
 
-    double DetMass = 10.0*MTon; //Mass in megaton units
-    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    //double T       = 30.0*years2sec; //Detector Exposure time in sec: One Year
+    double Region[] = {Emin,Emax,Etamin,Etamax,dAz};
 
-
-    double E[] = {Emin,Emax};
-
-    double Eta[] = {Etamin,Etamax};
-
-
-    //Detector Parameters
-
-    double aE = 0.2;
-
-    double aTh = 0.25;
+    // neutrino state options nue (0), numu (1) or nutau (2)
     
+    int flvf = 1;
+
+    //Simulation Information
+      std::cout << "Monte Carlo simulation for neutrino mu-like true events " << std::endl;
+      std::cout << "Energy Range in GeV: [" << Emin << " - " << Emax << "]" << "Angular Range(zenith): [" << Etamin << " - " << Etamax << "]" <<std::endl;
+       std::cout << "Detector Mass: " << 10 <<std::endl;
+     
+      std::cout << "Simulation set up- Angular bins: " << Etabins << " Energy bins: "  << Ebins <<std::endl;
+      std::cout << "PREM tables located in /OscProb/PremTables"<< std::endl;
 
 
     //STATS--------------------------------------------------------------------------------------------
 
-    // Number of bins
-    int Ebins =9; // # of Bins of Energy
-    int Tbins =4; // # of Bins of cosThetaZ
-
-    //Final neutrino Flavor nue(0) numu(1) nutau(2):
-    int flvf = 1;
-
     // Get the model table paths ------------
     std::string Path2Original;
     std::ifstream StdPrem;
-    ofstream ChiSqrtVals("SimulationResults/Chi2test.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+
+    std::string location = "SimulationResults/chi2results/" ;
+    
+    std::string title = "TrueDiff_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    std::string filename = location+title;
+
+
+
+    ofstream ChiSqrtVals(filename, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
 
     //Loops---------------------------------------------------------------------------------------------
 
-    for (int t = 1; t <= 4 ; ++t)
+    for (int t = 1; t <= 1 ; ++t)
     {   
         double T       = t*10.0*years2sec; //Detector Exposure time in sec: One Year
+        
         double NnT=Nn*T; //DETECTOR EXPOSURE IN MTON*YEARS
-        double Det_par[] = {aE,aTh,NnT};
 
         for (int i = 0; i <= m; ++i)
         {
@@ -176,34 +197,35 @@ int main()
 
                 
 
-                // Null hypothesis: Standard Earth
-
-                std::string prem_default;
                 
-                prem_default   = "/home/dehy0499/OscProb/PremTables/prem_default.txt"; //Specify PREM table from OscProb
+
+                std::string prem_default, prem_alt;
+
+                // Null hypothesis: Standard Earth
+                
+                prem_default   = "prem_default"; //Specify PREM table from OscProb
 
                 // Alternative hypothesis
 
-                std::string prem_alt;
+                prem_alt   = "prem_alt"; //Specify PREM table from OscProb
+
+                TH2D* EventsExp = GetTrueEvents(prem_default, flvf, Region, Bins, NnT); //Null hypothesis
+
                 
-                prem_alt   = "/home/dehy0499/OscProb/PremTables/prem_alt.txt"; //Specify PREM table from OscProb
 
-                // Generate Observed events for two different models/hypothesis
-
-                //TH2D* EventsExp = GetObservedEvents(prem_default,flvf, E, Eta , dAz , Ebins, Tbins, Det_par ); //Expected data from Null
-
-                //TH2D* EventsObs = GetObservedEvents(prem_alt,flvf, E, Eta , dAz , Ebins, Tbins, Det_par ); //Observed data from Alternative
+                TH2D* EventsObs = GetTrueEvents(prem_alt, flvf, Region, Bins, NnT); //Observed data from Alternative
 
 
-                TH2D* EventsExp = GetTrueEvents(prem_default,flvf, E, Eta , dAz , Ebins, Tbins, NnT); //Expected data from Null
-
-                TH2D* EventsObs = GetTrueEvents(prem_alt,flvf, E, Eta , dAz , Ebins, Tbins, NnT); //Observed data from Alternative
                    
                 //Chi2 Analysis: Log-likelihood Analysis.
 
+                
+
                 double dChi2 = 0;
 
-                for(int m=1; m <= Tbins  ; m++) 
+                std::cout <<"Value : " << dChi2 << std::endl;
+
+                for(int m=1; m <= Etabins  ; m++) 
                 {    
 
                     
@@ -224,22 +246,25 @@ int main()
 
                 } // Loop eta
 
+                std::cout <<"Value 2: " << dChi2 << std::endl; 
+
                  //P-Value calculation
 
-                int r = Tbins*Ebins - 2; //Degrees of freedorm
+                //int r = Tbins*Ebins - 2; //Degrees of freedorm
+                int r = 1; //Degrees of freedorm
 
                 double pval_c = ROOT::Math::chisquared_cdf_c  (dChi2, r) ;
-                double pval = ROOT::Math::chisquared_cdf   (dChi2, r);  
+                //double pval = ROOT::Math::chisquared_cdf   (dChi2, r);  
 
                 std::cout << "exposure" << t*10 <<std::endl;
 
-                std::cout << "Chi^2 Result = " << dChi2 << std::endl;       
+                std::cout << "Chi^2  = " << dChi2 << std::endl;       
 
-                std::cout << "Pvalue 1 = " << pval_c << " " << "Pvalue 2= " << pval<< std::endl;
+                std::cout << "Pvalue = " << pval_c << std::endl;
 
                 std::cout << " " << std::endl;
 
-                ChiSqrtVals << t*10 <<" " << drho_dp << " "<< dChi2 << " "<< Ebins << " "<< Tbins <<"\n";
+                ChiSqrtVals << t*10 <<" " << drho_dp << " "<< dChi2 << " "<< Ebins << " "<< Etabins <<"\n";
 
                 delete EventsExp;
                 delete EventsObs;
@@ -249,39 +274,6 @@ int main()
     }
 
     ChiSqrtVals.close();
-
-
-/*            
- // It work
-            //Quick Test
-
-            double ni [] = {6, 23, 29, 31, 27, 13, 8, 13}; //Observed
-            double Ei [] = {5.54, 18.26, 30.12, 33.14, 27.35, 18.05, 9.93, 7.63}; //Expected
-
-            int r_o = sizeof(ni)/sizeof(ni[0]); //length calculation
-
-            double dChi2 = 0;
-
-            for(int i=0; i < r_o  ; i++) 
-            {    
-
-                  dChi2 +=  (ni[i] - Ei[i])*(ni[i] - Ei[i])/(Ei[i]); // Chi^2
-                std::cout << ni[i] << std::endl;
-
-            } // Loop eta
-            
-
-            //P-Value calculation
-
-            int r = r_o - 2; //Degrees of freedorm
-
-            double pval_c = ROOT::Math::chisquared_cdf_c  (dChi2, r) ;
-            double pval = ROOT::Math::chisquared_cdf   (dChi2, r);  
-
-             std::cout << "Chi^2 Result = " << dChi2 << std::endl;       
-
-            std::cout << "Pvalue 1 = " << pval_c << " " << "Pvalue 2= " << pval<< std::endl;
-            */
 
     return 0;
 

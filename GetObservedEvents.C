@@ -47,64 +47,100 @@ using namespace std;
 
 //Resolution functions
 
-double w_E(double aE, double E , std::vector<double> Eo, double E_GeV[] );
 
-double w_th(double aTh, double th, double E,std::vector<double> tho, double Eta[]);
+double w_E(double e_o , double e, double dE_o, double a_E, double E[] ); 
+
+double w_eta(double eta_o, double e, double eta, double deta_o,double a_eta ,double Eta[]);
 
 // Make oscillogram for given final flavour and MH
-TH2D*  GetObservedEvents(std::string model, int flvf, double E_GeV[], double Eta[],double dAz ,int Ebins, int Tbins, double Det_par[] )
+
+
+TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int Bins[],double Det_par[], double NnT)
 {   
+    //Data Storage -----------------------------------------------------------------------------------------------------
+    std::string model = "/home/dehy0499/OscProb/PremTables/"+modelname+".txt";
 
-    //ofstream ObservedData("SimulationResults/NmuObs_extend.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    std::string location = "SimulationResults/ObsEventsResults/" ;
+    std::string Earthmodel= modelname;
+    std::string title = "_PO_"+std::to_string(flvf)+"_"+std::to_string(Bins[2])+"_"+std::to_string(Bins[3])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    std::string filename = location+Earthmodel+title;
     
-    //DETECTOR PROPERTIES
-    //double DetMass = 10.0*MTon; //Mass in megaton units
-    //double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    //double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
-
-    double aE =  Det_par[0] ;
-    double aTh = Det_par[1] ;
-    double NnT = Det_par[2] ; //Exposure in MegaTon*Years
-
-    //std::cout << "Detector expousre :" << DetMass*T << "MTon-Year" << std::endl;
-
-    //Simulation Variables
-    double N_ij    = 0.0;   //Mean number of events at bin ij. True distribution.
-    double No_mn = 0.0;     //Mean number of events at bin mn. Observed distribution.
-    double Ntot;
-    double Ntrue;
-
-    //INTERVAL LIMITS FOR INTEGRATION:
+    ofstream ObservedData(filename, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
     
-    //Integration limits of E
-    double Emin      = E_GeV[0];
-    double Emax      = E_GeV[1];
+
+    //Detector Response-------------------------------------------------------------------------------------------------
     
-    double thmin   = Eta[0];
-    double thmax   = Eta[1];
+    double a_E =  Det_par[0] ;
+    
+    double a_eta = Det_par[1] ;
 
 
-    double ctmin   = cos((180.0-thmax)*TMath::Pi()/180); 
-    double ctmax   = cos((180.0-thmin)*TMath::Pi()/180);
+    //Observed Variables:-----------------------------------------------------------------------------------------------
+    
+    //Observed bins
+    int mbins = Bins[2]; //Number of angular bins of Observed event distribution
+    
+    int nbins = Bins[3]; //Number of Energy bins of Observed event distribution
+    
+    //Energy[GeV]
+    double EOmin      = Region[0];
+    
+    double EOmax      = Region[1];
+    
+    double dE_o = (EOmax - EOmin)/(2.0*nbins); //< Bin width/2
+    
+    double E_itv[] = {EOmin, EOmax};
+    
+    //Observed Angle
+    double etaOmin   = Region[2];
+    
+    double etaOmax   = Region[3];
+    
+    double deta_o = (etaOmax - etaOmin)/(2.0*mbins); //< Bin width/2
 
+    double Eta_itv[] = {etaOmin, etaOmax};
+    
+    //Azimuthal 
+    double dAz = Region[4];
 
-    //True Bins:
-    int ibins = Tbins; // Number of  angular bins of True event distribution
-    int jbins = Ebins; // Number of  energy bins of True event distribution
-    double dth = (thmax - thmin)/(2.0*ibins); //< Bin width/2
+    //Observed distribution:
+    TH2D* hObs = new TH2D("hObs","Observed Events",mbins,etaOmin,etaOmax,nbins,EOmin,EOmax); // xbins correspond to energy values and ybins to zenith angle cost
+    
+
+    //True Variables:---------------------------------------------------------------------------------------------------
+
+    //True bins
+    int ibins = Bins[0]; // Number of  angular bins of True event distribution
+
+    int jbins = Bins[1]; // Number of  energy bins of True event distribution
+    
+    //True Energy[GeV]
+    double Emin=(1/(1+4*a_E))*(EOmin);
+
+    double Emax=(1/(1-4*a_E))*(EOmax);
+    
     double dE = (Emax - Emin)/(2.0*jbins); //< Bin width/2
-    TH2D* hTrue = new TH2D("hTrue","True Events",jbins,thmin,thmax,ibins,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
 
-    //Observed Bins:
-    int mbins = Tbins; //Number of angular bins of Observed event distribution
-    int nbins = Ebins; //Number of Energy bins of Observed event distribution
-    double dtho = (thmax - thmin)/(2.0*mbins); //< Bin width/2
-    double dEo = (Emax - Emin)/(2.0*nbins); //< Bin width/2
-    TH2D* hObs = new TH2D("hObs","Observed Events",mbins,thmin,thmax,nbins,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
+    //True Angle
+    double etamin= (etaOmin)-4*(a_eta/sqrt(Emax))*(180/TMath::Pi());
 
-    //std::cout << "deltaE " << 2*dE <<" deltaTh"<< 2*dth <<std::endl; 
+    double etamax= (etaOmax)+4*(a_eta/sqrt(Emax))*(180/TMath::Pi());
+
+    double deta = (etamax - etamin)/(2.0*ibins); //< Bin width/2
+
     
-    //NEUTRINO OSCILLATION PROB
+    //True distribution        
+    TH2D* hTrue = new TH2D("hTrue","True Events",jbins,etamin,etamax,ibins,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
+
+
+
+
+
+    std::cout << "True variable region ["<< Emin << "-"<<Emax<< "]*["<<etamin<< "-"<<etamax <<"]" << std::endl;
+
+    std::cout << "Observed variable region ["<< EOmin << "-"<<EOmax<< "]*["<<etaOmin<< "-"<<etaOmax <<"]" << std::endl;
+    
+    //NEUTRINO OSCILLATION PROB-----------------------------------------------------------------------------------------
 
     // Neutrino flavour
     int nue        = 0;  // electron neutrino  
@@ -141,13 +177,15 @@ TH2D*  GetObservedEvents(std::string model, int flvf, double E_GeV[], double Eta
 
     OscProb::PremModel prem(model);
 
-    // Atmospheric Neutrino Flux data:
+    // Atmospheric Neutrino Flux data-----------------------------------------------------------------------------------
     
     TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope) Averaged all directions
     
     //TFile *HF = new TFile("./NuFlux/TestFlux.root","read"); // Specific flux V. Agrawal, et al. (1996)
-    //TDirectory *Zen;
+    
+    
     TDirectory *Zen = (TDirectory*) HF->Get("CosZ_all"); // Avg Flux for -0.9 <~ CosT < 0
+
     TTree *flux= (TTree*) Zen->Get("FluxData"); //Opens data file      
     
     double Enu,NuMu,NuMubar,NuE,NuEbar;
@@ -179,77 +217,68 @@ TH2D*  GetObservedEvents(std::string model, int flvf, double E_GeV[], double Eta
     ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE);   // Electron Antineutrino Flux Interpolation
 
 
-   // Observed Events 
+
+   //Calculation of observed events------------------------------------------------------------------------------------- 
     for (int m = 1; m <= mbins; ++m) //Observed Angular bins
     {
 
-        double tho = hObs->GetXaxis()->GetBinCenter(m); // Select angular bin from the "Observed" histogram
-        std::vector<double> Th_o;
-        Th_o.push_back(tho - dtho);
-        Th_o.push_back(tho);
-        Th_o.push_back(tho + dtho);
-
+        double eta_o = hObs->GetXaxis()->GetBinCenter(m); // Select angular bin from the "Observed" histogram
+       
         for (int n = 1; n <=nbins ; ++n) //Observed Energy bins
         {
      
-            double Eo = hObs->GetYaxis()->GetBinCenter(n); // Select Energy bin from the "Observed" histogram
-            std::vector<double> E_o;
-            E_o.push_back(Eo - dEo);
-            E_o.push_back(Eo);
-            E_o.push_back(Eo + dEo);
-
-            Ntot = 0;   // Reset total number of events.
-  
-
-//----------------------------------------------------------------------------------------------
+            double e_o = hObs->GetYaxis()->GetBinCenter(n); // Select Energy bin from the "Observed" histogram
+       
+            double Ntot = 0;   // Reset total number of events.
             
             for(int i=1; i<= ibins ; i++) //Loop in cosT
             {    
 
                 // Get cos(theta_z) from bin center, It fix a value of L
 
-                double th = hTrue->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+                double eta = hTrue->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
                 
-                double cosT =cos( (180.0-th)*TMath::Pi()/180.0 );
+                double cosEta =cos( (180.0-eta)*TMath::Pi()/180.0 );
 
-                if(cosT < -1 || cosT > 1) break; // Skip if cosT is unphysical 
+                if(cosEta < -1 || cosEta > 1) break; // Skip if cosT is unphysical 
                 
-                double L_Ho = prem.GetTotalL(cosT); // Set total path length L  
+                double L_Ho = prem.GetTotalL(cosEta); // Set total path length L  
                 
-                prem.FillPath(cosT); // Fill paths from PREM model
+                prem.FillPath(cosEta); // Fill paths from PREM model
                 
                 // Set paths in OscProb  
                 PMNS_Ho.SetPath(prem.GetNuPath()); //STANDARD EARTH (DESCRIBED BY PREM MODEL)
-
-                std::vector<double> Th;
-                Th.push_back(th - dth);
-                Th.push_back(th);
-                Th.push_back(th + dth);
 
 
                 for (int j = 1; j <= jbins; ++j)
                 { 
                     //NUMERICAL INTEGRATION
 
-                    double ene = hTrue->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
-
-                    //INTEGRATION IN ENERGY
+                    double e = hTrue->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
+                    
                     int nstep = 2; //Steps for Integration of E
-
-                    //double deltaE =2*dE;
-
-                    //double hE = deltaE/nstep; //Step size for Integration of E
 
                     std::vector<double>  Et, R_Ho; // R= event rate d^2( N )/ (dtheta dE)
 
                     for (int l = 0; l <= nstep ; ++l)
                     {   
-                        Et.push_back( ene + (l-1)*dE );
-                        
+                        Et.push_back( e + (l-1)*dE );
 
-                        double res = w_E( aE, Et[l],E_o,E_GeV)*(dth/3.0)*(  w_th( aTh, Th[0],Et[l],Th_o,Eta)*sin( (180.0-Th[0])*TMath::Pi()/180.0 )+ 4.0*w_th( aTh, Th[1],Et[l],Th_o,Eta)*sin( (180.0-Th[1])*TMath::Pi()/180.0 ) +  w_th( aTh, Th[2], Et[l], Th_o, Eta)*sin( (180.0-Th[2])*TMath::Pi()/180.0 )  );
+                        //Integration in angular variable using simpson's rule.
+
+                        double etai_min=eta - deta; //Lower bound
                         
-                        //Calculate the Interaction Rate at E for neutrinos passing trough lower mantle of Standar Earth
+                        double etai= eta; //Center
+                        
+                        double etai_max=eta + deta; //Upper bound
+                        
+                        double res_eta = (deta/3.0)*( w_eta(eta_o,e,etai_min,deta_o,a_eta,Eta_itv)*sin( (180.0-etai_min)*TMath::Pi()/180.0 )+ 4.0*w_eta(eta_o,e,eta,deta_o,a_eta,Eta_itv)*sin( (180.0-eta)*TMath::Pi()/180.0 ) +  w_eta(eta_o,e,etai_max,deta_o,a_eta,Eta_itv)*sin( (180.0-etai_max)*TMath::Pi()/180.0 ) );
+
+                        double res_e = w_E(e_o, e, dE_o, a_E, E_itv);
+
+                        //double res = w_E( aE, Et[l],E_o,E_GeV)*(dth/3.0)*(  w_th( aTh, Th[0],Et[l],Eta_o,Eta)*sin( (180.0-Th[0])*TMath::Pi()/180.0 )+ 4.0*w_th( aTh, Th[1],Et[l],Eta_o,Eta)*sin( (180.0-Th[1])*TMath::Pi()/180.0 ) +  w_th( aTh, Th[2], Et[l], Eta_o, Eta)*sin( (180.0-Th[2])*TMath::Pi()/180.0 )  );
+                        
+                        //Calculate the Interaction Rate at bin center E for neutrinos passing trough lower mantle of Standar Earth
 
                         //Neutrino contribution
                         PMNS_Ho.SetIsNuBar(false); 
@@ -259,79 +288,108 @@ TH2D*  GetObservedEvents(std::string model, int flvf, double E_GeV[], double Eta
                         PMNS_Ho.SetIsNuBar(true); 
                         double r_hobar = XSec(Et[l],nubar)*( PMNS_Ho.Prob(numu,flvf, Et[l])*dPsiMubardE.Eval(Et[l]) + PMNS_Ho.Prob(nue,flvf,Et[l])*dPsiEbardE.Eval(Et[l]) ); 
                         
-                        //store data
-                        R_Ho.push_back(res*(r_ho + r_hobar));
+
+                        R_Ho.push_back( res_eta*res_e*(r_ho + r_hobar) );
+
 
                     }
                     
             
                     //Integration in negery variables using NC quadrature
-                    double dN_Ho_dOm = simpson(Et, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
+                    double dNHo_dAzdNnT = simpson(Et, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
 
-                    //NUMBER OF EVENTS FOR [Emin Emax]&[cTmin cTmax] or bin(i,j) 
-                    double N_ij=(NnT*(dAz)*(TMath::Pi()/180.0) )*dN_Ho_dOm;
+                    double N_ij=(NnT*(dAz)*(TMath::Pi()/180.0) )*dNHo_dAzdNnT;
+
                     Ntot += N_ij;
-
-                    //ObservedData << th << ", " << ene << ", "<< N_ij << "\n";
                     
                 } // loop e
 
             } // Loop ct
             
-            No_mn = Ntot;
+            double No_mn = Ntot;
 
-
-
-            //ObservedData << tho << ", " << Eo << ", "<< No_mn << "\n"; //Write im file.
+            ObservedData << eta_o << ", " << e_o << ", "<< No_mn << "\n"; //Write im file.
             
             hObs->SetBinContent(m,n,No_mn); // Set events in Observed histogram. 
+
+         
             
 
         } // loop in eo
 
-    } // loop in tho
+    } // loop in eta_o
 
-   //ObservedData.close();
+
+   ObservedData.close();
        
    hObs->SetTitle("Observed events for #nu_{#mu} and #bar{#nu}_#mu ");
     
    hObs->SetStats(0);
 
    //Delete 
-
-   delete HF;
    delete hTrue;
+   delete HF;
+   
 
    return hObs;
 }
 
 
-double w_E(double aE, double E , std::vector<double> Eo, double E_GeV[] ) 
+//double w_E(double a_E, double E , std::vector<double> eo, double E_GeV[] ) 
+
+double w_E(double e_o , double e, double dE_o, double a_E, double E[] ) 
 {
 
-//double aE = 0.2;
+//True
 
-double sdE = aE*E;
+double e_min = E[0];
 
-double AE = (0.5)*( ROOT::Math::erf (  (E - E_GeV[0] )/( sqrt(2)*sdE )  ) - ROOT::Math::erf (  (E - E_GeV[1] )/( sqrt(2)*sdE )  ) );  
+double e_max = E[1]; 
 
-double wE = (0.5)*( ROOT::Math::erf (  (E - Eo[0] )/( sqrt(2)*sdE )  ) - ROOT::Math::erf (  (E - Eo[2])/( sqrt(2)*sdE )  ) );    
+//Observed
+
+double e_omin = e_o - dE_o;
+
+double e_omax = e_o + dE_o; 
+
+//Resolution function 
+
+double sdE = a_E*e;
+
+double AE = (0.5)*( ROOT::Math::erf (  (e - e_min )/( sqrt(2)*sdE )  ) - ROOT::Math::erf (  (e - e_max )/( sqrt(2)*sdE )  ) );  
+
+double wE = (0.5)*( ROOT::Math::erf (  (e - e_omin )/( sqrt(2)*sdE )  ) - ROOT::Math::erf (  (e - e_omax)/( sqrt(2)*sdE )  ) );    
 
 return wE/AE;
 
 }
 
-double w_th(double aTh, double th, double E, std::vector<double> tho, double Eta[])
+//double w_eta(double a_eta, double eta, double E, std::vector<double> eta_o, double Eta[])
+
+double w_eta(double eta_o, double e, double eta, double deta_o,double a_eta ,double Eta[])
 {
 
-//double ath = 0.25;
 
-double sdth = aTh/(sqrt(E));
+//True Variable
 
-double ATh = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - Eta[0])/( sqrt(2)*sdth )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - Eta[1])/( sqrt(2)*sdth )  ) );
+double eta_min = Eta[0];
 
-double wth = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - tho[0])/( sqrt(2)*sdth )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(th - tho[2])/( sqrt(2)*sdth )  ) );   
+double eta_max = Eta[1];
 
-return wth/ATh;
+//Observed variable
+
+double eta_omin = eta_o - deta_o;
+
+double eta_omax = eta_o + deta_o;
+
+//Resolution function
+
+double s_eta = a_eta/(sqrt(e));
+
+double A_eta = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_min)/( sqrt(2)*s_eta )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_max)/( sqrt(2)*s_eta )  ) );
+
+double w_eta = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_omin)/( sqrt(2)*s_eta )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_omax)/( sqrt(2)*s_eta )  ) );   
+
+return w_eta/A_eta;
     
 }

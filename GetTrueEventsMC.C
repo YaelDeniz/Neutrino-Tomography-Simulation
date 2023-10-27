@@ -50,12 +50,12 @@ using namespace std;
 
 
 // Some Constants i need
-//# define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
-//# define MTon  1E9  //Metric MegaTon
-//# define years2sec 3.154E7 // Years in Seconds
+# define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
+# define MTon  1E9  //Metric MegaTon
+# define years2sec 3.154E7 // Years in Seconds
 
 // Make oscillogram for given final flavour and MH
-TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[], double NnT)
+TObjArray*  GetTrueEventsMC(std::string modelname, int flvf, double Region[], int Bins[], double NnT, int K)
 {  
 
     double total = 0;
@@ -69,15 +69,26 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
     
     std::string Earthmodel= modelname;
     
-    std::string title = "_PoiMeansT_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    std::string title = "_PoiMeansT_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(K)+".csv";
     
     std::string filename = location+Earthmodel+title;
     
     ofstream TrueEvents(filename, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
+    TObjArray *PseudoExp = new TObjArray(K+2);
+
+    // Monte Carlo Simulation - Random Sampling-------------------------------------------------------------------------
+
+    std::random_device rd; //produce non-deterministic random numbers.
+    
+    std::mt19937 gen(rd()); //high quality, but not cryptographically secure, unsigned integer random numbers of type UIntType on the interval
     
     double N_ij = 0   ;   //Poisson mean for bin ij.
-  
+    double n_ij  = 0   ;   //Random Sample for bin ij
+    double n_ijk  =0   ;   //Random Sample for bin ij; Pseudo experiment k
+    double Ntot  = 0  ;   //Total number of events.
+    int psudoexp   = K;   //Montecarlo simulation.
+
 
     //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
 
@@ -103,8 +114,8 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
     /* Create 2D histogram for Event Oscillogram,
      xbins correspond to energy values and ybins to zenith angle cosEta*/
     TH2D* hTrue = new TH2D("hTrue","True Events",ibins,etamin,etamax,jbins,Emin,Emax); 
-    //TH2D* hTrue_k= new TH2D("hTrue_k","True Events; #eta ; #E",ibins,etamin,etamax,jbins,Emin,Emax); //Store data for each pseudo-experiment.
-    //TH2D* hTrue_means= new TH2D("hTrue_means","True Events( Means ); #eta ; #E",ibins,etamin,etamax,jbins,Emin,Emax); //Store data for each pseudo-experiment.
+    TH2D* hTrue_k= new TH2D("hTrue_k","True Events; #eta ; #E",ibins,etamin,etamax,jbins,Emin,Emax); //Store data for each pseudo-experiment.
+    TH2D* hTrue_means= new TH2D("hTrue_means","True Events( Means ); #eta ; #E",ibins,etamin,etamax,jbins,Emin,Emax); //Store data for each pseudo-experiment.
     
     //Neutrino event generation-----------------------------------------------------------------------------------------
 
@@ -185,7 +196,12 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
     ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kCSPLINE);// Electron Neutrino Flux Interpolation
     ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE);// Electron Antineutrino Flux Interpolation
 
+    //Monte Carlo Simulation--------------------------------------------------------------------------------------------  
+    for (int k = 1; k <= psudoexp; ++k) //kth sudo Experiments for the MC simulation
+    {
+        //std::cout << "Pseudo-exp #" << k<<std::endl;
 
+        total = 0;
 
         for(int i=1; i<= ibins ; i++) //Loop in Angular bins
         {    
@@ -243,17 +259,71 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
 
                 N_ij=NnT*dN_nu_dOm*DOm; //Mean of the Monte carlo simulation 
 
-                hTrue->SetBinContent(i,j, N_ij); //Create histogram for  kth Pseudo-Experimens
+                
+                
+                //Appoximation for large bin size
+                
+                /*
+                double r_nu = XSec(e,nu)*( PMNS_H.Prob(numu, flvf, e)*dPsiMudE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEdE.Eval(e) );
+                double r_nubar = XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
+                N_ij=NnT*(r_nu*r_nubar)*(2*dE)*(2*deta*TMath::Pi()/180)*dAz*TMath::Pi()/180; //Mean of the Monte carlo simulation 
+                */
 
+                if ( k == 1)
+                {
+                    TrueEvents << eta << ", " << e << ", "<< N_ij << "\n";
+                    //std::cout << eta << ", " << e << ", "<< N_ij << "\n" << std::endl;
+                   hTrue_means->SetBinContent(i,j, N_ij); //Create histogram for  kth Pseudo-Experiment
+                }
+                
+                //Inverse Tranfrom Sampling.
+
+                //double sam_ij=Sample_Pois(N_ij,u);
+
+                std::poisson_distribution<> d(N_ij);
+                
+                n_ijk = d(gen); //Random sample from a Poisson distribution with mean N_ij
+
+                total += n_ijk;
+
+                hTrue_k->SetBinContent(i,j, n_ijk); //Create histogram for  kth Pseudo-Experiment
+
+                
+
+                int gbin = hTrue->GetBin(i,j); //Generalized mean
+
+
+
+                n_ij = hTrue->GetBinContent(gbin)+ n_ijk; //Total Events histogram
+
+    
+
+               // std::cout << n_ijk << " " << n_ij << " " << " " << N_ij << std::endl;
+                
+
+                hTrue->SetBinContent(i,j, n_ij);      //Expected Events
+
+
+
+                //std::cout << n_ij << " " << nij<< " " << N_ij << std::endl;            
+                
             } // loop energy
 
         } // Loop eta
 
+        std::cout << " total events kth PseudoExp: " << total << std::endl;
+
+        PseudoExp->Add(hTrue_k);
+
+    } // # Of PseudoExperiments.
+
+    PseudoExp -> Add(hTrue);
+    PseudoExp -> Add(hTrue_means);
 
     TrueEvents.close();
 
     delete HF;
             
              
-    return hTrue;
+    return PseudoExp;
 }

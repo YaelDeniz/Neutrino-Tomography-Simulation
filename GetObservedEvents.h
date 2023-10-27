@@ -2,11 +2,14 @@
 #define OBSEVENTGENERATOR_H
 
 #include "TH2.h"
+#include "TObjArray.h"
 #include <string.h>
 #include <stdlib.h>
 
 
-TH2D*  GetObservedEvents( std::string model, int flvf, double E_GeV[], double Eta[],double dAz ,int Ebins, int Tbins, double Det_par[] );
+TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int Bins[],double Det_par[], double NnT);
+
+TObjArray*  SmearEvents( TObjArray* TrueEvents, int flvf, double Region[], int Bins[],double Det_par[], double NnT, int K );
 
 
 //Generate energy dependent Oscillation Probabilities  (fixed Baseline) 

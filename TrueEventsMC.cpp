@@ -38,9 +38,9 @@ int main()
     std::cout << " Neutrino Oscillation tomography. " << std::endl;
 
     // Number of bins
-    
-    int Ebins=100 ; // # of Bins of Energy
-    int Tbins=100 ; // # of Bins of cosEta
+    int K = 1000; //Number of Pseudo experiments.
+    int Ebins=200 ; // # of Bins of Energy
+    int Tbins=200 ; // # of Bins of cosEta
 
     int Bins[]={Tbins, Ebins};
 
@@ -60,20 +60,13 @@ int main()
     double R_cmb = 3500.0;
     double R_llsvp = R_cmb + h_llsvp; //km
 
-    double R_min = 3200.0;
-    //double R_min = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
+    double R_min = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
     //double R_llsvp = R_cmb + h_llsvp; //Km
     double R_max = 4500; // Distance from the center of the Earth
 
     double Etamin = TMath::ASin( (R_min)/R_earth )*(180.0/TMath::Pi()) ;
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
     double Etamax = TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ;
-
-
-    //double Etamin = 10 ;
-    //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
-    //double Etamax = 30 ;
-
 
     //MOdify prem to fit H_LLSVP
 
@@ -88,9 +81,9 @@ int main()
     //double PhiM = 360.0 ; 
 
      //DETECTOR PROPERTIES
-    double DetMass = 10.0*MTon; //Mass in megaton units
+    double DetMass = 1.0*MTon; //Mass in megaton units
     double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
+    double T       = 1.0*years2sec; //Detector Exposure time in sec: One Year
 
     double NnT = Nn*T; 
 
@@ -121,7 +114,7 @@ int main()
       std::cout << "Monte Carlo simulation for neutrino mu-like true events " << std::endl;
       std::cout << "Energy Range in GeV: [" << Emin << " - " << Emax << "]" << "Angular Range(zenith): [" << Etamin << " - " << Etamax << "]" <<std::endl;
       std::cout << "LLSVP information-  density contrats(%): " << drho_dp << " Height(km): "<< h_llsvp << std::endl;
-      std::cout << "Simulation set up- Angular bins: " << Tbins << " Energy bins: "  << Ebins<<std::endl;
+      std::cout << "Simulation set up- Angular bins: " << Tbins << " Energy bins: "  << Ebins<< " # of pseudo experiments: "<< K <<std::endl;
       std::cout << "PREM tables located in /OscProb/PremTables"<< std::endl;
 
 
@@ -175,23 +168,35 @@ int main()
     std::cout<< "PREM DATA--------------"<< std::endl;  
     
     prem_default   = "prem_default"; //Specify PREM table from OscProb
-    TH2D* nullhist = GetTrueEvents(prem_default, flvf , Region,  Bins,  NnT);
+    TObjArray* PREM_Events = GetTrueEvents(prem_default, flvf, Region, Bins, NnT, K);
 
     std::cout<< "ALT DATA--------------"<< std::endl;  
 
     prem_llsvp   = "prem_llsvp"; //Specify PREM table from OscProb
-    TH2D* althist = GetTrueEvents(prem_llsvp, flvf , Region,  Bins,  NnT);
+    TObjArray* Alt_Events = GetTrueEvents(prem_llsvp, flvf, Region, Bins, NnT, K);
 
     std::cout << "True data is stored inside './SimulationResults" << std::endl;
 
+    /*
+    TCanvas *c = new TCanvas();
+    TH2D*e;
+    e=(TH2D*)PREM_Events->At(10);
+    e->Draw();
+    c->Print("histtestLAST.png");
+    */
 
-  
+
+    TH2D* nullhist;
+    TH2D* althist;
+
+    nullhist=(TH2D*)PREM_Events->At(2);
+    althist=(TH2D*)Alt_Events->At(2);
 
     TH2D* diffhist = new TH2D("diffhist"," Events percentage difference; #eta ; E",Tbins,Etamin,Etamax,Ebins,Emin,Emax); 
 
     // Data visualization
    
-   std::ofstream EventDiff("SimulationResults/TrueEventsResults/perdiff_Poi_mean.csv"); 
+   std::ofstream EventDiff("SimulationResults/TrueEventsResults/perdiff_MCTest200200.csv"); 
    double eta, e, nexp, nobs, dn;
 
     for(int i=1; i<= Tbins  ; i++) 
@@ -224,7 +229,7 @@ int main()
 
     TCanvas *c = new TCanvas();
     diffhist->Draw("COLZ");
-    c->Print("SimulationResults/Histograms/perdiff_true_poisson.png");
+    c->Print("SimulationResults/Histograms/perdiff_MCTestmean2.png");
     
 
     
