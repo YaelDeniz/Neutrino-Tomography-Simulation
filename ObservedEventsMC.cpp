@@ -74,7 +74,7 @@ int main()
     double R_cmb = 3500.0;
     double R_llsvp = R_cmb + h_llsvp; //km
 
-    double R_min = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
+    double R_min = 3000.0; // Distance from the center of the Earth , 3500 Km CMB
     //double R_llsvp = R_cmb + h_llsvp; //Km
     double R_max = 4500; // Distance from the center of the Earth
 

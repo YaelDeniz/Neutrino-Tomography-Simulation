@@ -39,8 +39,8 @@ int main()
 
     // Number of bins
     
-    int Ebins=100 ; // # of Bins of Energy
-    int Tbins=100 ; // # of Bins of cosEta
+    int Ebins=30 ; // # of Bins of Energy
+    int Tbins=30 ; // # of Bins of cosEta
 
     int Bins[]={Tbins, Ebins};
 
@@ -60,7 +60,7 @@ int main()
     double R_cmb = 3500.0;
     double R_llsvp = R_cmb + h_llsvp; //km
 
-    double R_min = 3200.0;
+    double R_min = 3000.0;
     //double R_min = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
     //double R_llsvp = R_cmb + h_llsvp; //Km
     double R_max = 4500; // Distance from the center of the Earth
@@ -210,7 +210,7 @@ int main()
 
                         diffhist->SetBinContent(i,j, dn); //Create histogram for  kth Pseudo-Experiment
 
-                        EventDiff<< eta << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
+                        EventDiff<<  eta << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
 
 
 

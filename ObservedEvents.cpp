@@ -40,11 +40,11 @@ int main()
     std::cout << " Neutrino Oscillation tomography. " << std::endl;
     std::cout << " Observed Events: track-like only. "<< std::endl; 
 
-    int Ebins=100; // # of Bins of Energy
-    int Etabins=100; // # of Bins of cosEta
+    int Ebins=10; // # of Bins of Energy
+    int Etabins=10; // # of Bins of cosEta
 
-    int Ebins_o=20; // # of Bins of Energy
-    int Etabins_o=20; // # of Bins of cosEta
+    int Ebins_o=10; // # of Bins of Energy
+    int Etabins_o=10; // # of Bins of cosEta
 
     int Bins[]={Etabins, Ebins, Etabins_o, Ebins_o};
 
@@ -189,6 +189,40 @@ int main()
     c->Print("SimulationResults/ObsEventsResults/test_poimeans.png");
 
     */
+
+
+    /*
+    double c_min = cos(etaOmax);
+    double c_max = cos(etaOmin);
+   
+    double a_eta=0.25;
+
+    double a_E=0.2;
+
+    //True Energy[GeV]
+    double Emin=(1/(1+4*a_E))*(EOmin);
+
+    double Emax=(1/(1-4*a_E))*(EOmax);
+
+
+   
+
+    //True Angle
+    double etamin_a = (etaOmin)-4*(a_eta/sqrt(Emin));
+    double etamin_b = 0;
+
+    double etamax_a = (etaOmax)+4*(a_eta/sqrt(Emin));
+    double etamax_b =  TMath::Pi();
+
+   
+
+    double etamin= max(etamin_a, etamin_b);
+    double etamax= min(etamax_a, etamax_b);
+
+    */
+
+
+
 
     return 0;
 

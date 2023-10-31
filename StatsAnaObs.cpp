@@ -44,11 +44,11 @@ int main()
 
     
      // Number of bins
-    int Ebins=50; // # of Bins of Energy
-    int Etabins=50; // # of Bins of cosEta
+    int Ebins=10; // # of Bins of Energy
+    int Etabins=10; // # of Bins of cosEta
 
-    int Ebins_o=50; // # of Bins of Energy
-    int Etabins_o=50; // # of Bins of cosEta
+    int Ebins_o=10; // # of Bins of Energy
+    int Etabins_o=10; // # of Bins of cosEta
 
     int Bins[]={Etabins, Ebins, Etabins_o, Ebins_o};
     //-----------------------------------------------------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ int main()
     double R_cmb = 3500.0;
     double R_llsvp = R_cmb + h_llsvp; //km
 
-    double R_min = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
+    double R_min = 3000.0; // Distance from the center of the Earth , 3500 Km CMB
     //double R_llsvp = R_cmb + h_llsvp; //Km
     double R_max = 4500; // Distance from the center of the Earth
 
@@ -98,7 +98,7 @@ int main()
 
     double drho_arr = (rho_max-rho_min)/(m);
 
-    double da_arr = (a_max-a_min)/(m);
+
 
     for (int i = 0; i <= m; ++i)
     {
