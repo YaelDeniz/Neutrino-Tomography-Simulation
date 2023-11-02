@@ -62,7 +62,7 @@ TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int B
 
     std::string location = "SimulationResults/ObsEventsResults/" ;
     std::string Earthmodel= modelname;
-    std::string title = "_POnn_"+std::to_string(flvf)+"_"+std::to_string(Bins[2])+"_"+std::to_string(Bins[3])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    std::string title = "_PO_"+std::to_string(flvf)+"_"+std::to_string(Bins[2])+"_"+std::to_string(Bins[3])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
     std::string filename = location+Earthmodel+title;
     
     ofstream ObservedData(filename, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
@@ -89,19 +89,19 @@ TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int B
     
     double dE_o = (EOmax - EOmin)/(2.0*nbins); //< Bin width/2
     
-    
+    double E_itv[] = {EOmin, EOmax};
     
     //Observed Angle
-    double etaOmax   = ( 180.0 - Region[2] )*TMath::Pi()/180.0;
+    double etaOmin   = Region[2];
     
-    double etaOmin   = ( 180.0 - Region[3] )*TMath::Pi()/180.0;
+    double etaOmax   = Region[3];
     
     double deta_o = (etaOmax - etaOmin)/(2.0*mbins); //< Bin width/2
 
-    
+    double Eta_itv[] = {etaOmin, etaOmax};
     
     //Azimuthal 
-    double dAz = Region[4]*TMath::Pi()/180.0;
+    double dAz = Region[4];
 
     //Observed distribution:
     TH2D* hObs = new TH2D("hObs","Observed Events",mbins,etaOmin,etaOmax,nbins,EOmin,EOmax); // xbins correspond to energy values and ybins to zenith angle cost
@@ -115,52 +115,18 @@ TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int B
     int jbins = Bins[1]; // Number of  energy bins of True event distribution
     
     //True Energy[GeV]
+    double Emin=Region[0];
 
-    double  n_s = 0.0;
-    
-    double Emin=(1/(1+n_s*a_E))*(EOmin);
-
-    double Emax=(1/(1-n_s*a_E))*(EOmax);
-    
-    
-    /*
-    double Emin=EOmin;
-
-    double Emax=EOmax;
-    */
-   
+    double Emax=Region[1];
     
     double dE = (Emax - Emin)/(2.0*jbins); //< Bin width/2
 
     //True Angle
-    
-    double etamin_a = (etaOmin)-n_s*(a_eta/sqrt(Emin));
-    double etamin_b = 0;
+    double etamin= Region[2];
 
-    double etamax_a = (etaOmax)+n_s*(a_eta/sqrt(Emin));
-    double etamax_b =  TMath::Pi();
-
-    std::cout << "[ " << etamin_a*180.0/TMath::Pi() << "-" << etamin_b*180.0/TMath::Pi() << "] [" << etamax_a*180.0/TMath::Pi() << "-" << etamax_b*180.0/TMath::Pi() << " ]" << std::endl;
-
-    double etamin= max(etamin_a, etamin_b);
-    double etamax= min(etamax_a, etamax_b);
-    
-    
-    /*
-    double etamax   = etaOmax;
-    
-    double etamin   = etaOmin;
-    */
-  
+    double etamax= Region[3];
 
     double deta = (etamax - etamin)/(2.0*ibins); //< Bin width/2
-
-
-
-    double E_itv[] = {EOmin, EOmax};//normalization
-
-
-    double Eta_itv[] = {etaOmin, etaOmax};//normalization
 
     
     //True distribution        
@@ -170,24 +136,9 @@ TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int B
 
 
 
-    std::cout << "True variable region ["<< Emin << "-"<<Emax<< "]*["<<180.0-etamin*180.0/TMath::Pi()<< "-"<<180.0-etamax*180.0/TMath::Pi() <<"]" << std::endl;
+    std::cout << "True variable region ["<< Emin << "-"<<Emax<< "]*["<<etamin<< "-"<<etamax <<"]" << std::endl;
 
-    std::cout << "Observed variable region ["<< EOmin << "-"<<EOmax<< "]*["<<180.0-etaOmin*180.0/TMath::Pi()<< "-"<<180.0-etaOmax*180.0/TMath::Pi() <<"]" << std::endl;
-
-      std::cout << "True variable region ["<< Emin << "-"<<Emax<< "]*["<< etamin*180.0/TMath::Pi()<< "-"<< etamax*180.0/TMath::Pi() <<"]" << std::endl;
-
-    std::cout << "Observed variable region ["<< EOmin << "-"<<EOmax<< "]*["<< etaOmin*180.0/TMath::Pi()<< "-"<< etaOmax*180.0/TMath::Pi() <<"]" << std::endl;
-
-
-     std::cout << "True variable region ["<< Emin << "-"<<Emax<< "]*["<< etamin << "-"<< etamax <<"]" << std::endl;
-
-    std::cout << "Observed variable region ["<< EOmin << "-"<<EOmax<< "]*["<< etaOmin<< "-"<< etaOmax <<"]" << std::endl;
-
-
-
-
-
-    std::cout << "Unnormalized pdfs" << std::endl;
+    std::cout << "Observed variable region ["<< EOmin << "-"<<EOmax<< "]*["<<etaOmin<< "-"<<etaOmax <<"]" << std::endl;
     
     //NEUTRINO OSCILLATION PROB-----------------------------------------------------------------------------------------
 
@@ -287,7 +238,7 @@ TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int B
 
                 double eta = hTrue->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
                 
-                double cosEta =cos( eta );
+                double cosEta =cos( (180.0-eta)*TMath::Pi()/180.0 );
 
                 if(cosEta < -1 || cosEta > 1) break; // Skip if cosT is unphysical 
                 
@@ -321,10 +272,9 @@ TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int B
                         
                         double etai_max=eta + deta; //Upper bound
                         
-                        double res_eta = (deta/3.0)*( w_eta(eta_o,e,etai_min,deta_o,a_eta,Eta_itv)*sin(etai_min)+ 4.0*w_eta(eta_o,e,eta,deta_o,a_eta,Eta_itv)*sin( eta ) +  w_eta(eta_o,e,etai_max,deta_o,a_eta,Eta_itv)*sin( etai_max ) );
+                        double res_eta = (deta/3.0)*( w_eta(eta_o,e,etai_min,deta_o,a_eta,Eta_itv)*sin( (180.0-etai_min)*TMath::Pi()/180.0 )+ 4.0*w_eta(eta_o,e,eta,deta_o,a_eta,Eta_itv)*sin( (180.0-eta)*TMath::Pi()/180.0 ) +  w_eta(eta_o,e,etai_max,deta_o,a_eta,Eta_itv)*sin( (180.0-etai_max)*TMath::Pi()/180.0 ) );
 
                         double res_e = w_E(e_o, e, dE_o, a_E, E_itv);
-
 
                         //double res = w_E( aE, Et[l],E_o,E_GeV)*(dth/3.0)*(  w_th( aTh, Th[0],Et[l],Eta_o,Eta)*sin( (180.0-Th[0])*TMath::Pi()/180.0 )+ 4.0*w_th( aTh, Th[1],Et[l],Eta_o,Eta)*sin( (180.0-Th[1])*TMath::Pi()/180.0 ) +  w_th( aTh, Th[2], Et[l], Eta_o, Eta)*sin( (180.0-Th[2])*TMath::Pi()/180.0 )  );
                         
@@ -348,13 +298,7 @@ TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int B
                     //Integration in negery variables using NC quadrature
                     double dNHo_dAzdNnT = simpson(Et, R_Ho); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
 
-                    //double N_ij=(NnT*(dAz)*(TMath::Pi()/180.0) )*dNHo_dAzdNnT;
-
-                    double N_ij=( NnT*(dAz) )*dNHo_dAzdNnT;
-
-
-                     //std::cout<<"True: " << j <<" "<< i << " " << e << " " << eta <<  " N_ij" << N_ij << std::endl;
-
+                    double N_ij=(NnT*(dAz)*(TMath::Pi()/180.0) )*dNHo_dAzdNnT;
 
                     Ntot += N_ij;
                     
@@ -363,10 +307,6 @@ TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int B
             } // Loop ct
             
             double No_mn = Ntot;
-
-            //std::cout<<"        Obs: " << m <<" "<< n << " " << e_o << " " << eta_o <<  " N_ij" << No_mn << std::endl;
-
-            //std::cout<<"-----------------"<< m <<" "<< n << " " << e_o << " " << eta_o << "No_mn" << No_mn << std::endl;
 
             ObservedData << eta_o << ", " << e_o << ", "<< No_mn << "\n"; //Write im file.
             
@@ -446,15 +386,9 @@ double eta_omax = eta_o + deta_o;
 
 double s_eta = a_eta/(sqrt(e));
 
-double A_eta = (0.5)*( ROOT::Math::erf (  (eta - eta_min)/( sqrt(2)*s_eta )  ) - ROOT::Math::erf (  (eta - eta_max)/( sqrt(2)*s_eta )  ) );
+double A_eta = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_min)/( sqrt(2)*s_eta )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_max)/( sqrt(2)*s_eta )  ) );
 
-//double A_eta = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_min)/( sqrt(2)*s_eta )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_max)/( sqrt(2)*s_eta )  ) );
-
-//double w_eta = (180.0/TMath::Pi())*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_omin)/( sqrt(2)*s_eta )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_omax)/( sqrt(2)*s_eta )  ) );   
-
-double w_eta = (0.5)*( ROOT::Math::erf (  (eta - eta_omin)/( sqrt(2)*s_eta )  ) - ROOT::Math::erf (  (eta - eta_omax)/( sqrt(2)*s_eta )  ) );   
-
-
+double w_eta = (TMath::Pi()/180)*(0.5)*( ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_omin)/( sqrt(2)*s_eta )  ) - ROOT::Math::erf (  (TMath::Pi()/180.0)*(eta - eta_omax)/( sqrt(2)*s_eta )  ) );   
 
 return w_eta;
     

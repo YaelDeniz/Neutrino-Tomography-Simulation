@@ -86,8 +86,8 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
     double Emin      = Region[0];//Lower limit for Energy
     double Emax      = Region[1];//Upper limit for Energy
 
-    double etamax   = ( 180 - Region[2] )*TMath::Pi()/180.0; 
-    double etamin   = ( 180 - Region[3] )*TMath::Pi()/180.0;
+    double etamin   = Region[2] ; 
+    double etamax   = Region[3] ;
 
     //Zenith Angle Interval
     //double etamax   = ( 180-Region[2] )*TMath::Pi()/180;//Lower limit for angle
@@ -96,7 +96,7 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
     //double cetamax   = cos((180-etamin)*TMath::Pi()/180);
 
     //Phi/Azimuthal Intervals
-    double dAz = Region[4]*TMath::Pi()/180;
+    double dAz = Region[4];
 
     //Bins
     int ibins = Bins[0]; // Number of  angular bins of True event distribution
@@ -200,7 +200,7 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
             
             
 
-            double cosEta =cos( eta );
+            double cosEta =cos( (180.0-eta)*TMath::Pi()/180.0 );
 
             if(cosEta < -1 || cosEta > 1) break; // Skip if cosEta is unphysical 
 
@@ -243,7 +243,7 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
                 double dN_nu_dOm =  simpson(E, R_nu); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
 
                 // INTEGRATION IN THETA AND PHI (Solid Angle):
-                double DOm = abs ( ( cos( eta+deta)  - cos( eta-deta ) ) )*(dAz) ; //Solid Angle =  DeltaCosEta*DeltaPhi
+                double DOm = (cos( (180.0-(eta+deta))*TMath::Pi()/180.0 )  - cos( (180.0-(eta-deta))*TMath::Pi()/180.0 ) )*(dAz) ; //Solid Angle =  DeltaCosEta*DeltaPhi
 
                 //NUMBER OF EVENTS FOR [Emin Emax]&[cetamin cetamax] or bin(i,j) 
 

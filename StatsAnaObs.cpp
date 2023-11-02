@@ -44,11 +44,11 @@ int main()
 
     
      // Number of bins
-    int Ebins=10; // # of Bins of Energy
-    int Etabins=10; // # of Bins of cosEta
+    int Ebins=30; // # of Bins of Energy
+    int Etabins=30; // # of Bins of cosEta
 
-    int Ebins_o=10; // # of Bins of Energy
-    int Etabins_o=10; // # of Bins of cosEta
+    int Ebins_o=30; // # of Bins of Energy
+    int Etabins_o=30; // # of Bins of cosEta
 
     int Bins[]={Etabins, Ebins, Etabins_o, Ebins_o};
     //-----------------------------------------------------------------------------------------------------------------------------------------
@@ -234,11 +234,14 @@ int main()
                 for(int m=1; m <= Etabins  ; m++) 
                 {    
 
-                    
+                    std::cout << " m " << m << "******************************************" <<std::endl;
                     for (int n = 1; n <= Ebins ; ++n)
                     { 
+                        
                         double nexp = EventsExp->GetBinContent(m,n); // expected
                         double nobs = EventsObs->GetBinContent(m,n); // obserbed
+
+                        std::cout << nexp << " " << nobs << std::endl;
 
                         dChi2 +=  2*( nexp - nobs + nobs*TMath::Log(nobs/nexp) ); // LLRT
 

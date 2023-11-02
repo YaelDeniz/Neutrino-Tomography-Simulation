@@ -44,8 +44,8 @@ int main()
     
      // Number of bins
     //int K = 1000; //Number of Pseudo experiments.
-    int Ebins=50; // # of Bins of Energy
-    int Etabins=50; // # of Bins of cosEta
+    int Ebins=200; // # of Bins of Energy
+    int Etabins=200; // # of Bins of cosEta
 
     int Bins[]={Etabins, Ebins};
 
@@ -100,8 +100,12 @@ int main()
     //double PhiM = 360.0 ; 
 
     //DETECTOR PROPERTIES
-    double DetMass = 10.0*MTon; //Mass in megaton units
-    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+    
+    double T = 10; // Exposure time in years 
+
+    double DetMass = 10; // Detetor mass in Mtons
+
+    double NnT      = (DetMass*MTon)*(T*years2sec)/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
 
 
     //double NnT = Nn*T; 
@@ -142,12 +146,8 @@ int main()
 
     //Loops---------------------------------------------------------------------------------------------
 
-    for (int t = 1; t <= 1 ; ++t)
-    {   
-        double T       = t*10.0*years2sec; //Detector Exposure time in sec: One Year
-        
-        double NnT=Nn*T; //DETECTOR EXPOSURE IN MTON*YEARS
-
+   
+  
         for (int i = 0; i <= m; ++i)
         {
                 
@@ -234,6 +234,8 @@ int main()
                         double nexp = EventsExp->GetBinContent(m,n); // expected
                         double nobs = EventsObs->GetBinContent(m,n); // obserbed
 
+                       //std::cout << nexp << " " << nobs << std::endl;
+
                         dChi2 +=  2*( nexp - nobs + nobs*TMath::Log(nobs/nexp) ); // LLRT
 
                         //dChi2 +=  (nexp - nobs)*(nexp - nobs)/(nexp); // Pearson's Chi^2
@@ -243,6 +245,8 @@ int main()
 
                         
                     } // loop energy
+
+                  
 
                 } // Loop eta
 
@@ -256,22 +260,22 @@ int main()
                 double pval_c = ROOT::Math::chisquared_cdf_c  (dChi2, r) ;
                 //double pval = ROOT::Math::chisquared_cdf   (dChi2, r);  
 
-                std::cout << "exposure" << t*10 <<std::endl;
+                
 
                 std::cout << "Chi^2  = " << dChi2 << std::endl;       
 
-                std::cout << "Pvalue = " << pval_c << std::endl;
+              
 
                 std::cout << " " << std::endl;
 
-                ChiSqrtVals << t*10 <<" " << drho_dp << " "<< dChi2 << " "<< Ebins << " "<< Etabins <<"\n";
+                ChiSqrtVals << T <<" " << drho_dp << " "<< dChi2 << " "<< Ebins << " "<< Etabins <<"\n";
 
                 delete EventsExp;
                 delete EventsObs;
 
         }//End Loop
 
-    }
+    
 
     ChiSqrtVals.close();
 

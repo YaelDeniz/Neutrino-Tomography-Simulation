@@ -40,11 +40,11 @@ int main()
     std::cout << " Neutrino Oscillation tomography. " << std::endl;
     std::cout << " Observed Events: track-like only. "<< std::endl; 
 
-    int Ebins=10; // # of Bins of Energy
-    int Etabins=10; // # of Bins of cosEta
+    int Ebins=30; // # of Bins of Energy
+    int Etabins=30; // # of Bins of cosEta
 
-    int Ebins_o=10; // # of Bins of Energy
-    int Etabins_o=10; // # of Bins of cosEta
+    int Ebins_o=20; // # of Bins of Energy
+    int Etabins_o=20; // # of Bins of cosEta
 
     int Bins[]={Etabins, Ebins, Etabins_o, Ebins_o};
 
@@ -69,11 +69,17 @@ int main()
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
     double Etamax = TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ;
 
+    //double Etamin = 10 ;
+    //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
+    //double Etamax = 30 ;
+
+
 
     //------------------
 
     double Phim = 0.0;
     double PhiM = 80.0 ; 
+     
 
     double dAz = PhiM-Phim;
 
@@ -84,9 +90,8 @@ int main()
 
     //Resolution
 
-    double a_E = 0.2;
-
-    double a_Eta= 0.25;
+    double a_E = 0.01;
+    double a_Eta= 0.01;
 
     double Det_par[] = {a_E,a_Eta};
     
