@@ -45,7 +45,7 @@ int main()
      // Number of bins
     //int K = 1000; //Number of Pseudo experiments.
     int Ebins=200; // # of Bins of Energy
-    int Etabins=200; // # of Bins of cosEta
+    int Etabins=200; // # of Bins of cosEta0
 
     int Bins[]={Etabins, Ebins};
 
@@ -61,7 +61,7 @@ int main()
     double R_cmb = 3500.0;
     double R_llsvp = R_cmb + h_llsvp; //km
 
-    double R_min = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
+    double R_min = 3000.0; // Distance from the center of the Earth , 3500 Km CMB
     //double R_llsvp = R_cmb + h_llsvp; //Km
     double R_max = 4500; // Distance from the center of the Earth
 
@@ -136,7 +136,7 @@ int main()
 
     std::string location = "SimulationResults/chi2results/" ;
     
-    std::string title = "TrueDiff_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    std::string title = "AsimovFixed_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
     std::string filename = location+title;
 
 
@@ -209,11 +209,11 @@ int main()
 
                 prem_alt   = "prem_alt"; //Specify PREM table from OscProb
 
-                TH2D* EventsExp = GetTrueEvents(prem_default, flvf, Region, Bins, NnT); //Null hypothesis
+                TH2D* EventsExp = AsimovTrueEvents(prem_default, flvf, Region, Bins, NnT); //Null hypothesis
 
                 
 
-                TH2D* EventsObs = GetTrueEvents(prem_alt, flvf, Region, Bins, NnT); //Observed data from Alternative
+                TH2D* EventsObs = AsimovTrueEvents(prem_alt, flvf, Region, Bins, NnT); //Observed data from Alternative
 
 
                    

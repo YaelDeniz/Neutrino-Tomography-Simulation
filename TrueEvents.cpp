@@ -39,8 +39,8 @@ int main()
 
     // Number of bins
     
-    int Ebins=30 ; // # of Bins of Energy
-    int Tbins=30 ; // # of Bins of cosEta
+    int Ebins=100 ; // # of Bins of Energy
+    int Tbins=100 ; // # of Bins of cosEta
 
     int Bins[]={Tbins, Ebins};
 
@@ -48,7 +48,7 @@ int main()
 
     //Energy interval (in GeV):
     double Emin=1.0 ; 
-    double Emax=10.0 ;
+    double Emax=50.0 ;
 
     //Zenith Angle Interval:
     //double Etamin = 33.0;
@@ -65,10 +65,11 @@ int main()
     //double R_llsvp = R_cmb + h_llsvp; //Km
     double R_max = 4500; // Distance from the center of the Earth
 
+    
     double Etamin = TMath::ASin( (R_min)/R_earth )*(180.0/TMath::Pi()) ;
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
     double Etamax = TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ;
-
+    
 
     //double Etamin = 10 ;
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
@@ -175,12 +176,12 @@ int main()
     std::cout<< "PREM DATA--------------"<< std::endl;  
     
     prem_default   = "prem_default"; //Specify PREM table from OscProb
-    TH2D* nullhist = GetTrueEvents(prem_default, flvf , Region,  Bins,  NnT);
+    TH2D* nullhist = AsimovTrueEvents(prem_default, flvf , Region,  Bins,  NnT);
 
     std::cout<< "ALT DATA--------------"<< std::endl;  
 
     prem_llsvp   = "prem_llsvp"; //Specify PREM table from OscProb
-    TH2D* althist = GetTrueEvents(prem_llsvp, flvf , Region,  Bins,  NnT);
+    TH2D* althist = AsimovTrueEvents(prem_llsvp, flvf , Region,  Bins,  NnT);
 
     std::cout << "True data is stored inside './SimulationResults" << std::endl;
 
@@ -191,7 +192,7 @@ int main()
 
     // Data visualization
    
-   std::ofstream EventDiff("SimulationResults/TrueEventsResults/perdiff_Poi_mean.csv"); 
+   std::ofstream EventDiff("SimulationResults/TrueEventsResults/Mydata.csv"); 
    double eta, e, nexp, nobs, dn;
 
     for(int i=1; i<= Tbins  ; i++) 

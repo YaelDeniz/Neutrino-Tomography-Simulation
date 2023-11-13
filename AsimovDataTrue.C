@@ -48,6 +48,8 @@ bool isCINT = true;
 
 using namespace std;
 
+# define R_earth 6368.0 //km
+
 
 // Some Constants i need
 //# define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
@@ -55,22 +57,23 @@ using namespace std;
 //# define years2sec 3.154E7 // Years in Seconds
 
 // Make oscillogram for given final flavour and MH
-TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[], double NnT)
+TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bins[], double NnT)
 {  
+    std::cout << "Generating Asimov data set: Reimann Integration Method" << std::endl;
 
     double total = 0;
 
     //Data Storage -----------------------------------------------------------------------------------------------------
     std::string model = "/home/dehy0499/OscProb/PremTables/"+modelname+".txt";
-    std::string model_default = "/home/dehy0499/OscProb/PremTables/prem_test.txt";
+    std::string model_default = "/home/dehy0499/OscProb/PremTables/prem_default.txt";
     
     std::cout << modelname <<std::endl;
 
-    std::string location = "SimulationResults/PoisMeans/" ;
+    std::string location = "SimulationResults/AsimovData/" ;
     
     std::string Earthmodel= modelname;
     
-    std::string title = "_PoiMeansT_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    std::string title = "_Asimov_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
     
     std::string filename = location+Earthmodel+title;
     
@@ -86,8 +89,8 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
     double Emin      = Region[0];//Lower limit for Energy
     double Emax      = Region[1];//Upper limit for Energy
 
-    double etamin   = Region[2] ; 
-    double etamax   = Region[3] ;
+    double etamin   = ( 180-Region[3] )*TMath::Pi()/180;
+    double etamax   = ( 180-Region[2] )*TMath::Pi()/180;;
 
     //Zenith Angle Interval
     //double etamax   = ( 180-Region[2] )*TMath::Pi()/180;//Lower limit for angle
@@ -96,13 +99,13 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
     //double cetamax   = cos((180-etamin)*TMath::Pi()/180);
 
     //Phi/Azimuthal Intervals
-    double dAz = Region[4];
+    double dAz = Region[4]*TMath::Pi()/180;
 
     //Bins
     int ibins = Bins[0]; // Number of  angular bins of True event distribution
     int jbins = Bins[1]; // Number of  energy bins of True event distribution
-    double deta = (etamax - etamin)/(2.0*ibins); //< Bin width/2
-    double dE = (Emax - Emin)/(2.0*jbins); //< Bin width/2
+    double deta = (etamax - etamin)/(ibins); //< Bin width/2
+    double dE = (Emax - Emin)/(jbins); //< Bin width/2
 
     /* Create 2D histogram for Event Oscillogram,
      xbins correspond to energy values and ybins to zenith angle cosEta*/
@@ -149,8 +152,17 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
     
     
     //Earth model for neutrino propagation 
-    OscProb::PremModel prem(model);
-    //OscProb::PremModel prem; //Default PREM table
+    OscProb::PremModel prem_model(model);
+    OscProb::PremModel prem(model_default); //Default PREM table
+
+
+    double R_lim = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
+       
+    double EtaLim = TMath::Pi() - TMath::ASin( (R_lim)/R_earth ) ;
+    //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
+
+
+
 
     // Atmospheric Neutrino Flux data:
     TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
@@ -198,56 +210,53 @@ TH2D*  GetTrueEvents(std::string modelname, int flvf, double Region[], int Bins[
 
             double eta = hTrue->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
             
-            
-
-            double cosEta =cos( (180.0-eta)*TMath::Pi()/180.0 );
+            double cosEta =cos(eta);
 
             if(cosEta < -1 || cosEta > 1) break; // Skip if cosEta is unphysical 
 
-            double L_Ho = prem.GetTotalL(cosEta); // Set total path length L  
-            prem.FillPath(cosEta); // Fill paths from PREM model
-            PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
-        
+             
+
+            //double L_Ho = prem.GetTotalL(cosEta); // Set total path length L
+
+            //Select Earth model dependeing on the neutrino path
+
+
+            if (eta <= EtaLim ) 
+             {
+
+                std::cout << eta << " " << EtaLim << " --- " << std::endl;
+                double cosEta =cos(eta);
+                 
+                prem_model.FillPath(cosEta); // Fill paths from PREM model
+
+                PMNS_H.SetPath(prem_model.GetNuPath()); // Set paths in OscProb  
+
+              }
+              else
+
+              {
+
+                std::cout << eta << " " << EtaLim << " *** " << std::endl;
+
+                prem.FillPath(cosEta); // Fill paths from PREM model
+            
+                PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
+              }
+            
             for (int j = 1; j <=jbins; ++j)
             { 
                 double e = hTrue->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
                 
+                //Neutrino
+                PMNS_H.SetIsNuBar(false); 
+                double Ri_nu = XSec(e,nu)*( PMNS_H.Prob(numu, flvf, e)*dPsiMudE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEdE.Eval(e) );
                 
-                //NUMERICAL INTEGRATION
-                
-                int nstep = 2; //Steps for Integration of E
-                double deltaE =2*dE;
-                double hE = deltaE/nstep; //Step size for Integration of E
-                std::vector<double>  E, R_nu; // R= event rate d^2( N )/ (dtheta dE)
-                
-                for (int l = 0; l <= nstep ; ++l)
-                {   
-                    
-                    E.push_back( e + (l-1)*dE);
-                   
-                    //Calculate the Interaction Rate at E for neutrinos passing trough lower mantle of Standar Earth
-                   
-                    //Neutrino contribution
-                    PMNS_H.SetIsNuBar(false); 
-                    double r_nu = XSec(E[l],nu)*( PMNS_H.Prob(numu, flvf, E[l])*dPsiMudE.Eval(E[l]) + PMNS_H.Prob(nue,flvf,E[l])*dPsiEdE.Eval(E[l]) );
-                    //Antineutrino contribution
-                    PMNS_H.SetIsNuBar(true); 
-                    double r_nubar = XSec(E[l],nubar)*( PMNS_H.Prob(numu,flvf, E[l])*dPsiMubardE.Eval(E[l]) + PMNS_H.Prob(nue,flvf,E[l])*dPsiEbardE.Eval(E[l]) ); 
-                    //store data
-                    R_nu.push_back(r_nu + r_nubar);
+                //Antineutrino contribution
+                PMNS_H.SetIsNuBar(true); 
+                double Ri_nubar = XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
 
-                }
-                
+                double N_ij = NnT*(Ri_nu + Ri_nubar)*dE*deta*dAz;
 
-                //Integration in negery variables using NC quadrature
-                double dN_nu_dOm =  simpson(E, R_nu); //Integration of Event Rate Interaction for neutrinos passing Homogeneus mantle over E
-
-                // INTEGRATION IN THETA AND PHI (Solid Angle):
-                double DOm = (cos( (180.0-(eta+deta))*TMath::Pi()/180.0 )  - cos( (180.0-(eta-deta))*TMath::Pi()/180.0 ) )*(dAz) ; //Solid Angle =  DeltaCosEta*DeltaPhi
-
-                //NUMBER OF EVENTS FOR [Emin Emax]&[cetamin cetamax] or bin(i,j) 
-
-                N_ij=NnT*dN_nu_dOm*DOm; //Mean of the Monte carlo simulation 
 
                 TrueEvents << eta << ", " << e << ", "<< N_ij  << "\n";
 

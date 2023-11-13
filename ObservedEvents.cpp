@@ -43,8 +43,8 @@ int main()
     int Ebins=30; // # of Bins of Energy
     int Etabins=30; // # of Bins of cosEta
 
-    int Ebins_o=20; // # of Bins of Energy
-    int Etabins_o=20; // # of Bins of cosEta
+    int Ebins_o=30; // # of Bins of Energy
+    int Etabins_o=30; // # of Bins of cosEta
 
     int Bins[]={Etabins, Ebins, Etabins_o, Ebins_o};
 
@@ -90,8 +90,8 @@ int main()
 
     //Resolution
 
-    double a_E = 0.01;
-    double a_Eta= 0.01;
+    double a_E = 0.2;
+    double a_Eta= 0.25;
 
     double Det_par[] = {a_E,a_Eta};
     
@@ -170,61 +170,12 @@ int main()
 
     prem_default   = "prem_default"; //Specify PREM table from OscProb
 
-    TH2D* EventOsc_null = GetObservedEvents(prem_default, flvf,  Region, Bins , Det_par,  NnT);
+    TH2D* EventOsc_null = AsimovObservedEvents(prem_default, flvf,  Region, Bins , Det_par,  NnT);
 
     prem_llsvp   = "prem_llsvp"; //Specify PREM table from OscProb
 
-    TH2D* EventOsc_alt = GetObservedEvents(prem_llsvp, flvf,  Region, Bins , Det_par,  NnT);
+    TH2D* EventOsc_alt = AsimovObservedEvents(prem_llsvp, flvf,  Region, Bins , Det_par,  NnT);
 
-
-    /*
-    std::cout << "Observed data is stored inside './SimulationResults' " << std::endl;
-
-    TCanvas *c = new TCanvas();
-    
-    EventOsc->Draw("SURF1 Z");
-    
-    gStyle->SetPalette(55);
-
-    gPad->SetTheta(30.0); // default is 30
-    gPad->SetPhi(330.0); // default is 30 --Azimuthal
-    gPad->Update();
-    gPad->SetRightMargin(0.18);
-
-    c->Print("SimulationResults/ObsEventsResults/test_poimeans.png");
-
-    */
-
-
-    /*
-    double c_min = cos(etaOmax);
-    double c_max = cos(etaOmin);
-   
-    double a_eta=0.25;
-
-    double a_E=0.2;
-
-    //True Energy[GeV]
-    double Emin=(1/(1+4*a_E))*(EOmin);
-
-    double Emax=(1/(1-4*a_E))*(EOmax);
-
-
-   
-
-    //True Angle
-    double etamin_a = (etaOmin)-4*(a_eta/sqrt(Emin));
-    double etamin_b = 0;
-
-    double etamax_a = (etaOmax)+4*(a_eta/sqrt(Emin));
-    double etamax_b =  TMath::Pi();
-
-   
-
-    double etamin= max(etamin_a, etamin_b);
-    double etamax= min(etamax_a, etamax_b);
-
-    */
 
 
 

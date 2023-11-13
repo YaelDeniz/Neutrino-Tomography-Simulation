@@ -152,7 +152,7 @@ int main()
 
     std::string location = "SimulationResults/chi2results/" ;
     
-    std::string title = "ObsDiff_Para_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    std::string title = "AsimovObsNextGen"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
     std::string filename = location+title;
 
 
@@ -223,9 +223,9 @@ int main()
 
                 prem_alt   = "prem_alt"; //Specify PREM table from OscProb
 
-                TH2D* EventsExp = GetObservedEvents(prem_default, flvf,  Region, Bins , Det_par,  NnT); //Null hypothesis
+                TH2D* EventsExp = AsimovObservedEvents(prem_default, flvf,  Region, Bins , Det_par,  NnT); //Null hypothesis
 
-                TH2D* EventsObs = GetObservedEvents(prem_alt, flvf,  Region, Bins , Det_par,  NnT); //Observed data from Alternative
+                TH2D* EventsObs = AsimovObservedEvents(prem_alt, flvf,  Region, Bins , Det_par,  NnT); //Observed data from Alternative
                    
                 //Chi2 Analysis: Log-likelihood Analysis.
 
@@ -234,14 +234,14 @@ int main()
                 for(int m=1; m <= Etabins  ; m++) 
                 {    
 
-                    std::cout << " m " << m << "******************************************" <<std::endl;
+                    
                     for (int n = 1; n <= Ebins ; ++n)
                     { 
                         
                         double nexp = EventsExp->GetBinContent(m,n); // expected
                         double nobs = EventsObs->GetBinContent(m,n); // obserbed
 
-                        std::cout << nexp << " " << nobs << std::endl;
+                        //std::cout << nexp << " " << nobs << std::endl;
 
                         dChi2 +=  2*( nexp - nobs + nobs*TMath::Log(nobs/nexp) ); // LLRT
 
