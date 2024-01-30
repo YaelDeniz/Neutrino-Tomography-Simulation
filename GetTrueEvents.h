@@ -8,6 +8,8 @@
 
 TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bins[], double NnT);
 
+TH2D*  OscProbEarth(std::string modelname, int flvf, double Region[], int Bins[], double NnT);
+
 //TObjArray*  GetTrueEventsMC(std::string modelname, int flvf , double Region[], int Bins[], double NnT, int K);
 //TH2D*  GetTrueEvents(std::string modelname, int flvf , double Region[], int Bins[], double NnT);
 /*

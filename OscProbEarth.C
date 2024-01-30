@@ -57,7 +57,7 @@ using namespace std;
 //# define years2sec 3.154E7 // Years in Seconds
 
 // Make oscillogram for given final flavour and MH
-TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bins[], double NnT)
+TH2D*  OscProbEarth(std::string modelname, int flvf, double Region[], int Bins[], double NnT)
 {  
     std::cout << "Generating Asimov data set: Reimann Integration Method" << std::endl;
 
@@ -69,15 +69,15 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
     
     std::cout << modelname <<std::endl;
 
-    std::string location = "SimulationResults/AsimovData/" ;
+    std::string location = "SimulationResults/OscProbEarth/" ;
     
     std::string Earthmodel= modelname;
     
-    std::string title = "_Asimov_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    std::string title = "_FullPem_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
     
     std::string filename = location+Earthmodel+title;
     
-    ofstream TrueEvents(filename, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    ofstream OscProb(filename, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
     
     double N_ij = 0   ;   //Poisson mean for bin ij.
@@ -164,44 +164,6 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
 
 
 
-    // Atmospheric Neutrino Flux data:
-    TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
-    //TFile *HF = new TFile("./NuFlux/TestFlux.root","read"); //Flux Test
-   
-    // Set Avarege flux for a range of cosEta
-    TDirectory *Zen;
-    Zen = (TDirectory*) HF->Get("CosZ_all"); // Avg Flux for -0.9 <~ CosEta < -0.8
-    TTree *flux= (TTree*) Zen->Get("FluxData"); //Opens data file      
-    
-    double Enu,NuMu,NuMubar,NuE,NuEbar;
-    flux->SetBranchAddress("Enu",&  Enu  );
-    flux->SetBranchAddress("NuMu",&  NuMu );
-    flux->SetBranchAddress("NuMubar",& NuMubar );
-    flux->SetBranchAddress("NuE",& NuE );
-    flux->SetBranchAddress("NuEbar",& NuEbar );
-
-    int n = flux->GetEntries();
-    std::vector <double> EPsi,PsiNuMu,PsiNuMubar,PsiNuE,PsiNuEbar;
-            
-    for (int i = 0; i < n-1 ; ++i)
-    {
-        flux->GetEntry(i);
-        EPsi.push_back(Enu);
-        PsiNuMu.push_back(NuMu);
-        PsiNuMubar.push_back(NuMubar);
-        PsiNuE.push_back(NuE);
-        PsiNuEbar.push_back(NuEbar);
-    }
-    
-    //Interpolate Neutrino flux data:
-    //Muon-neutrino flux
-    ROOT::Math::Interpolator dPsiMudE(EPsi,PsiNuMu, ROOT::Math::Interpolation::kCSPLINE);// Muon Neutrino Flux Interpolation
-    ROOT::Math::Interpolator dPsiMubardE(EPsi,PsiNuMubar, ROOT::Math::Interpolation::kCSPLINE);// Muon Antineutrino Flux Interpolation
-    //Electron-neutrinos flux
-    ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kCSPLINE);// Electron Neutrino Flux Interpolation
-    ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE);// Electron Antineutrino Flux Interpolation
-
-
 
         for(int i=1; i<= ibins ; i++) //Loop in Angular bins
         {    
@@ -224,7 +186,6 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
             if (eta <= EtaLim ) 
              {
 
-                std::cout << eta << " " << EtaLim << " --- " << std::endl;
                 double cosEta =cos(eta);
                  
                 prem_model.FillPath(cosEta); // Fill paths from PREM model
@@ -236,37 +197,12 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
 
               {
 
-                std::cout << eta << " " << EtaLim << " *** " << std::endl;
+        
 
                 prem.FillPath(cosEta); // Fill paths from PREM model
             
                 PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
               }
-
-              std::cout << " GET PREM LAYERS- - - - - - - - - - - - - - - - - - - " << std::endl; 
-
-              vector<OscProb::NuPath> p;
-
-              p = prem.GetNuPath();
-
-              int nsteps = p.size();
-              
-              double totL = prem.GetTotalL(cosEta);
-
-              double sumL = prem.GetTotalL(cosEta);
-
-              for (int i = 0; i < nsteps; ++i)
-              {
-                  double NuL = p[i].length;  
-                  
-                  double rho = p[i].density;
-                  
-                  double idx = p[i].layer;
-
-                  std::cout << "*****" << NuL << " " << rho << " " << idx << " " << std::endl;
-              }
-              
-              std::cout << " - - - - - - - - - - - - - - - - - - - " << std::endl; 
             
             for (int j = 1; j <=jbins; ++j)
             { 
@@ -274,16 +210,16 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
                 
                 //Neutrino
                 PMNS_H.SetIsNuBar(false); 
-                double Ri_nu = XSec(e,nu)*( PMNS_H.Prob(numu, flvf, e)*dPsiMudE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEdE.Eval(e) );
+                double Pi_nu =  PMNS_H.Prob(nue,flvf,e);
                 
                 //Antineutrino contribution
                 PMNS_H.SetIsNuBar(true); 
-                double Ri_nubar = XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
+                double Pi_nubar = PMNS_H.Prob(nue,flvf,e); 
 
-                double N_ij = NnT*(Ri_nu + Ri_nubar)*dE*deta*dAz;
+                double N_ij = Pi_nu;
 
 
-                TrueEvents << eta << ", " << e << ", "<< N_ij  << "\n";
+                OscProb << eta << ", " << e << ", "<< N_ij  << "\n";
 
                 hTrue->SetBinContent(i,j, N_ij); //Create histogram for  kth Pseudo-Experimens
 
@@ -292,10 +228,10 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
         } // Loop eta
 
 
-    TrueEvents.close();
+    OscProb.close();
 
-    delete HF;
-            
+   
+       
              
     return hTrue;
 }

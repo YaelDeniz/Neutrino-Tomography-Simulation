@@ -70,7 +70,7 @@ TH2D*  AsimovObservedEvents(std::string modelname, int flvf, double Region[], in
 
     std::string location = "SimulationResults/AsimovData/" ;
     std::string Earthmodel= modelname;
-    std::string title = "_AsiObsNextGen_"+std::to_string(flvf)+"_"+std::to_string(Bins[2])+"_"+std::to_string(Bins[3])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    std::string title = "_AsiObsNextGen_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[2])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
     std::string filename = location+Earthmodel+title;
     
     ofstream ObservedData(filename, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
@@ -365,6 +365,8 @@ TH2D*  AsimovObservedEvents(std::string modelname, int flvf, double Region[], in
 
 
                     double N_ij = NnT*PDF_angle(eta_o,e,eta,a_eta)*PDF_energy(e_o,e,a_E)*(Ri_nu+Ri_nubar)*(dE*deta)*(dE_o*deta_o)*dAz;
+
+                    //std::cout << Ri_nu << " " << Ri_nubar << " " << N_ij << std::endl;
                     
                    
 
@@ -425,6 +427,9 @@ TH2D*  AsimovObservedEvents(std::string modelname, int flvf, double Region[], in
             } // Loop ct
             
             double No_mn = Ntot;
+
+            //std::cout << eta_o << " " << e_o << " ****************************** " << No_mn << std::endl;
+                    
 
             ObservedData << eta_o << ", " << e_o << ", "<< No_mn << "\n"; //Write im file.
             

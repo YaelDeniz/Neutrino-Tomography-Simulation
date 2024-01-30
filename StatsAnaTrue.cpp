@@ -72,10 +72,10 @@ int main()
     //LLSVP hypothesis
 
 
-    double rho_min = -2; //More thermal hypothesis
-    double rho_max = 2;  //More thermochemical hypothesis
+    double rho_min = -3; //More thermal hypothesis
+    double rho_max = 3;  //More thermochemical hypothesis
 
-    int m = 10; // # Number of points
+    int m = 15; // # Number of points
 
     double rho_arr [m+1]; 
 
@@ -136,7 +136,7 @@ int main()
 
     std::string location = "SimulationResults/chi2results/" ;
     
-    std::string title = "AsimovFixed_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    std::string title = "AsimovTrue_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
     std::string filename = location+title;
 
 
@@ -223,7 +223,7 @@ int main()
 
                 double dChi2 = 0;
 
-                std::cout <<"Value : " << dChi2 << std::endl;
+           
 
                 for(int m=1; m <= Etabins  ; m++) 
                 {    
@@ -250,7 +250,7 @@ int main()
 
                 } // Loop eta
 
-                std::cout <<"Value 2: " << dChi2 << std::endl; 
+                 
 
                  //P-Value calculation
 
