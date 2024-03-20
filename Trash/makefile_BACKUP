@@ -1,0 +1,153 @@
+#MACROS:  Expression which is likely to be used repeatedl
+CC= g++
+CFLAGS=`root-config  --cflags`
+LDFLAGS=`root-config --glibs `
+ROOTLIBS = `root-config --libs `
+
+ROOT_FLAGS = `root-config  --cflags --glibs --libs`
+
+#CFILES = MathTools.C PhyTools.C  GetObservedEvents.C GetObservedEventsMC.C GetTrueEvents.C GetProbPREM.C AsimovDataTrue.C AsimovDataObs.C
+
+#OBJECTStrue = MathTools.o PhyTools.o GetTrueEvents.o
+#OBJECTSobs  = MathTools.o PhyTools.o GetObservedEvents.o 
+
+OBJECTS_AsivTrue = MathTools.o PhyTools.o AsimovDataTrue.o
+OBJECTS_AsivObs  = MathTools.o PhyTools.o AsimovDataObs.o 
+OBJECTS_Res  = MathTools.o PhyTools.o  DetectorResolution.o 
+OBJECTS_OscProb  = MathTools.o PhyTools.o  OscProbEarth.o 
+
+
+
+#OBJECTSobsMC =MathTools.o PhyTools.o GetObservedEventsMC.o GetTrueEvents.o
+OBJECTSProb = GetProbPREM.o
+
+OSCPROB_PATH = /home/dehy0499/Desktop/Tomography/Simulation/OscProb
+
+ROOTMATH_LIB=/home/dehy0499/root/lib
+ROOTMATH_INCLUDE=/home/dehy0499/root/include/Math
+
+
+
+
+
+all:   ProbPREM ObservedEvents StatsAnaObs TrueEvents StatsAnaTrue DetectorResolution OscProbEarth
+
+ProbPREM: ProbPREM.cpp $(OBJECTSProb)
+	@echo " "
+	@echo "Generating Application for Oscillation Probabilities on Earth"
+	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	@echo " "
+	@echo "Done"
+
+
+ObservedEvents: ObservedEvents.cpp $(OBJECTS_AsivObs)
+	@echo " "
+	@echo "Generating Application for Observed Events"
+	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	@echo " "
+	@echo "Observed events Done" 
+
+
+DetectorResolution: DetectorResolution.cpp $(OBJECTS_Res)
+	@echo " "
+	@echo "Generating Application for Detector resolution"
+	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	@echo " "
+	@echo "Observed events Done" 
+
+
+
+
+StatsAnaObs: StatsAnaObs.cpp $(OBJECTS_AsivObs)
+	@echo " "
+	@echo "Generating Application for Statistical Analysis of Observed Events"
+	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	@echo " "
+	@echo "StatsObs Done"
+
+OscProbEarth: OscProbEarth.cpp $(OBJECTS_OscProb)
+	@echo " "
+	@echo "Generating Application for Oscillation Probabilities"
+	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	@echo " "
+	@echo "Probabilities Done"
+
+TrueEvents: TrueEvents.cpp $(OBJECTS_AsivTrue)
+	@echo " "
+	@echo "Generating Application for True Events"
+	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	@echo " "
+	@echo "True events Done"
+
+StatsAnaTrue: StatsAnaTrue.cpp $(OBJECTS_AsivTrue)
+	@echo " "
+	@echo "Generating Application for Statistical Analysis of True Events"
+	@ #$(CC)  $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	$(CC) -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+	@echo " "
+	@echo "StatsTrue Done"
+
+
+
+
+
+
+
+
+
+
+GetProbPREM.o: GetProbPREM.C
+	@echo "  "
+	@echo "Creating Probability Generator Objects"
+	$(CC)  -c -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+
+OscProbEarth.o: OscProbEarth.C MathTools.o PhyTools.o
+	@echo "  "
+	@echo "Creating Oscillation Probabilities  Objects"
+	$(CC)  -c -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+
+
+
+AsimovDataObs.o: AsimovDataObs.C MathTools.o PhyTools.o
+	@echo "  "
+	@echo "Creating Asimov Observed Events Generator Objects"
+	$(CC)  -c -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+
+DetectorResolution.o: DetectorRes.C MathTools.o PhyTools.o
+	@echo "  "
+	@echo "Creating detector response objects"
+	$(CC)  -c -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+
+
+AsimovDataTrue.o: AsimovDataTrue.C MathTools.o PhyTools.o
+	@echo "  "
+	@echo "Creating Asimov True Events Objects"
+	$(CC)  -c -g $^ $(ROOT_FLAGS) -L$(OSCPROB_PATH) -lOscProb -I$(OSCPROB_PATH) -L$(ROOTMATH_LIB) -lMathMore -I$(ROOTMATH_INCLUDE) -o $@
+
+## SYNTAX:  "@" indicates the parameters before ":", "@" indicates the parameters after ":"
+MathTools.o: MathTools.C
+	@echo "  "
+	@echo "Creating MathTools Objects"
+	@ #$(CC) -c $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -o $@
+	$(CC) -c -g $^ $(ROOT_FLAGS) -o $@
+
+
+PhyTools.o: PhyTools.C
+	@echo "  "
+	@echo "Creating PhyTools Objects"
+	@ #$(CC) -c $^ $(CFLAGS) $(LDFLAGS) $(ROOTLIBS) -o $@
+	$(CC) -c -g $^ $(ROOT_FLAGS) -o $@
+
+
+
+
+
+clean:
+	@echo "Removing Objects"
+	rm *.o StatsAnaObs StatsAnaTrue ObservedEvents TrueEvents ProbPREM DetectorResolution OscProbEarth

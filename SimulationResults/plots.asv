@@ -1,0 +1,12 @@
+lamda = pi*1/(1.27*0.002)
+
+
+
+ne= Z/A*rho*N_A;
+
+Ve = sqrt(2)*G_F*ne;
+
+eta = sqrt( ( sin(2*theta) )^2 + (cos(2*theta)-2*E*Ve/dm2)^2   )
+
+m_matter = eta*dm2
+
