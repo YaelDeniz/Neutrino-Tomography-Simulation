@@ -19,12 +19,12 @@ ROOT_FLAGS = `root-config  --cflags --glibs --libs`
 CPPFLAGS = -I$(ROOT_LIB) -I$(ROOTMATH_INCLUDE) -I$(OSCPROB_PATH) -I$(NUTOMO_INCLUDE) # Where to find /inc
 CFLAGS   := -Wall
 LDFLAGS  := -L$(OSCPROB_PATH) -L$(ROOT_LIB) # Where to find /lib
-LDLIBS   := -lOscProb -lMathMore # load specific lib
+LDLIBS   := -lOscProb -lMathMore  -lGeom# load specific lib
 
 
 #OBJECTS = $(SOURCES:.c=.o)
 
-OBJECTS_AsivTrue = MathTools.o PhyTools.o AsimovDataTrue.o
+OBJECTS_AsivTrue = MathTools.o PhyTools.o GeolTools.o AsimovDataTrue.o
 OBJECTS_AsivObs  = MathTools.o PhyTools.o AsimovDataObs.o 
 OBJECTS_Res  = MathTools.o PhyTools.o  DetectorResolution.o 
 OBJECTS_OscProb  = MathTools.o PhyTools.o  OscProbEarth.o 
@@ -102,6 +102,11 @@ MathTools.o: $(SRC_DIR)/MathTools.C
 PhyTools.o: $(SRC_DIR)/PhyTools.C
 	@echo "  "
 	@echo "Creating PhyTools Objects"
+	$(CC) -c -g $^ $(ROOT_FLAGS) $(CPPFLAGS) -o $@
+
+GeolTools.o: $(SRC_DIR)/GeolTools.C
+	@echo "  "
+	@echo "Creating Geological models Objects"
 	$(CC) -c -g $^ $(ROOT_FLAGS) $(CPPFLAGS) -o $@
 
 

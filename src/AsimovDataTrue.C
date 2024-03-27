@@ -45,6 +45,7 @@ bool isCINT = true;
 // My Math Tools
 #include "MathTools.h"
 #include "PhyTools.h"
+#include "GeolTools.h"
 
 using namespace std;
 
@@ -62,6 +63,10 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
     std::cout << "Generating Asimov data set: Reimann Integration Method" << std::endl;
 
     double total = 0;
+
+    std::string PREM_MODELTEST = modelname+".txt";
+
+    std::vector< std::vector<double> >  matrixtest = NuPATHS3D (PREM_MODELTEST, kFALSE); 
 
     //Data Storage -----------------------------------------------------------------------------------------------------
     std::string model = "/home/dehy0499/OscProb/PremTables/"+modelname+".txt";
