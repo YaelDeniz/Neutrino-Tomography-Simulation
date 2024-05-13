@@ -209,11 +209,11 @@ int main()
 
                 prem_alt   = "prem_alt"; //Specify PREM table from OscProb
 
-                TH2D* EventsExp = AsimovTrueEvents(prem_default, flvf, Region, Bins, NnT); //Null hypothesis
+                TH2D* EventsExp = AsimovTrueEvents(prem_default,false, flvf, Region, Bins, NnT); //Null hypothesis
 
                 
 
-                TH2D* EventsObs = AsimovTrueEvents(prem_alt, flvf, Region, Bins, NnT); //Observed data from Alternative
+                TH2D* EventsObs = AsimovTrueEvents(prem_default, true, flvf, Region, Bins, NnT); //Observed data from Alternative
 
 
                    

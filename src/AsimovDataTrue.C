@@ -58,7 +58,7 @@ using namespace std;
 //# define years2sec 3.154E7 // Years in Seconds
 
 // Make oscillogram for given final flavour and MH
-TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bins[], double NnT)
+TH2D*  AsimovTrueEvents(std::string modelname, bool LLVP,  int flvf, double Region[], int Bins[], double NnT)
 {  
     std::cout << "Generating Asimov data set: Reimann Integration Method" << std::endl;
 
@@ -66,7 +66,7 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
 
     std::string PREM_MODELTEST = modelname+".txt";
 
-    std::vector< std::vector<double> >  matrixtest = NuPATHS3D (PREM_MODELTEST, kFALSE); 
+    //std::vector< std::vector<double> >  matrixtest = NuPATHS3D (PREM_MODELTEST, 180.0, 0.0 kFALSE); 
 
     //Data Storage -----------------------------------------------------------------------------------------------------
     std::string model = "/home/dehy0499/OscProb/PremTables/"+modelname+".txt";
@@ -95,7 +95,9 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
     double Emax      = Region[1];//Upper limit for Energy
 
     double etamin   = ( 180-Region[3] )*TMath::Pi()/180;
-    double etamax   = ( 180-Region[2] )*TMath::Pi()/180;;
+    double etamax   = ( 180-Region[2] )*TMath::Pi()/180;
+
+
 
     //Zenith Angle Interval
     //double etamax   = ( 180-Region[2] )*TMath::Pi()/180;//Lower limit for angle
@@ -207,6 +209,7 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
     ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE);// Electron Antineutrino Flux Interpolation
 
 
+        double l,d,z,ly;
 
         for(int i=1; i<= ibins ; i++) //Loop in Angular bins
         {    
@@ -218,60 +221,28 @@ TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bi
             double cosEta =cos(eta);
 
             if(cosEta < -1 || cosEta > 1) break; // Skip if cosEta is unphysical 
-
-             
-
-            //double L_Ho = prem.GetTotalL(cosEta); // Set total path length L
-
-            //Select Earth model dependeing on the neutrino path
-
-
-            if (eta <= EtaLim ) 
-             {
-
-                std::cout << eta << " " << EtaLim << " --- " << std::endl;
-                double cosEta =cos(eta);
-                 
-                prem_model.FillPath(cosEta); // Fill paths from PREM model
-
-                PMNS_H.SetPath(prem_model.GetNuPath()); // Set paths in OscProb  
-
-              }
-              else
-
-              {
-
-                std::cout << eta << " " << EtaLim << " *** " << std::endl;
-
-                prem.FillPath(cosEta); // Fill paths from PREM model
             
-                PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
-              }
-
-              std::cout << " GET PREM LAYERS- - - - - - - - - - - - - - - - - - - " << std::endl; 
-
-              vector<OscProb::NuPath> p;
-
-              p = prem.GetNuPath();
-
-              int nsteps = p.size();
-              
-              double totL = prem.GetTotalL(cosEta);
-
-              double sumL = prem.GetTotalL(cosEta);
-
-              for (int i = 0; i < nsteps; ++i)
-              {
-                  double NuL = p[i].length;  
-                  
-                  double rho = p[i].density;
-                  
-                  double idx = p[i].layer;
-
-                  std::cout << "*****" << NuL << " " << rho << " " << idx << " " << std::endl;
-              }
-              
-              std::cout << " - - - - - - - - - - - - - - - - - - - " << std::endl; 
+            std::vector< std::vector<double> >  PathMatrix = NuPATHS3D (PREM_MODELTEST, eta , 0.0, LLVP);
+        
+            l = PathMatrix[0][0];
+            d = PathMatrix[0][1];
+            z = PathMatrix[0][2];
+            ly =  PathMatrix[0][3]; 
+            
+            PMNS_H.SetPath(l,d,z,ly);
+            
+           
+            for (int i = 1; i < PathMatrix.size(); i++) 
+            { 
+        
+                l = PathMatrix[i][0];
+                d = PathMatrix[i][1];
+                z = PathMatrix[i][2];
+                ly =  PathMatrix[i][3]; 
+                
+                PMNS_H.AddPath(l,d,z, ly);
+            
+            } 
             
             for (int j = 1; j <=jbins; ++j)
             { 

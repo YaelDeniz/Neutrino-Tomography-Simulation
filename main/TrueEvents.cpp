@@ -69,6 +69,9 @@ int main()
     double Etamin = TMath::ASin( (R_min)/R_earth )*(180.0/TMath::Pi()) ;
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
     double Etamax = TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ;
+
+    std::cout << ( 180-Etamin ) << " " << ( 180-Etamax ) <<  std::endl;
+
     
 
     //double Etamin = 10 ;
@@ -127,7 +130,8 @@ int main()
 
 
     //
-
+    
+    /*
     std::string prem_llsvp, prem_default;
     
     std::ifstream PREM_DEFAULT;
@@ -171,21 +175,22 @@ int main()
     //------------------------------------------------------------------------------------------------------
     //std::ifstream StdPrem;
     
-    
+    */
+
     //prem_test   = "/home/dehy0499/OscProb/PremTables/prem_test.txt"; //Specify PREM table from OscProb
     std::cout<< "PREM DATA--------------"<< std::endl;  
     
-    prem_default   = "prem_default"; //Specify PREM table from OscProb
-    TH2D* nullhist = AsimovTrueEvents(prem_default, flvf , Region,  Bins,  NnT);
+    std::string prem_default   = "prem_default"; //Specify PREM table from OscProb
+    TH2D* nullhist = AsimovTrueEvents(prem_default,false,flvf , Region,  Bins,  NnT);
 
     std::cout<< "ALT DATA--------------"<< std::endl;  
 
-    prem_llsvp   = "prem_llsvp"; //Specify PREM table from OscProb
-    TH2D* althist = AsimovTrueEvents(prem_llsvp, flvf , Region,  Bins,  NnT);
+    std::string prem_llsvp   = "prem_default"; //Specify PREM table from OscProb
+    TH2D* althist = AsimovTrueEvents(prem_llsvp,true,flvf , Region,  Bins,  NnT);
 
     std::cout << "True data is stored inside './SimulationResults" << std::endl;
 
-
+    
   
 
     TH2D* diffhist = new TH2D("diffhist"," Events percentage difference; #eta ; E",Tbins,Etamin,Etamax,Ebins,Emin,Emax); 
@@ -213,6 +218,7 @@ int main()
 
                         EventDiff<<  eta << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
 
+                        std::cout<<  eta << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << std::endl;
 
 
                         
@@ -225,7 +231,7 @@ int main()
 
     TCanvas *c = new TCanvas();
     diffhist->Draw("COLZ");
-    c->Print("SimulationResults/Histograms/perdiff_true_poisson.png");
+    c->Print("SimulationResults/Histograms/3DModel.png");
     
 
     

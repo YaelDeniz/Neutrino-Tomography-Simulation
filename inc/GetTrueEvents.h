@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-TH2D*  AsimovTrueEvents(std::string modelname, int flvf, double Region[], int Bins[], double NnT);
+TH2D*  AsimovTrueEvents(std::string modelname,bool LLVP,int flvf, double Region[], int Bins[], double NnT);
 
 TH2D*  OscProbEarth(std::string modelname, int flvf, double Region[], int Bins[], double NnT);
 

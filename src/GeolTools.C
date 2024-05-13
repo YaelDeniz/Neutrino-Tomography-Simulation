@@ -79,7 +79,7 @@ std::vector< std::vector<double> > SortPREMdata( std::string PREM_MODEL = "prem_
 }
 
 
-void PREM3D( std::vector< std::vector<double> > PremMatrix, bool LLVP = false, double h_llvp = 1000, double drho_llvp = 1.03, double LLVP_angle = 45.0 )
+void PREM3D( std::vector< std::vector<double> > PremMatrix, bool LLVP, double h_llvp = 1000, double drho_llvp = 1.03, double LLVP_angle = 45.0 )
 {
 
    
@@ -168,6 +168,9 @@ void PREM3D( std::vector< std::vector<double> > PremMatrix, bool LLVP = false, d
 
        if ( LLVP )
        { 
+
+          std::cout << " LLVP IS ACTIVATED " << std::endl;
+          
           double local_rho = drho_llvp*density; //Fixed density
 
           double llvp_rmax = 3480.0 + h_llvp; //Fixed density
@@ -206,7 +209,7 @@ void PREM3D( std::vector< std::vector<double> > PremMatrix, bool LLVP = false, d
 }
 
 
-std::vector< std::vector<double> >  NuPATHS3D (std::string PREM_MODEL, bool LLVP )
+std::vector< std::vector<double> >  NuPATHS3D (std::string PREM_MODEL, double zen, double azi,  bool LLVP )
 {
    gSystem->Load("libGeom");
 
@@ -244,11 +247,11 @@ std::vector< std::vector<double> >  NuPATHS3D (std::string PREM_MODEL, bool LLVP
    //Calculate Paths inside the Earth
 
    //Direction of neutrino in spherical coordiates: https://mathworld.wolfram.com/SphericalCoordinates.html
-   double zen = 180.0; // zen (90,180]
+   //double zen = 180.0; // zen (90,180]
 
-   double pol = TMath::Pi()*( 1-(zen/180.0) ); // 0 to Pi
+   double pol = zen; // 0 to Pi
    
-   double azi = 0.0; // 0 to 2*Pi
+   //double azi = 0.0; // 0 to 2*Pi
    
    //Initial Position
    double x = sin(pol)*cos(azi);
