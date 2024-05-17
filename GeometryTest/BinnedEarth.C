@@ -4,17 +4,13 @@ void BinnedEarth()
 
 
   TCanvas *c1 = new TCanvas("c", "c",0,0,600,600);
-   
   new TGeoManager("simple1", "Simple geometry");
-
-
-
   TGeoMaterial *mat = new TGeoMaterial("Vacuum", 0.0, 0.0, 0.0);
   TGeoMedium *med = new TGeoMedium("VACUUM",1,mat);
   TGeoVolume *top = gGeoManager->MakeBox("TOP",med,100,100,100);
 
- TGeoMaterial *llsvpmat = new TGeoMaterial("EarthMaterial", 1,0.5,1.1*5.51);
- TGeoMedium *LLVP_M = new TGeoMedium("LLSVPComp",1,llsvpmat);
+  TGeoMaterial *llsvpmat = new TGeoMaterial("EarthMaterial", 1,0.5,1.1*5.51);
+  TGeoMedium *LLVP_M = new TGeoMedium("LLSVPComp",1,llsvpmat);
 
 
 
