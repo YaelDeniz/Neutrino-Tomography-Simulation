@@ -1,78 +1,124 @@
-//Hard Coded
+std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_15layers.txt" )
+{
+   std::string PREM_PATH = "/home/dehy0499/OscProb/PremTables/"+PREM_MODEL;
+
+   //--- open PREM model 
+   std::vector< std::vector<double> > PremMatrix; // Matrix data  form of Prem tables
+   std::vector<double> PremRow(4);               // [radius density z/a, layer ID]
+
+   // Variables for storing table rows
+   double radius, density, zoa, layer;
+
+   std::ifstream PREM_DATA;
+
+   PREM_DATA.open(PREM_PATH);
+
+      // Loop over table rows
+   while(PREM_DATA >> radius >> density >> zoa >> layer)
+   {
+
+      PremRow[0] = radius;
+      PremRow[1] = density;
+      PremRow[2] = zoa;
+      PremRow[3] = layer;
+
+      PremMatrix.push_back(PremRow);
+    }
+
+   return PremMatrix;
+
+}
+
+
+
+
 void BinnedEarth()
 {
+  //Read Prem Data
 
+  gSystem->Load("libGeom");
+
+  std::vector< std::vector<double> > PathMatrix;
+  
+  std::vector<double> PathData(4); // Row [L, rho, z/a, layer]
+
+  std::vector< std::vector<double> > PremMatrix = GetPremData(); // Sort PREM model into a readable matrix
+
+  double rEarth = PremMatrix.back()[0];
+
+  
 
   TCanvas *c1 = new TCanvas("c", "c",0,0,600,600);
+ 
   new TGeoManager("simple1", "Simple geometry");
-  TGeoMaterial *mat = new TGeoMaterial("Vacuum", 0.0, 0.0, 0.0);
-  TGeoMedium *med = new TGeoMedium("VACUUM",1,mat);
-  TGeoVolume *top = gGeoManager->MakeBox("TOP",med,100,100,100);
 
-  TGeoMaterial *llsvpmat = new TGeoMaterial("EarthMaterial", 1,0.5,1.1*5.51);
-  TGeoMedium *LLVP_M = new TGeoMedium("LLSVPComp",1,llsvpmat);
-
-
+  //Define world
+  TGeoMaterial *VAC = new TGeoMaterial("Vacuum", 0.0, 0.0, 0.0);
+  
+  TGeoMedium *vac = new TGeoMedium("VACUUM",1,VAC);
+  
+  TGeoVolume *top = gGeoManager->MakeBox("TOP",vac,rEarth+10,rEarth+10,rEarth+10);
 
   gGeoManager->SetTopVolume(top);
 
-
+  //Create Earth
   std::vector<TGeoMaterial*> MAT; //
   std::vector<TGeoMedium*>  MED; //
   std::vector<TGeoVolume*> LAYER; //
 
-  MAT.push_back(new TGeoMaterial("EarthMaterial", 1,0.5,5.51) );
-  MED.push_back(new TGeoMedium("AvgMaterial",1,MAT[0]));
+  double rmin, rmax, density, zoa, layer;
 
-  LAYER.push_back( gGeoManager->MakeSphere("INNERCORE",MED[0], 0,40,0,180,0,360) );//0
+  for (int i = 0; i < PremMatrix.size(); ++i)
+   {
+      
+      if (i==0)
+      {
+        rmin = 0;
+      }
 
-  LAYER.push_back( gGeoManager->MakeSphere("OUTERCORE",MED[0], 40,50,0,180,0,360) );//1
+      else
+      {
 
-  LAYER.push_back( gGeoManager->MakeSphere("LOWERMANTLE",MED[0], 50,60,0,180,0,360) );//2
+      rmin = PremMatrix[i-1][0];
+      
+      }
 
-   //Adding LLSVP
-  TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);//Rotation
+      rmax = PremMatrix[i][0];
 
-  TGeoVolume *LLVP = gGeoManager -> MakeSphere("LLVP", LLVP_M , 50, 60 , 0,45,0,360 );
+      density = PremMatrix[i][1]; 
+      
+      zoa = PremMatrix[i][2];
+      
+      layer = PremMatrix[i][3];
+
+      //Generate Names
+      char integer_string[32];
+      sprintf(integer_string, "%d", i+1);
+
+      char material_string[64]="Material";
+      char medium_string[64]="Medium";
+      char layer_string[64]="Layer";
+
+      strcat(material_string, integer_string);
+      strcat(medium_string, integer_string);
+      strcat(layer_string, integer_string);
+      
+
+      const char *MatName = material_string;
+      const char *MedName = medium_string;
+      const char *LayerName= layer_string;
+
+      
+
+      MAT.push_back( new TGeoMaterial(MatName,1.0 ,zoa,density) );
+       
+      MED.push_back( new TGeoMedium(MedName,1, MAT[i]) );
+
+      LAYER.push_back( gGeoManager->MakeSphere(LayerName,MED[i], rmin,rmax,0,180,0,360) );//0
 
   
-
-  LLVP ->SetLineColor(kGreen);
-           
-  LAYER[2]->AddNode(LLVP,1,rot1);
-  
-
-  LAYER.push_back( gGeoManager->MakeSphere("UPPERMANTLE",MED[0], 60,70,0,180,0,360) );//3
-
-  LAYER.push_back( gGeoManager->MakeSphere("CRUST",MED[0], 70,80,0,180,0,360) );//4
-  LAYER.push_back( gGeoManager->MakeSphere("ATMOSPHERE",MED[0], 80,90,0,180,0,360) );//5
-  
-  //LAYER[0] ->SetLineColor(kRed);
-  //LAYER[0] ->SetVisibility(kFALSE);
-  LAYER[2] ->SetLineColor(kBlue);
-  
-  
-  LAYER[0] ->SetVisibility(kFALSE);
-  //LAYER[1] ->SetVisibility(kFALSE);
-  //LAYER[2] ->SetVisibility(kFALSE);
-  LAYER[3] ->SetVisibility(kFALSE);
-  LAYER[4] ->SetVisibility(kFALSE);
-  //LAYER[5] ->SetVisibility(kFALSE);
-  
-
-  //LAYER[4] ->SetLineColor(kGreen);
-
-
-
-  //Create World
-  top->AddNode(LAYER[0],1);
-  top->AddNode(LAYER[1],1);
-  top->AddNode(LAYER[2],1);
-  top->AddNode(LAYER[3],1);
-  top->AddNode(LAYER[4],1);
-  top->AddNode(LAYER[5],1);
-
-
+      top->AddNode(LAYER[i],1);
+  }
 
   gGeoManager->CloseGeometry();
   gGeoManager->SetTopVisible(); // the TOP is invisible
@@ -81,21 +127,21 @@ void BinnedEarth()
   TView *view = gPad->GetView();
   view->ShowAxis();
  
- // Tracking----------------------------------------------------------------------------------------------------------------------------------------
+  // Tracking----------------------------------------------------------------------------------------------------------------------------------------
 
   //Calculate Paths inside the Earth
 
    //Direction of neutrino in spherical coordiates: https://mathworld.wolfram.com/SphericalCoordinates.html
-   double zen = 143.0; // zen (90,180]
+  double zen = 180.0; // zen (90,180]
 
-   double th = TMath::Pi()*( 1-(zen/180.0) ); // 0 to Pi
+  double th = TMath::Pi()*( 1-(zen/180.0) ); // 0 to Pi
    
-   double phi = 0.0; // 0 to 2*Pi
+  double phi = 0.0; // 0 to 2*Pi
    
    //Initial Position
-   double xn = sin(th)*cos(phi);
-   double yn = sin(th)*sin(phi);
-   double zn = cos(th);
+  double xn = sin(th)*cos(phi);
+  double yn = sin(th)*sin(phi);
+  double zn = cos(th);
 
    //double n = sqrt(x*x + y*y + z*z);
 
@@ -110,38 +156,38 @@ void BinnedEarth()
 
    //Initial Point must be in the outermost layer -> Intersection Line spehere
 
-   ROOT::Math::SVector<double, 3> u(xn,yn,zn); // Direction of neutrino
-   ROOT::Math::SVector<double, 3> o(0.0,0.0,-90.0); // Origin of the line
-   ROOT::Math::SVector<double, 3> cc(0,0,0); // Origin of the Sphere 
+   
+  double r = rEarth;
 
-   double r = 90;
+  ROOT::Math::SVector<double, 3> u(xn,yn,zn); // Direction of neutrino
+  ROOT::Math::SVector<double, 3> o(0.0,0.0,-r); // Origin of the line
+  ROOT::Math::SVector<double, 3> cc(0,0,0); // Origin of the Sphere 
 
+   
 
+  double a = ROOT::Math::Dot( u, u);
+  double b = 2*ROOT::Math::Dot( u, o - cc);
+  double c = ROOT::Math::Dot( o-cc, o-cc) - r*r ;
+  double d1 = (-b+sqrt(b*b -4*a*c))/(2*a);
+  double d2 = (-b-sqrt(b*b -4*a*c))/(2*a);
 
- 
-   double a = ROOT::Math::Dot( u, u);
-   double b = 2*ROOT::Math::Dot( u, o - cc);
-   double c = ROOT::Math::Dot( o-cc, o-cc) - r*r ;
-   double d1 = (-b+sqrt(b*b -4*a*c))/(2*a);
-   double d2 = (-b-sqrt(b*b -4*a*c))/(2*a);
+  std::cout << " d1 " << d1 << " d2 " << d2 << std::endl;
 
-   std::cout << " d1 " << d1 << " d2 " << d2 << std::endl;
-
-   TPolyLine3D *l1 = new TPolyLine3D();
-   TPolyLine3D *l2 = new TPolyLine3D();
-   l1->SetPoint( 0 , 0.0, 0.0, -90);
-   l1->SetPoint( 1 , o[0]+d1*u[0],o[1]+d1*u[1],o[2]+d1*u[2]);
+  TPolyLine3D *l1 = new TPolyLine3D();
+  TPolyLine3D *l2 = new TPolyLine3D();
+  l1->SetPoint( 0 , 0.0, 0.0, -r);
+  l1->SetPoint( 1 , o[0]+d1*u[0],o[1]+d1*u[1],o[2]+d1*u[2]);
    //l->SetPoint( 1 , o[0]-0.5*d1*u[0],o[0]-0.5*d1*u[0],o[0]-0.5*d1*u[0]);
   
    
    
 
-   gGeoManager->InitTrack(o[0]+d1*u[0], o[1]+d1*u[1], o[2]+d1*u[2], -u[0] , -u[1], -u[2]); // d*u is the point in the sphere
+  gGeoManager->InitTrack(o[0]+d1*u[0], o[1]+d1*u[1], o[2]+d1*u[2], -u[0] , -u[1], -u[2]); // d*u is the point in the sphere
 
-   int i = 0;
+  int i = 0;
 
-   while (!gGeoManager->IsOutside ())
-   {  
+  while (!gGeoManager->IsOutside ())
+  {  
 
          //gGeoManager->FindNextBoundaryAndStep(); // Calculate distance to the next boundary and Evolve system.
       
@@ -172,7 +218,7 @@ void BinnedEarth()
          gGeoManager->FindNextBoundaryAndStep(); // Calculate distance to the next boundary and Evolve system.
          
          i += 1;
-   }
+  }
 
    l1->SetLineColor(6);
    l1->SetLineWidth(3);
