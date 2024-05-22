@@ -229,7 +229,7 @@ void BinnedEarth()
   //Calculate Paths inside the Earth
 
    //Direction of neutrino in spherical coordiates: https://mathworld.wolfram.com/SphericalCoordinates.html
-  double zen = 140.0; // zenith angle respect to the detector location in degrees (90,180]
+  double zen = 135.0; // zenith angle respect to the detector location in degrees (90,180]
 
   double azi = 0.0;  //Azimuthal angle respect to the detector location in degrees [0,360]
 
