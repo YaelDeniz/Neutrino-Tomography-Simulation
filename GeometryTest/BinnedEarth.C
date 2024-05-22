@@ -389,13 +389,13 @@ void BinnedEarth()
 
   double Ltot = -2.0*6371*cos(th);
 
-  for (int i = 1; i < EarthPath.size(); ++i)
+  for (int i = 0; i < EarthPath.size(); ++i)
   {
-  
+    TestL = TestL + EarthPath[i+1][0];
 
     std::cout << i << " "  << TestL << " " << rPREM - TestL << " "  << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << EarthPath[i][3] <<  " " << LabelLayer(abs (rPREM - TestL) ) << std::endl;
     
-    TestL = TestL + EarthPath[i][0];
+    
   }
 
 /*
