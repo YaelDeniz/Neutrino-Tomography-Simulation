@@ -405,7 +405,7 @@ void BinnedEarth()
 
   double Ltot = -2.0*6371*cos(th);
 
-  for (int i = 1; i < EarthPath.size(); ++i)
+  for (int i = 0; i < EarthPath.size(); ++i)
   {
     //TestL = TestL + EarthPath[i][0];
 
