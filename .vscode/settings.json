@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "GitHubTestFile.C": "cpp",
-        "BinnedEarth.C": "cpp"
+        "BinnedEarth.C": "cpp",
+        "AsimovDataTrue.C": "cpp"
     }
 }
