@@ -86,7 +86,7 @@ void BinnedEarth()
   //Defining Vacuum Medium
   TGeoMaterial *VAC = new TGeoMaterial("Vacuum", 0.0, 0.0, 0.0);
   
-  TGeoMedium *vac = new TGeoMedium("VACUUM",1,VAC);
+  TGeoMedium *vac = new TGeoMedium("VACUUM",99,VAC);
   
   TGeoVolume *top = gGeoManager->MakeBox("TOP",vac,rPREM,rPREM,rPREM);
 
