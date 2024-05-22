@@ -1,4 +1,4 @@
-std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_15layers.txt" )
+std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "test.txt" )
 {
    std::string PREM_PATH = "/home/dehy0499/OscProb/PremTables/"+PREM_MODEL;
 
@@ -144,10 +144,10 @@ void BinnedEarth()
       LAYER[i]->SetVisibility(kFALSE);
   }
  
-
+  /*
   //Definition LLVPS
 
-  /*In this version of the Code LLVPs are just segmets of SPHERE inside specific layers in the Lower Mantle*/
+  // In this version of the Code LLVPs are just segmets of SPHERE inside specific layers in the Lower Mantle
 
   std::vector<TGeoMaterial*> LLVPMat; //Vector to define material for each LLVP segment ( A X% anomaly in local Density or Z/A)
   std::vector<TGeoMedium*> LLVPMed;   //Vector to define medium for each LLVP segment
@@ -201,7 +201,9 @@ void BinnedEarth()
     LAYER[index]->AddNode(LLVPLAYER[i],1,rot1);
 
   }
-  
+ 
+  */
+
   //Add Earth Layers to TOP Volume
 
   for (int i = 0; i < PremMatrix.size(); ++i)
