@@ -301,7 +301,11 @@ void BinnedEarth()
   //Neutrino Propagation inside the Earth
   while (!gGeoManager->IsOutside ())
   {  
-
+        if (cvol->GetMedium()->GetId() == 99)
+        {
+          std::cout << " OUTSIDE" << std::endl;
+        }
+        
          std::cout << "Starting loop" << std::endl;
          
          //gGeoManager->FindNextBoundaryAndStep(); // Calculate distance to the next boundary and Evolve system.
