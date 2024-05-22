@@ -311,6 +311,21 @@ void BinnedEarth()
 
          const Double_t *cpoint = gGeoManager->GetCurrentPoint(); // Current nuetrino Position
 
+         Dx2 = (cpoint[0]-Det[0])*(cpoint[0]-Det[0]);
+         Dy2 = (cpoint[1]-Det[1])*(cpoint[1]-Det[1]);
+         Dy2 = (cpoint[2]-Det[2])*(cpoint[2]-Det[2]);
+
+         Dnorm = round(sqrt( Dx2 + Dy2 + Dz2 ));
+
+
+         if (Dnorm == 0 )
+         {
+
+          std::cout << " At detector" << std::endl;
+         
+         }
+         
+
          const char *path = gGeoManager->GetPath();
 
          TGeoVolume *cvol = gGeoManager->GetCurrentVolume();
@@ -333,7 +348,7 @@ void BinnedEarth()
         if (cvol->GetMedium()->GetId() == 99)
         {
 
-          std::cout << " OUTSIDE ************************************ " << std::endl;
+          //std::cout << " OUTSIDE ************************************ " << std::endl;
           continue;
 
         }
