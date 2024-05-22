@@ -327,7 +327,7 @@ void BinnedEarth()
 
          EarthPath.push_back({Li, cmat->GetDensity(), cmat->GetZ(),R_i}); //Store Path information [Baseline segment, Density, Z/A, R_i]
         
-         EarthPathId.push_back(LabelLayer(R_i)); // Store layer ID
+         EarthPathId.push_back(LabelLayer(rPREM - sumL)); // Store layer ID
 
          sumL = sumL + Li; //Track Total Segment (Max = -2*R_earth*cos(zen))
 
@@ -387,7 +387,7 @@ void BinnedEarth()
 
   double TestL = 0  ;
 
-  double Ltot = -2.0*rPREM*cos(th);
+  double Ltot = -2.0*6371*cos(th);
 
   for (int i = 1; i < EarthPath.size(); ++i)
   {
