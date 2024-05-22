@@ -301,10 +301,7 @@ void BinnedEarth()
   //Neutrino Propagation inside the Earth
   while (!gGeoManager->IsOutside ())
   {  
-        if (cvol->GetMedium()->GetId() == 99)
-        {
-          std::cout << " OUTSIDE" << std::endl;
-        }
+       
         
          std::cout << "Starting loop" << std::endl;
          
@@ -319,6 +316,11 @@ void BinnedEarth()
          TGeoVolume *cvol = gGeoManager->GetCurrentVolume();
 
          TGeoMaterial *cmat = cvol->GetMedium()->GetMaterial(); //Material of the current Boundary
+
+          if (cvol->GetMedium()->GetId() == 99)
+        {
+          std::cout << " OUTSIDE ************************************ " << std::endl;
+        }
             
 
          //Double_t Li = gGeoManager->GetStep(); //Baseline Segement
