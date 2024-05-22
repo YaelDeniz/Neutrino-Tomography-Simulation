@@ -1,4 +1,4 @@
-std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_44layers.txt" )
+std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_15layers.txt" )
 {
    std::string PREM_PATH = "/home/dehy0499/OscProb/PremTables/"+PREM_MODEL;
 
@@ -72,7 +72,7 @@ void BinnedEarth()
 
 
 
-  double rEarth = PremMatrix.back()[0];
+  double rPREM = PremMatrix.back()[0];
 
   std::vector< std::vector<double> > EarthPath;
   std::vector< int > EarthPathId;
@@ -90,7 +90,8 @@ void BinnedEarth()
   
   TGeoMedium *vac = new TGeoMedium("VACUUM",1,VAC);
   
-  TGeoVolume *top = gGeoManager->MakeBox("TOP",vac,rEarth+10,rEarth+10,rEarth+10);
+  TGeoVolume *top = gGeoManager->MakeBox("TOP",vac,rPREM,rPREM,rPREM);
+  //TGeoVolume *top = gGeoManager->MakeSphere("TOP",vac,0,rPREM+10,0.0,180.0,0.0,360.0);
 
   gGeoManager->SetTopVolume(top);
 
@@ -153,10 +154,13 @@ void BinnedEarth()
   
       //top->AddNode(LAYER[i],1);
   }
+ 
+ 
+  LAYER[5]->SetVisibility(kTRUE);
 
-  LAYER[23]->SetVisibility(kTRUE);
-  //LAYER[35]->SetVisibility(kTRUE);
-  //LAYER[41]->SetVisibility(kTRUE);
+ 
+
+  LAYER[14]->SetVisibility(kTRUE);
 
 
 
@@ -168,7 +172,7 @@ void BinnedEarth()
   
   TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);//Rotation
 
-  int LLVPIdLayers[3] = {25,26,27}; //Layers to be modified
+  int LLVPIdLayers[1] = {7}; //Layers to be modified
 
   int LLVPint = sizeof(LLVPIdLayers) / sizeof(int);
 
@@ -202,7 +206,7 @@ void BinnedEarth()
   
     LLVPMed.push_back( new TGeoMedium(llvpMedName,1,LLVPMat[i]) );
 
-    LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[i] ,LLVPMatrix[index-1][0],LLVPMatrix[index][0] , 0,(3-i)*angle,0,360 ) );
+    LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[i] ,LLVPMatrix[index-1][0],LLVPMatrix[index][0] , 0,(LLVPint-i)*angle,0,360 ) );
 
     LLVPLAYER[i]->SetLineColor(kGreen);
 
@@ -229,7 +233,7 @@ void BinnedEarth()
   //Calculate Paths inside the Earth
 
    //Direction of neutrino in spherical coordiates: https://mathworld.wolfram.com/SphericalCoordinates.html
-  double zen = 145.0; // zen (90,180]
+  double zen = 180.0; // zen (90,180]
 
   double azi = 0.0;
 
@@ -237,18 +241,21 @@ void BinnedEarth()
 
   double phi = TMath::Pi()*(azi)/180.0; // 0 to 2*Pi
    
-  //Initial Position/ Direction Cosines
-  double xn = sin(th)*cos(phi);
-  double yn = sin(th)*sin(phi);
-  double zn = cos(th);
    
-  double r = rEarth;
+  double r = rPREM;
 
-  //double DETR = 6368;
-  //double r = DETR;
+  double Det[3]= {0.0,0.0,-6371.0}; //Detector location
+  
+  //Initial Position/ Direction Cosines
+  double x = sin(th)*cos(phi);
+  double y = sin(th)*sin(phi);
+  double z = cos(th);
 
-  ROOT::Math::SVector<double, 3> u(xn,yn,zn); // Direction of neutrino
-  ROOT::Math::SVector<double, 3> o(0.0,0.0,-r); // Origin of the line
+  double norm = sqrt(x*x + y*y + z*z);
+
+
+  ROOT::Math::SVector<double, 3> u(x/norm, y/norm, z/norm); // Direction of neutrino
+  ROOT::Math::SVector<double, 3> o(Det[0], Det[1], Det[2]); // Origin of the line
   ROOT::Math::SVector<double, 3> cc(0,0,0); // Origin of the Sphere 
  
 
@@ -258,9 +265,9 @@ void BinnedEarth()
   double d1 = (-b+sqrt(b*b -4*a*c))/(2*a);
   double d2 = (-b-sqrt(b*b -4*a*c))/(2*a);
 
-  std::cout << " d1 " << d1 << " d2 " << d2 << std::endl;
+  
 
-  TPolyLine3D *l1 = new TPolyLine3D();
+  TPolyMarker3D *l1 = new TPolyMarker3D(2,2);
   TPolyLine3D *l2 = new TPolyLine3D();
    //l->SetPoint( 1 , o[0]-0.5*d1*u[0],o[0]-0.5*d1*u[0],o[0]-0.5*d1*u[0]);
 
@@ -284,14 +291,23 @@ void BinnedEarth()
 
   int i = 0;
 
+  double Dx2, Dy2, Dz2, Dnorm;
+
+  double sumL = 0;
+
   while (!gGeoManager->IsOutside ())
   {  
+
+        std::cout << "Starting loop" << std::endl;
+         
+
 
          //gGeoManager->FindNextBoundaryAndStep(); // Calculate distance to the next boundary and Evolve system.
       
          int nodeID= gGeoManager->GetCurrentNode()->GetIndex();
 
          const Double_t *cpoint = gGeoManager->GetCurrentPoint();
+
 
          const char *path = gGeoManager->GetPath();
 
@@ -300,43 +316,128 @@ void BinnedEarth()
          TGeoMaterial *cmat = cvol->GetMedium()->GetMaterial(); //Material of the current Boundary
             
 
-         Double_t Li = gGeoManager->GetStep(); //Baseline Segement
+         //Double_t Li = gGeoManager->GetStep(); //Baseline Segement
 
          Double_t safety = gGeoManager->GetSafeDistance(); //Distance to the next boundary/Neutrino Baseline
 
          double R_i = sqrt(cpoint[0]*cpoint[0]+ cpoint[1]*cpoint[1] + cpoint[2]*cpoint[2]);
          
 
+         
+         l2->SetPoint( i , cpoint[0],cpoint[1],cpoint[2]);
+
+         gGeoManager->FindNextBoundaryAndStep(); // Calculate distance to the next boundary and Evolve system.
+          
+         Double_t Li = gGeoManager->GetStep(); //Baseline Segement
+
+
+
          std::cout << "Current path is: " << path << " r "  << R_i << "id: " << LabelLayer(R_i) <<  std::endl;
 
          std::cout << "L " << Li  << " rho "  << cmat->GetDensity() << " zoa " << cmat->GetZ() << " "<< cmat->GetA() << " " << cvol->GetMedium()->GetId() << std::endl;
 
          std::cout << std::endl; 
-         
-         l2->SetPoint( i , cpoint[0],cpoint[1],cpoint[2]);
 
-         gGeoManager->FindNextBoundaryAndStep(); // Calculate distance to the next boundary and Evolve system.
-         
          i += 1;
 
         
-         EarthPath.push_back({Li, cmat->GetDensity(), cmat->GetZ()});
+         EarthPath.push_back({Li, cmat->GetDensity(), cmat->GetZ(),R_i});
          EarthPathId.push_back(LabelLayer(R_i));
+
+         Dx2 = (cpoint[0]-o[0])*(cpoint[0]-o[0]);
+         Dy2 = (cpoint[1]-o[1])*(cpoint[1]-o[1]);
+         Dz2 = (cpoint[2]-o[2])*(cpoint[2]-o[2]);
+         
+         Dnorm = round(sqrt(Dx2 + Dy2 + Dz2));
+
+         std::cout << Dnorm << " ******|***** End loop" <<std::endl;
+
+
+
+
+         //stop at detetor
+         /*
+         if ( Dnorm < 0.1  )
+         {
+           break;
+         }
+         */
+
+         
   }
 
-
-  for (int i = 0; i < EarthPath.size(); ++i)
-  {
-    std::cout << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << EarthPathId[i] << std::endl;
-  }
-
-   l1->SetLineColor(6);
-   l1->SetLineWidth(3);
+    l1->SetMarkerColor(6);
+   l1->SetMarkerSize(3);
    l2->SetLineColor(14);
    l2->SetLineWidth(3);
    
    l1->Draw("same");
    l2->Draw("same");
+
+  //DrawPrem
+
+  TCanvas *c2 = new TCanvas("c2", "c2",0,0,600,600);
+
+
+
+
+  for (int i = 0; i < EarthPath.size(); ++i)
+  {
+    std::cout << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << EarthPath[i][3] << " " << EarthPathId[i] << std::endl;
+  }
+
+
+// Number of layers
+  int nlayers = EarthPath.size();
+
+  // Create a TGraph to plot
+  TGraph* gr = new TGraph(nlayers);
+  TGraph* prem = new TGraph(PremMatrix.size());
+
+  // Loop over paths
+  for(int i=1; i<16; i++){
+    gr->SetPoint(i, EarthPath[i][3], EarthPath[i][1]);
+
+    std::cout << EarthPath[i][3] << " " << EarthPath[i][1] << std::endl; 
+   
+  }
+
+  for(int i=0; i < PremMatrix.size(); i++){
+   
+    prem->SetPoint((PremMatrix.size()-1)-i, PremMatrix[i][0], PremMatrix[i][1]);
+
+    std::cout << " * " <<PremMatrix[i][0] << " " << PremMatrix[i][1] << std::endl; 
+  }
+ 
+  gr->SetLineColor(kRed);
+  
+  gr->Draw("C*");
+
+
+  prem->SetLineWidth(3);
+  prem->SetMarkerStyle(21);
+  prem->SetLineColor(6);
+  prem->Draw("C");
+
+ 
+
+
+
+
+
+
+  ////
+
+
+
+   //Geometrical display
+   std::cout << " d1 " << d1 << " d2 " << d2 << std::endl;
+   std::cout << " Detector: "  << Det[0] << " " << Det[1] << " " << Det[2] << std::endl;
+   std::cout << " Neutrino: "  << xo << " " << yo << " " << zo << std::endl;
+   std::cout << " Neutrino: "  << sqrt(xo*xo +yo*yo + zo*zo) << std::endl;
+
+
+ 
 
 
 }
