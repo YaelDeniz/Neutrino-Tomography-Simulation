@@ -322,6 +322,7 @@ void BinnedEarth()
          {
 
           std::cout << " At detector" << std::endl;
+          break;
          
          }
          
