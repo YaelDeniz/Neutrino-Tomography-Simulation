@@ -160,11 +160,7 @@ void BinnedEarth()
   int LLVPint = sizeof(LLVPIdLayers) / sizeof(int);
 
   double gamma = 45.0/LLVPint; // Angular width of each LLVP segment
-
-  double drho = 1.03; // Perctentage anomaly in Density
-
-  double dzoa = 1.00; //Percentage anomaly in Z/A 
-
+  
   double drho, dzoa, gammai, rminLLVP, rmaxLLVP;
  
   for (int i = 0; i < LLVPint; ++i)
@@ -190,11 +186,10 @@ void BinnedEarth()
     const char *llvpLayerName= llvplayer_string;
 
     rminLLVP = LLVPMatrix[index-1][0];
-    rmaxLLVP = LLVPMatrix[index][0]
-    drho = (1.03)*LLVPMatrix[index][1]
-    dzoa = (1.00)*LLVPMatrix[index][2]
-    gammai =(LLVPint - i)*gamma
-     
+    rmaxLLVP = LLVPMatrix[index][0];
+    drho = (1.03)*LLVPMatrix[index][1];
+    dzoa = (1.00)*LLVPMatrix[index][2];
+    gammai =(LLVPint - i)*gamma;
     LLVPMat.push_back( new TGeoMaterial(llvpMatName, 1, dzoa, drho) ); // Create LLVP material
   
     LLVPMed.push_back( new TGeoMedium(llvpMedName,1,LLVPMat[i]) ); // Create LLVP medium
