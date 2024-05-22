@@ -385,10 +385,16 @@ void BinnedEarth()
 
 
 
+  double TestL = 0  ;
 
-  for (int i = 0; i < EarthPath.size(); ++i)
+  double Ltot = -2.0*rPrem*cos(th);
+  
+  for (int i = 1; i < EarthPath.size(); ++i)
   {
-    std::cout << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << EarthPath[i][3] << " " << EarthPathId[i] << std::endl;
+     
+    std::cout << Ltot << " "<< TestL << " " << rPREM - TestL << " "  << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << EarthPath[i][3] << " " << EarthPathId[i] << std::endl;
+    
+    TestL = TestL + EarthPath[i][0];
   }
 
 /*
