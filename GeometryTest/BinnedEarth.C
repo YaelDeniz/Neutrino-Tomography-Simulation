@@ -446,7 +446,7 @@ void BinnedEarth()
 
 
    //Geometrical display
-   std::cout<< " " std::endl;
+   std::cout<< " " << std::endl;
    std::cout << "Detector Geometrical settings  d1 " << d1 << " d2 " << d2 << std::endl;
    std::cout << " Detector: "  << Det[0] << " " << Det[1] << " " << Det[2] << std::endl;
    std::cout << " Neutrino: "  << xo << " " << yo << " " << zo << std::endl;
