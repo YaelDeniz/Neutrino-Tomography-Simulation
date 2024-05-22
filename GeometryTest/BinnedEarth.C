@@ -318,7 +318,7 @@ void BinnedEarth()
          Dnorm = round(sqrt( Dx2 + Dy2 + Dz2 ));
 
 
-         if (Dnorm == 0 )
+         if (Dnorm <= 0.0 )
          {
 
           std::cout << " At detector" << std::endl;
