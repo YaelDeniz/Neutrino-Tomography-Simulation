@@ -1,4 +1,4 @@
-std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "TestModel.txt" )
+std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_15layers.txt" )
 {
    std::string PREM_PATH = "/home/dehy0499/OscProb/PremTables/"+PREM_MODEL;
 
