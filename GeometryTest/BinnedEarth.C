@@ -392,7 +392,7 @@ void BinnedEarth()
   for (int i = 1; i < EarthPath.size(); ++i)
   {
      
-    std::cout << Ltot << " "<< TestL << " " << rPREM - TestL << " "  << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << EarthPath[i][3] <<  " " << LabelLayer(rPREM - TestL) << std::endl;
+    std::cout << Ltot << " "<< TestL << " " << rPREM - TestL << " "  << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << EarthPath[i][3] <<  " " << LabelLayer(abs (rPREM - TestL) ) << std::endl;
     
     TestL = TestL + EarthPath[i][0];
   }
