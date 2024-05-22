@@ -317,10 +317,7 @@ void BinnedEarth()
 
          TGeoMaterial *cmat = cvol->GetMedium()->GetMaterial(); //Material of the current Boundary
 
-          if (cvol->GetMedium()->GetId() == 99)
-        {
-          std::cout << " OUTSIDE ************************************ " << std::endl;
-        }
+
             
 
          //Double_t Li = gGeoManager->GetStep(); //Baseline Segement
@@ -332,6 +329,15 @@ void BinnedEarth()
          Double_t Li = gGeoManager->GetStep(); //Baseline Segement
 
          double R_i = sqrt(cpoint[0]*cpoint[0]+ cpoint[1]*cpoint[1] + cpoint[2]*cpoint[2]); //Current Radius
+
+        if (cvol->GetMedium()->GetId() == 99)
+        {
+
+          std::cout << " OUTSIDE ************************************ " << std::endl;
+          continue;
+
+        }
+
 
          EarthPath.push_back({Li, cmat->GetDensity(), cmat->GetZ(),R_i}); //Store Path information [Baseline segment, Density, Z/A, R_i]
         
@@ -345,6 +351,8 @@ void BinnedEarth()
 
 
         //Path Infromation 
+
+        
 
          std::cout << "Current path is: " << path << " Layer radius: "  << R_i << " id: " << LabelLayer(R_i) <<  std::endl;
 
