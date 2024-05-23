@@ -53,15 +53,15 @@ int LabelLayer (double radius)
 
 
 
-void BinnedEarth()
+std::vector<std::vector<double>> CreateEarth3DPath(double zen = 180 , double azi = 0, std::string MODEL = "prem_15layers.txt" )
 {
   //Read Prem Data
 
   gSystem->Load("libGeom");
 
-  std::vector< std::vector<double> > PremMatrix = GetPremData(); // Sort PREM model into a readable matrix
+  std::vector< std::vector<double> > PremMatrix = GetPremData(MODEL); // Sort PREM model into a readable matrix
 
-  std::vector< std::vector<double> > LLVPMatrix = GetPremData(); // A Copy of PREM model matrix to construct LLVPs
+  std::vector< std::vector<double> > LLVPMatrix = GetPremData(MODEL); // A Copy of PREM model matrix to construct LLVPs
 
   
 
@@ -231,9 +231,9 @@ void BinnedEarth()
   //Calculate Paths inside the Earth
 
    //Direction of neutrino in spherical coordiates: https://mathworld.wolfram.com/SphericalCoordinates.html
-  double zen = 180.0; // zenith angle respect to the detector location in degrees (90,180]
+ // double zen = 180.0; // zenith angle respect to the detector location in degrees (90,180]
 
-  double azi = 0.0;  //Azimuthal angle respect to the detector location in degrees [0,360]
+ // double azi = 0.0;  //Azimuthal angle respect to the detector location in degrees [0,360]
 
   double th = TMath::Pi()*( 1-(zen/180.0) ); //Polar angle in spherical coordinates in rads [pi/2, pi] 
 
@@ -415,7 +415,21 @@ void BinnedEarth()
 
   //TCanvas *c2 = new TCanvas("c2", "c2",0,0,600,600);
 
+     //Geometrical display
+   std::cout<< " " << std::endl;
+   std::cout << "Detector Geometrical settings  d1 " << d1 << " d2 " << d2 << std::endl;
+   std::cout << " Detector: "  << Det[0] << " " << Det[1] << " " << Det[2] << std::endl;
+   std::cout << " Neutrino: "  << xo << " " << yo << " " << zo << std::endl;
+   std::cout << " Neutrino: "  << sqrt(xo*xo +yo*yo + zo*zo) << std::endl;
 
+   return EarthPath;
+}
+
+
+void BinnedEarth()
+{
+
+  std::vector<std::vector<double>> EarthPath CreateEarth3DPath(double zen = 180 , double azi = 0, std::string MODEL = "prem_15layers.txt" )
 
   double TestL = 0  ;
 
@@ -475,11 +489,6 @@ void BinnedEarth()
 
 
 
-   //Geometrical display
-   std::cout<< " " << std::endl;
-   std::cout << "Detector Geometrical settings  d1 " << d1 << " d2 " << d2 << std::endl;
-   std::cout << " Detector: "  << Det[0] << " " << Det[1] << " " << Det[2] << std::endl;
-   std::cout << " Neutrino: "  << xo << " " << yo << " " << zo << std::endl;
-   std::cout << " Neutrino: "  << sqrt(xo*xo +yo*yo + zo*zo) << std::endl;
+
 
 }
