@@ -47,13 +47,40 @@ int LabelLayer (double radius)
 
 }
 
+class 3DEarthModel
+{
+
+  public:
+
+  std::string ModelName;
+  double zen;
+  double azi;
+  // std::vector< std::vector < double > > TheNuPath;
+
+  void SetModel(std::string model)
+  {
+    ModelName = model;
+  } 
+  
+  void SetDirection(double zenith, double azimuth)
+  {
+    zen = zenith;
+    azi = azimuth;
+  } 
+
+  std::vector<std::vector<double>> CreateEarth3DPath ( );
+
+
+
+}
 
 
 
 
 
 
-std::vector<std::vector<double>> CreateEarth3DPath(double zen = 180 , double azi = 0, std::string MODEL = "prem_15layers.txt" )
+
+std::vector<std::vector<double>> 3DEarthModel:CreateEarth3DPath( )
 {
   //Read Prem Data
 
@@ -426,6 +453,8 @@ std::vector<std::vector<double>> CreateEarth3DPath(double zen = 180 , double azi
 }
 
 
+
+
 void BinnedEarth()
 {
 
@@ -437,57 +466,12 @@ void BinnedEarth()
 
   for (int i = 0; i < EarthPath.size(); ++i)
   {
-    //TestL = TestL + EarthPath[i][0];
 
-    //std::cout << i << " "  << TestL << " " << rPREM - TestL << " "  << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << EarthPath[i][3] << " " << LabelLayer(EarthPath[i][3]) <<  " | " << LabelLayer(abs (rPREM - TestL) ) << std::endl;
-    //TestL = TestL + EarthPath[i][0];
 
     std::cout << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << std::endl;
     //TestL = TestL + EarthPath[i][0];
     
   }
-
-/*
-// Number of layers
-  int nlayers = EarthPath.size();
-
-  // Create a TGraph to plot
-  TGraph* gr = new TGraph(nlayers);
-  TGraph* prem = new TGraph(PremMatrix.size());
-
-  // Loop over paths
-  for(int i=1; i<16; i++){
-    gr->SetPoint(i, EarthPath[i][3], EarthPath[i][1]);
-
-    std::cout << EarthPath[i][3] << " " << EarthPath[i][1] << std::endl; 
-   
-  }
-
-  for(int i=0; i < PremMatrix.size(); i++){
-   
-    prem->SetPoint((PremMatrix.size()-1)-i, PremMatrix[i][0], PremMatrix[i][1]);
-
-    std::cout << " * " <<PremMatrix[i][0] << " " << PremMatrix[i][1] << std::endl; 
-  }
- 
-  gr->SetLineColor(kRed);
-  
-  gr->Draw("C*");
-
-
-  prem->SetLineWidth(3);
-  prem->SetMarkerStyle(21);
-  prem->SetLineColor(6);
-  prem->Draw("C");
-  */ 
-
-
-
-
-
-  ////
-
-
 
 
 
