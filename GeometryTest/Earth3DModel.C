@@ -1,27 +1,55 @@
-class Earth3DModel
-{
+#include "Earth3DModel.h"
 
-  public:
+//C++
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <cmath>
+#include <vector>
+#include <time.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
 
-  std::string filename; //Prem file
-  double zenith;
-  double azimuth;
-  double Det[3]= {0.0,0.0,-6371.0}; //South Pole is the Default location
 
-  bool Anomaly = false; //By Default we dont need LLVPs
-  std::vector<int> LLVPIdLayers{1};
-  double aWidth = 45.0; //LLVP Angular With
-  double drho = 3; // 3% more dense
-  double dzoa = 0.0; // 0% Chemical difference
-  
-  // std::vector< std::vector < double > > TheNuPath;
 
-  void SetModel(std::string model)
+
+//Cern Root
+#include <math.h>
+#include "TMath.h"
+#include <Math/SVector.h>
+#include "TCanvas.h"
+#include "TSystem.h"
+#include "TPolyMarker3D.h"
+#include "TPolyLine3D.h"
+#include "TView.h"
+
+//Geometry manager
+
+#include "TGeoManager.h"
+#include "TGeoMatrix.h"
+#include "TGeoMedium.h"
+#include "TGeoMaterial.h"
+#include "TGeoVolume.h"
+#include "TGLViewer.h"
+
+
+using namespace std;
+
+
+
+//Set Things
+
+//	Model
+
+void Earth3DModel::SetModel(std::string model)
   {
     filename = model;
   } 
   
-  void SetDetector(double Position[3]) 
+// Detectpr
+
+  void Earth3DModel::SetDetector(double Position[3]) 
   {
   
    Det[0] = Position[0];
@@ -29,48 +57,21 @@ class Earth3DModel
    Det[2] = Position[2];
 
   }
-  void SetDirection(double theta , double phi )
+
+// Direction
+
+ void Earth3DModel::SetDirection(double theta , double phi )
   {
     zenith =  theta; /*Polar direction*/
     azimuth = phi;   /*Azimuthal direction*/
   } 
 
-  
-  //LLVPs
+//LLVP
 
-  void ActiveHeterogeneity( bool value ) { Anomaly = value; } // Activate the LLVPs
-
-  void SetLLVPAtt( std::vector<int> layers = {10}, double AngularWidth = 45.0, double RhoDiff = 3.0 , double ChemDiff = 0.0) 
-  { 
-
-    LLVPIdLayers = layers; //Layers to be modified
-    aWidth = AngularWidth;
-    drho = 1 + (RhoDiff)/100;
-    dzoa = 1 + (ChemDiff)/100;
-
-  }
+void Earth3DModel::ActiveHeterogeneity( bool value ) { Anomaly = value; } // Activate the LLVPs
 
 
-  std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_15layers.txt" );
-
-  int LabelLayer (double radius);
-
-  std::vector<std::vector<double>> Earth3DPath ( double zen , double azi, std::string MODEL);
-
-  std::vector<std::vector<double>> Create3DPath () 
-  {
-   
-  return Earth3DPath ( zenith , azimuth , filename);
-
-  }
-
-
-};
-
-
-
-//---------------------------------------------------------------------------------------------------------------------------------------------------
-
+// Create a matrix from PremTables
 std::vector< std::vector<double> > Earth3DModel::GetPremData( std::string PREM_MODEL  )
 {
    std::string PREM_PATH = "/home/dehy0499/OscProb/PremTables/"+PREM_MODEL;
@@ -102,7 +103,7 @@ std::vector< std::vector<double> > Earth3DModel::GetPremData( std::string PREM_M
 
 }
 
-//----------------------------------------------------------------------------------------------------------------------------------------------------
+//Label PREM Layers
 
 int Earth3DModel::LabelLayer (double radius)
 {
@@ -122,8 +123,7 @@ int Earth3DModel::LabelLayer (double radius)
 
 }
 
-//----------------------------------------------------------------------------------------------------------------------------------------------------
-
+// CONSTRUCT THE 3D MODEL
 
 std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double azi, std::string MODEL )
 {
@@ -514,48 +514,6 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
    return EarthPath;
 }
 
+// Create LLVP
 
-
-
-void BinnedEarth()
-{
-
-  Earth3DModel test;
-
-  test.SetModel("prem_44layers.txt");
-
-  test.SetDirection(140.0, 0.0);
-
-  //test.LLVPIdLayers()
-
-
-  std::vector<int> LLVPSegments {25,26,27,28,29,30,31,44};
-
-  test.LLVPIdLayers = LLVPSegments;
-
-  test.aWidth = 70;
-  
-
-  //void SetLLVPAtt( LLVPSegments, aWidth, 3.0, 0);
-  
-  test.ActiveHeterogeneity( true );
-
-  std::vector<std::vector<double>> EarthPath = test.Create3DPath();
-//  std::vector<std::vector<double>> EarthPath = CreateEarth3DPath( 180 , 0,  "prem_15layers.txt" );
-
-  double TestL = 0  ;
-
-  //double Ltot = -2.0*6371*cos(th);
-
-  for (int i = 0; i < EarthPath.size(); ++i)
-  {
-
-
-    std::cout << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << std::endl;
-    //TestL = TestL + EarthPath[i][0];
-    
-  }
-
-
-
-}
+ std::vector<std::vector<double>> Earth3DModel::Create3DPath () { return Earth3DPath ( zenith , azimuth , filename); }

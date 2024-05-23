@@ -45,7 +45,7 @@ bool isCINT = true;
 // My Math Tools
 #include "MathTools.h"
 #include "PhyTools.h"
-#include "GeolTools.h"
+#include "Earth3DModel.h"
 
 using namespace std;
 
@@ -58,7 +58,7 @@ using namespace std;
 //# define years2sec 3.154E7 // Years in Seconds
 
 // Make oscillogram for given final flavour and MH
-TH2D*  AsimovTrueEvents(std::string modelname, bool LLVP,  int flvf, double Region[], int Bins[], double NnT)
+TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly,  int flvf, double Region[], int Bins[], double NnT)
 {  
     std::cout << "Generating Asimov data set: Reimann Integration Method" << std::endl;
 
@@ -209,6 +209,25 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool LLVP,  int flvf, double Regi
     ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE);// Electron Antineutrino Flux Interpolation
 
 
+
+    
+     Earth3DModel MyEarthModel;
+
+     MyEarthModel.SetModel("prem_44layers.txt");
+
+     MyEarthModel.ActiveHeterogeneity( MantleAnomaly );
+
+     MyEarthModel.aWidth = 40;
+
+     std::vector<int> LLVPSegments {25,26,27,28};
+
+     MyEarthModel.LLVPIdLayers = LLVPSegments;
+
+
+
+    
+
+
         double l,d,z,ly;
 
         for(int i=1; i<= ibins ; i++) //Loop in Angular bins
@@ -222,25 +241,35 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool LLVP,  int flvf, double Regi
 
             if(cosEta < -1 || cosEta > 1) break; // Skip if cosEta is unphysical 
             
-            std::vector< std::vector<double> >  PathMatrix = NuPATHS3D (PREM_MODELTEST, eta , 0.0, LLVP);
+            //std::vector< std::vector<double> >  PathMatrix = NuPATHS3D (PREM_MODELTEST, eta , 0.0, LLVP);
+
+            double angle = eta*180.0/TMath::Pi();
+
+            MyEarthModel.SetDirection(angle, 0.0);
+
+            std::vector<std::vector<double>> EarthPath = MyEarthModel.Create3DPath();
+
+
+
+
         
-            l = PathMatrix[0][0];
-            d = PathMatrix[0][1];
-            z = PathMatrix[0][2];
-            ly =  PathMatrix[0][3]; 
+            l = EarthPath[0][0];
+            d = EarthPath[0][1];
+            z = EarthPath[0][2];
+            //ly =  PathMatrix[0][3]; 
             
-            PMNS_H.SetPath(l,d,z,ly);
+            PMNS_H.SetPath(l,d,z);
             
            
-            for (int i = 1; i < PathMatrix.size(); i++) 
+            for (int i = 1; i < EarthPath.size(); i++) 
             { 
         
-                l = PathMatrix[i][0];
-                d = PathMatrix[i][1];
-                z = PathMatrix[i][2];
-                ly =  PathMatrix[i][3]; 
+                l = EarthPath[i][0];
+                d = EarthPath[i][1];
+                z = EarthPath[i][2];
+               // ly =  PathMatrix[i][3]; 
                 
-                PMNS_H.AddPath(l,d,z, ly);
+                PMNS_H.AddPath(l,d,z);
             
             } 
             

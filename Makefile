@@ -24,7 +24,7 @@ LDLIBS   := -lOscProb -lMathMore  -lGeom# load specific lib
 
 #OBJECTS = $(SOURCES:.c=.o)
 
-OBJECTS_AsivTrue = MathTools.o PhyTools.o GeolTools.o AsimovDataTrue.o
+OBJECTS_AsivTrue = MathTools.o PhyTools.o Earth3DModel.o AsimovDataTrue.o
 OBJECTS_AsivObs  = MathTools.o PhyTools.o AsimovDataObs.o 
 OBJECTS_Res  = MathTools.o PhyTools.o  DetectorResolution.o 
 OBJECTS_OscProb  = MathTools.o PhyTools.o  OscProbEarth.o 
@@ -104,9 +104,9 @@ PhyTools.o: $(SRC_DIR)/PhyTools.C
 	@echo "Creating PhyTools Objects"
 	$(CC) -c -g $^ $(ROOT_FLAGS) $(CPPFLAGS) -o $@
 
-GeolTools.o: $(SRC_DIR)/GeolTools.C
+Earth3DModel.o: $(SRC_DIR)/Earth3DModel.C
 	@echo "  "
-	@echo "Creating Geological models Objects"
+	@echo "Creating a 3D Earth from a Geological models Objects"
 	$(CC) -c -g $^ $(ROOT_FLAGS) $(CPPFLAGS) -o $@
 
 
