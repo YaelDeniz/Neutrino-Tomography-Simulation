@@ -429,11 +429,11 @@ std::vector<std::vector<double>> CreateEarth3DPath(double zen = 180 , double azi
 void BinnedEarth()
 {
 
-  std::vector<std::vector<double>> EarthPath CreateEarth3DPath(double zen = 180 , double azi = 0, std::string MODEL = "prem_15layers.txt" )
+  std::vector<std::vector<double>> EarthPath = CreateEarth3DPath(double zen = 180 , double azi = 0, std::string MODEL = "prem_15layers.txt" )
 
   double TestL = 0  ;
 
-  double Ltot = -2.0*6371*cos(th);
+  //double Ltot = -2.0*6371*cos(th);
 
   for (int i = 0; i < EarthPath.size(); ++i)
   {
