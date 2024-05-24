@@ -97,8 +97,8 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
     //double etamin   = ( 180-Region[3] )*TMath::Pi()/180;
     //double etamax   = ( 180-Region[2] )*TMath::Pi()/180;
 
-    double thmin = Region[2]; //[90-180]
-    double thmax = Region[3];
+    double thmin = Region[2]; //[min 90]
+    double thmax = Region[3];  //[max 180]
 
 
 
@@ -234,7 +234,7 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
             // Get cos(eta) from bin center, This is used to calculate the baseline.
 
             double th = hEvents->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-            dth = hEvents -> GetXaxis()->GetBinWidth();
+            double dth = (hEvents -> GetXaxis()->GetBinWidth())*(TMath::Pi()/180);
             double cth =cos(th);
 
             if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 

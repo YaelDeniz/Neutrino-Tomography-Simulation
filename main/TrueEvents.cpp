@@ -66,9 +66,9 @@ int main()
     double R_max = 4500; // Distance from the center of the Earth
 
     
-    double zenmax = 180-TMath::ASin( (R_min)/R_earth )*(180.0/TMath::Pi()) ;
+    double zenmax = 180-TMath::ASin( (R_min)/R_earth )*(180.0/TMath::Pi()) ; // max 180
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
-    double zenmin = 180-TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ;
+    double zenmin = 180-TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ; // min 90
 
     std::cout << zenmin << " " << zenmax <<  std::endl;
 
