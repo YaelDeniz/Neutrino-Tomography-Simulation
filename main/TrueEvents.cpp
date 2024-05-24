@@ -160,7 +160,7 @@ int main()
                 std::cout <<" LLVP segment:" << radius << " " << density << " " << zoa << " " << layer << "\n";
                 std::cout <<" Remaning height " << R_llsvp - radius << std::endl;
                 std::cout <<" Segment height : " << radius - 3480 << std::endl;
-                layers.push_back(nlayer)
+                layers.push_back(nlayer);
                             
 
             }
