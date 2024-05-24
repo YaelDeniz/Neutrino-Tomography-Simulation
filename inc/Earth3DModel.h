@@ -23,7 +23,7 @@ class Earth3DModel
   double Det[3]= {0.0,0.0,-6371.0}; //South Pole is the Default location
 
   bool Anomaly = false; //By Default we dont need LLVPs
-  std::vector<int> LLVPIdLayers{1};
+  std::vector<int> WhichLayersLLVPs{1}; //Specify which layers contain an LLVPs segment
   double aWidth = 45.0; //LLVP Angular With
   double drho = 3; // 3% more dense
   double dzoa = 0.0; // 0% Chemical difference
