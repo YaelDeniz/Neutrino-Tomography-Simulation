@@ -1,5 +1,6 @@
 
 %% MyData
+clear all;  close all;  clc;
 
 file = 'Mydata.csv';
 
