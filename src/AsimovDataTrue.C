@@ -58,7 +58,7 @@ using namespace std;
 //# define years2sec 3.154E7 // Years in Seconds
 
 // Make oscillogram for given final flavour and MH
-TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly,  int flvf, double Region[], int Bins[], double NnT)
+TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<int> layers,  int flvf, double Region[], int Bins[], double NnT)
 {  
     std::cout << "Generating Asimov data set: Reimann Integration Method" << std::endl;
 
@@ -219,9 +219,9 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly,  int flvf, do
 
      MyEarthModel.aWidth = 40;
 
-     std::vector<int> LLVPSegments {25,26,27,28};
+     // std::vector<int> LLVPSegments {25,26,27,28};
 
-     MyEarthModel.LLVPIdLayers = LLVPSegments;
+     MyEarthModel.WhichLayersLLVPs = layers;
 
 
 

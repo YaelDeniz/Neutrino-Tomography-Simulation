@@ -239,7 +239,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
 
   //int LLVPIdLayers[1] = {7}; //Layers to be modified
 
-  int LLVPint = LLVPIdLayers.size();
+  int LLVPint = WhichLayersLLVPs.size();
 
   //double gamma = 45.0/LLVPint; // Angular width of each LLVP segment
   
@@ -250,7 +250,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   for (int i = 0; i < LLVPint; ++i)
   {
 
-    int index = LLVPIdLayers[i]-1; //Index of the layer that will contain LLVPs
+    int index = WhichLayersLLVPs[i]-1; //Index of the layer that will contain LLVPs
 
     //Generate segment names
     char integer_string[32];

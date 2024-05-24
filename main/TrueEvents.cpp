@@ -148,6 +148,7 @@ int main()
     // Loop over table rows
 
     int nlayer = 1;
+    std::vector <int> layers; 
 
     while(PREM_DEFAULT >> radius >> density >> zoa >> layer)
     {
@@ -159,6 +160,7 @@ int main()
                 std::cout <<" LLVP segment:" << radius << " " << density << " " << zoa << " " << layer << "\n";
                 std::cout <<" Remaning height " << R_llsvp - radius << std::endl;
                 std::cout <<" Segment height : " << radius - 3480 << std::endl;
+                layers.push_back(nlayer)
                             
 
             }
@@ -188,12 +190,12 @@ int main()
     std::cout<< "PREM DATA--------------"<< std::endl;  
     
     std::string prem_default   = "prem_default"; //Specify PREM table from OscProb
-    TH2D* nullhist = AsimovTrueEvents(prem_default,false,flvf , Region,  Bins,  NnT);
+    TH2D* nullhist = AsimovTrueEvents(prem_default,false, layers ,flvf , Region,  Bins,  NnT);
 
     std::cout<< "ALT DATA--------------"<< std::endl;  
 
     std::string prem_llsvp   = "prem_default"; //Specify PREM table from OscProb
-    TH2D* althist = AsimovTrueEvents(prem_llsvp,true,flvf , Region,  Bins,  NnT);
+    TH2D* althist = AsimovTrueEvents(prem_llsvp,true, layers, flvf , Region,  Bins,  NnT);
 
     std::cout << "True data is stored inside './SimulationResults" << std::endl;
 
