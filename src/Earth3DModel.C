@@ -131,6 +131,8 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
 
   gSystem->Load("libGeom");
 
+  std::cout << " ************************************************************************************** Using model: " << MODEL << std::endl;
+
   std::vector< std::vector<double> > PremMatrix = GetPremData(MODEL); // Sort PREM model into a readable matrix
 
   std::vector< std::vector<double> > LLVPMatrix = GetPremData(MODEL); // A Copy of PREM model matrix to construct LLVPs
