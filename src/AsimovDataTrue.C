@@ -284,7 +284,7 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
                 double N_ij = NnT*(Ri_nu + Ri_nubar)*dE*dth*dAz;
 
 
-                TrueEvents << eta << ", " << e << ", "<< N_ij  << "\n";
+                TrueEvents << th << ", " << e << ", "<< N_ij  << "\n";
 
                 hEvents->SetBinContent(i,j, N_ij); //Create histogram for  kth Pseudo-Experimens
 
