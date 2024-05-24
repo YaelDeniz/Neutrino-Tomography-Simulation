@@ -224,8 +224,8 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
 
   // SECTION TO BE DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   double R_cmb = 3480.0;
-  double thtest = 180-TMath::ASin( (R_cmb)/R_earth )*(180.0/TMath::Pi()) ; // max 180
-  if (th  > zentest )
+  double zentest = 180-TMath::ASin( (R_cmb)/R_earth )*(180.0/TMath::Pi()) ; // max 180
+  if (zen  > thtest )
   {
     Anomaly = false;
   }
