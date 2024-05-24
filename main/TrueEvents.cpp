@@ -221,7 +221,7 @@ int main()
                         nexp = nullhist->GetBinContent(i,j); // expected
                         nobs = althist->GetBinContent(i,j); // obserbed
 
-                        dn = 100.0*(nexp-nobs)/nexp;
+                        dn = 100.0*(nobs-nexp)/nexp;
 
                         diffhist->SetBinContent(i,j, dn); //Create histogram for  kth Pseudo-Experiment
 

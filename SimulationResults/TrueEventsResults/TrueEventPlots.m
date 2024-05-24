@@ -31,7 +31,7 @@ dN = reshape(dn_ij,length(zen),length(e));
 %%imagesc(n_ij)
 figure('Renderer', 'painters', 'Position', [10 10 1000 800])
 %datatrue=pcolor(Et,Etat, dNt');
-datatrue=pcolor(cosd(Zen),E, dN);
+datatrue=pcolor(cosd(Zen),E, -dN);
 set(gca,'FontSize',20, 'FontName', 'Courier')
 set(datatrue,'edgecolor','none')
 title( 'Perfect resolution' ,'FontSize',30);
