@@ -48,7 +48,7 @@ int main()
 
     //Energy interval (in GeV):
     double Emin=1.0 ; 
-    double Emax=50.0 ;
+    double Emax=10.0 ;
 
     //Zenith Angle Interval:
     //double Etamin = 33.0;
