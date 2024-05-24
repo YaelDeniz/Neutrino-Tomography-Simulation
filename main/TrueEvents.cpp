@@ -122,7 +122,7 @@ int main()
     int flvf = 1;
 
     //Simulation Information
-      std::cout << "Energy Range in GeV: [" << Emin << " - " << Emax << "]" << "Angular Range(zenith): [" << Etamin << " - " << Etamax << "]" <<std::endl;
+      std::cout << "Energy Range in GeV: [" << Emin << " - " << Emax << "]" << "Angular Range(zenith): [" << zenmin << " - " <<zenmax << "]" <<std::endl;
       std::cout << "LLSVP information-  density contrats(%): " << drho_dp << " Height(km): "<< h_llsvp << std::endl;
       std::cout << "Simulation set up- Angular bins: " << Tbins << " Energy bins: "  << Ebins<<std::endl;
       std::cout << "PREM tables located in /OscProb/PremTables"<< std::endl;
@@ -202,7 +202,7 @@ int main()
     
   
 
-    TH2D* diffhist = new TH2D("diffhist"," Events percentage difference; #eta ; E",Tbins,Etamin,Etamax,Ebins,Emin,Emax); 
+    TH2D* diffhist = new TH2D("diffhist"," Events percentage difference; #eta ; E",Tbins,zenmin,zenmax,Ebins,Emin,Emax); 
 
     // Data visualization
    
