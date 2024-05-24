@@ -37,7 +37,7 @@ OBJECTS_OscProb  = MathTools.o PhyTools.o  OscProbEarth.o
 
 #TARGETS
 
-all: TrueEvents ObservedEvents StatsAnaTrue StatsAnaObs OscProbEarth #DetectorResolution   # All targets
+all: TrueEvents ObservedEvents  StatsAnaObs OscProbEarth #DetectorResolution   # All targets #Add StatsAnaTrue laters
 
 
 TrueEvents: $(MAIN_DIR)/TrueEvents.cpp $(OBJECTS_AsivTrue) 
