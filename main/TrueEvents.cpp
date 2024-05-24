@@ -39,8 +39,8 @@ int main()
 
     // Number of bins
     
-    int Ebins=50 ; // # of Bins of Energy
-    int Tbins=50 ; // # of Bins of cosEta
+    int Ebins=100 ; // # of Bins of Energy
+    int Tbins=100 ; // # of Bins of cosEta
 
     int Bins[]={Tbins, Ebins};
 
