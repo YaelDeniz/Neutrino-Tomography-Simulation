@@ -54,12 +54,12 @@ ObservedEvents: $(MAIN_DIR)/ObservedEvents.cpp $(OBJECTS_AsivObs)
 	@echo " "
 	@echo "Observed event generator Done"
 
-StatsAnaTrue: $(MAIN_DIR)/StatsAnaTrue.cpp $(OBJECTS_AsivTrue)
-	@echo " "
-	@echo "Generating Application for Statistical Analysis of True Events"
-	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
-	@echo " "
-	@echo "StatsTrue Done"
+#StatsAnaTrue: $(MAIN_DIR)/StatsAnaTrue.cpp $(OBJECTS_AsivTrue)
+#	@echo " "
+#	@echo "Generating Application for Statistical Analysis of True Events"
+#	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
+#	@echo " "
+#	@echo "StatsTrue Done"
 
 StatsAnaObs: $(MAIN_DIR)/StatsAnaObs.cpp $(OBJECTS_AsivObs)
 	@echo " "
