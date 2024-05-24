@@ -31,7 +31,7 @@ dN = reshape(dn_ij,length(zen),length(e));
 %%imagesc(n_ij)
 figure('Renderer', 'painters', 'Position', [10 10 1000 800])
 %datatrue=pcolor(Et,Etat, dNt');
-datatrue=pcolor(Zen,E, dN);
+datatrue=pcolor(cosd(Zen),E, dN);
 set(gca,'FontSize',20, 'FontName', 'Courier')
 set(datatrue,'edgecolor','none')
 title( 'Perfect resolution' ,'FontSize',30);
@@ -44,10 +44,10 @@ ylabel('E_{\nu}[GeV]','FontSize',30)
 
 hold on 
 
-topl = xline(138.8,'--','Top of LLVP','LineWidth',2.5) %Upper Mantle
+topl = xline(cosd(138.8),'--','Top of LLVP','LineWidth',2.5) %Upper Mantle
 topl.FontSize=25;
 
-cmbl = xline(146.8,'--','CMB','LineWidth',2.5) %CMB
+cmbl = xline(cosd(146.8),'--','CMB','LineWidth',2.5) %CMB
 cmbl.FontSize=25;
 
 hold off
