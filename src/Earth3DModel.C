@@ -282,7 +282,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   
     LLVPMed.push_back( new TGeoMedium(llvpMedName,1,LLVPMat[i]) ); // Create LLVP medium
 
-    LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[i] , rminLLVP , rmaxLLVP , 0, aWidthi,0 ,360 ) ); // DEFINE LLVP Segment
+    LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[i] , rminLLVP , rmaxLLVP , 0, aWidth,0 ,360 ) ); // DEFINE LLVP Segment
 
     LLVPLAYER[i]->SetLineColor(kGreen);
 
