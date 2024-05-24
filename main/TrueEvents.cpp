@@ -66,11 +66,11 @@ int main()
     double R_max = 4500; // Distance from the center of the Earth
 
     
-    double Etamin = TMath::ASin( (R_min)/R_earth )*(180.0/TMath::Pi()) ;
+    double zenmax = 180-TMath::ASin( (R_min)/R_earth )*(180.0/TMath::Pi()) ;
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
-    double Etamax = TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ;
+    double zenmin = 180-TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ;
 
-    std::cout << ( 180-Etamin ) << " " << ( 180-Etamax ) <<  std::endl;
+    std::cout << zenmin << " " << zenmax <<  std::endl;
 
     
 
@@ -113,7 +113,7 @@ int main()
     double dAz = PhiM-Phim;
 
 
-    double Region[] = {Emin,Emax,Etamin,Etamax,dAz};
+    double Region[] = {Emin,Emax,zenmin,zenmax,dAz};
 
     //Density contrast
     double drho_dp = 2.0; // 2 % density contrats
@@ -207,11 +207,11 @@ int main()
     // Data visualization
    
    std::ofstream EventDiff("SimulationResults/TrueEventsResults/Mydata.csv"); 
-   double eta, e, nexp, nobs, dn;
+   double zen, e, nexp, nobs, dn;
 
     for(int i=1; i<= Tbins  ; i++) 
     {    
-        eta = nullhist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+        zen = nullhist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
 
                     
                     for (int j=1; j <= Ebins ; j++)
@@ -225,9 +225,9 @@ int main()
 
                         diffhist->SetBinContent(i,j, dn); //Create histogram for  kth Pseudo-Experiment
 
-                        EventDiff<<  eta << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
+                        EventDiff<<  zen << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
 
-                        std::cout<<  eta << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << std::endl;
+                        std::cout<<  zen << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << std::endl;
 
 
                         

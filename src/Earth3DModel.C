@@ -60,7 +60,7 @@ void Earth3DModel::SetModel(std::string model)
 
 // Direction
 
- void Earth3DModel::SetDirection(double theta , double phi )
+ void Earth3DModel::SetDirection(double theta , double phi ) //In Degrees
   {
     zenith =  theta; /*Polar direction*/
     azimuth = phi;   /*Azimuthal direction*/

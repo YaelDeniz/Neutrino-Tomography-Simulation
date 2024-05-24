@@ -31,7 +31,7 @@
 #include "TTree.h"
 #include "TObjArray.h"
 #include <Math/Interpolator.h>
-//#include "TGraphTrueD.h"
+//#include "TGraphEventsD.h"
 
 //OSCPROB
 #ifndef __CINT__
@@ -64,13 +64,13 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
 
     double total = 0;
 
-    std::string PREM_MODELTEST = modelname+".txt";
+    std::string MODELNAME = modelname+".txt";
 
     //std::vector< std::vector<double> >  matrixtest = NuPATHS3D (PREM_MODELTEST, 180.0, 0.0 kFALSE); 
 
     //Data Storage -----------------------------------------------------------------------------------------------------
-    std::string model = "/home/dehy0499/OscProb/PremTables/"+modelname+".txt";
-    std::string model_default = "/home/dehy0499/OscProb/PremTables/prem_default.txt";
+    // std::string model = "/home/dehy0499/OscProb/PremTables/"+MODELNAME+".txt";
+    //std::string model_default = "/home/dehy0499/OscProb/PremTables/prem_default.txt";
     
     std::cout << modelname <<std::endl;
 
@@ -94,8 +94,11 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
     double Emin      = Region[0];//Lower limit for Energy
     double Emax      = Region[1];//Upper limit for Energy
 
-    double etamin   = ( 180-Region[3] )*TMath::Pi()/180;
-    double etamax   = ( 180-Region[2] )*TMath::Pi()/180;
+    //double etamin   = ( 180-Region[3] )*TMath::Pi()/180;
+    //double etamax   = ( 180-Region[2] )*TMath::Pi()/180;
+
+    double thmin = Region[2]; //[90-180]
+    double thmax = Region[3];
 
 
 
@@ -111,14 +114,14 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
     //Bins
     int ibins = Bins[0]; // Number of  angular bins of True event distribution
     int jbins = Bins[1]; // Number of  energy bins of True event distribution
-    double deta = (etamax - etamin)/(ibins); //< Bin width/2
-    double dE = (Emax - Emin)/(jbins); //< Bin width/2
+    //double dth = (thmax - thmin)/(ibins); //< Bin width/2
+    //double dE = (Emax - Emin)/(jbins); //< Bin width/2
 
     /* Create 2D histogram for Event Oscillogram,
      xbins correspond to energy values and ybins to zenith angle cosEta*/
-    TH2D* hTrue = new TH2D("hTrue","True Events",ibins,etamin,etamax,jbins,Emin,Emax); 
-    //TH2D* hTrue_k= new TH2D("hTrue_k","True Events; #eta ; #E",ibins,etamin,etamax,jbins,Emin,Emax); //Store data for each pseudo-experiment.
-    //TH2D* hTrue_means= new TH2D("hTrue_means","True Events( Means ); #eta ; #E",ibins,etamin,etamax,jbins,Emin,Emax); //Store data for each pseudo-experiment.
+    TH2D* hEvents = new TH2D("hEvents","Neutrino Events",ibins,thmin,thmax,jbins,Emin,Emax); 
+    //TH2D* hEvents_k= new TH2D("hEvents_k","True Events; #eta ; #E",ibins,etamin,etamax,jbins,Emin,Emax); //Store data for each pseudo-experiment.
+    //TH2D* hEvents_means= new TH2D("hEvents_means","True Events( Means ); #eta ; #E",ibins,etamin,etamax,jbins,Emin,Emax); //Store data for each pseudo-experiment.
     
     //Neutrino event generation-----------------------------------------------------------------------------------------
 
@@ -152,20 +155,15 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
     
     PMNS_H.SetStdPars(); // Set PDG 3-flavor parameters
 
-    // Create PREM Model
-    //string file_test;
-    //file_test   = "/home/dehy0499/OscProb/PremTables/prem_lbl.txt"; //Specify PREM table from OscProb
-    //OscProb::PremModel prem(file_test);
-    
-    
+   
     //Earth model for neutrino propagation 
-    OscProb::PremModel prem_model(model);
-    OscProb::PremModel prem(model_default); //Default PREM table
+    //OscProb::PremModel prem_model(model);
+    //OscProb::PremModel prem(model_default); //Default PREM table
 
 
-    double R_lim = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
+    double R_lim = 3480.0; // Distance from the center of the Earth , 3500 Km CMB
        
-    double EtaLim = TMath::Pi() - TMath::ASin( (R_lim)/R_earth ) ;
+    //double EtaLim = TMath::Pi() - TMath::ASin( (R_lim)/R_earth ) ;
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
 
 
@@ -213,11 +211,11 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
     
      Earth3DModel MyEarthModel;
 
-     MyEarthModel.SetModel("prem_44layers.txt");
+     MyEarthModel.SetModel(MODELNAME);
 
      MyEarthModel.ActiveHeterogeneity( MantleAnomaly );
 
-     MyEarthModel.aWidth = 40;
+    // MyEarthModel.aWidth = 40;
 
      // std::vector<int> LLVPSegments {25,26,27,28};
 
@@ -235,17 +233,15 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
 
             // Get cos(eta) from bin center, This is used to calculate the baseline.
 
-            double eta = hTrue->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-            
-            double cosEta =cos(eta);
+            double th = hEvents->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+            dth = hEvents -> GetXaxis()->GetBinWidth();
+            double cth =cos(th);
 
-            if(cosEta < -1 || cosEta > 1) break; // Skip if cosEta is unphysical 
+            if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
             
             //std::vector< std::vector<double> >  PathMatrix = NuPATHS3D (PREM_MODELTEST, eta , 0.0, LLVP);
 
-            double angle = eta*180.0/TMath::Pi();
-
-            MyEarthModel.SetDirection(angle, 0.0);
+            MyEarthModel.SetDirection(th, 0.0);
 
             std::vector<std::vector<double>> EarthPath = MyEarthModel.Create3DPath();
 
@@ -275,8 +271,8 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
             
             for (int j = 1; j <=jbins; ++j)
             { 
-                double e = hTrue->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
-                
+                double e = hEvents->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
+                double dE = hEvents->GetYaxis()->GetBinWidth();
                 //Neutrino
                 PMNS_H.SetIsNuBar(false); 
                 double Ri_nu = XSec(e,nu)*( PMNS_H.Prob(numu, flvf, e)*dPsiMudE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEdE.Eval(e) );
@@ -285,12 +281,12 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
                 PMNS_H.SetIsNuBar(true); 
                 double Ri_nubar = XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
 
-                double N_ij = NnT*(Ri_nu + Ri_nubar)*dE*deta*dAz;
+                double N_ij = NnT*(Ri_nu + Ri_nubar)*dE*dth*dAz;
 
 
                 TrueEvents << eta << ", " << e << ", "<< N_ij  << "\n";
 
-                hTrue->SetBinContent(i,j, N_ij); //Create histogram for  kth Pseudo-Experimens
+                hEvents->SetBinContent(i,j, N_ij); //Create histogram for  kth Pseudo-Experimens
 
             } // loop energy
 
@@ -302,5 +298,5 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
     delete HF;
             
              
-    return hTrue;
+    return hEvents;
 }
