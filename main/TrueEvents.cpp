@@ -131,7 +131,7 @@ int main()
     //
     
     
-    std::string prem_llsvp, prem_default;
+    //std::string prem_llsvp, prem_default;
     
     std::ifstream PREM_DEFAULT;
 
