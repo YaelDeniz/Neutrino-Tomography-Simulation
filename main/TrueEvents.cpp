@@ -122,7 +122,6 @@ int main()
     int flvf = 1;
 
     //Simulation Information
-      std::cout << "Monte Carlo simulation for neutrino mu-like true events " << std::endl;
       std::cout << "Energy Range in GeV: [" << Emin << " - " << Emax << "]" << "Angular Range(zenith): [" << Etamin << " - " << Etamax << "]" <<std::endl;
       std::cout << "LLSVP information-  density contrats(%): " << drho_dp << " Height(km): "<< h_llsvp << std::endl;
       std::cout << "Simulation set up- Angular bins: " << Tbins << " Energy bins: "  << Ebins<<std::endl;
@@ -131,7 +130,7 @@ int main()
 
     //
     
-    /*
+    
     std::string prem_llsvp, prem_default;
     
     std::ifstream PREM_DEFAULT;
@@ -140,20 +139,24 @@ int main()
 
     PREM_DEFAULT.open("/home/dehy0499/OscProb/PremTables/prem_default.txt");
                
-    std::ofstream PREM_LLSVP("/home/dehy0499/OscProb/PremTables/prem_llsvp.txt"); //Create a file with Alternative Earth density profile 
+   // std::ofstream PREM_LLSVP("/home/dehy0499/OscProb/PremTables/prem_llsvp.txt"); //Create a file with Alternative Earth density profile 
     
     // Variables for storing table rows
     float radius, density, zoa, layer;
 
     
     // Loop over table rows
+
+    int nlayer = 1;
+
     while(PREM_DEFAULT >> radius >> density >> zoa >> layer)
     {
+            std::cout << " #layer: " << nlayer << std::endl;
 
         if( radius >=  R_cmb  && radius <= R_llsvp )
             {
 
-                PREM_LLSVP << radius << " " << density*(1.0 + drho_dp/100) << " " << zoa << " " << layer << "\n";
+                std::cout <<" LLVP segment:" << radius << " " << density << " " << zoa << " " << layer << "\n";
                             
 
             }
@@ -161,21 +164,23 @@ int main()
         else 
             {
 
-                PREM_LLSVP << radius << " " << density << " " << zoa << " " << layer << "\n";
+//PREM_LLSVP << radius << " " << density << " " << zoa << " " << layer << "\n";
 
             }
+
+        nlayer += 1;
 
     }
 
     PREM_DEFAULT.close();
-    PREM_LLSVP.close();
+   
 
 
 
     //------------------------------------------------------------------------------------------------------
     //std::ifstream StdPrem;
     
-    */
+    
 
     //prem_test   = "/home/dehy0499/OscProb/PremTables/prem_test.txt"; //Specify PREM table from OscProb
     std::cout<< "PREM DATA--------------"<< std::endl;  

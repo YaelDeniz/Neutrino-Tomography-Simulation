@@ -224,7 +224,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   if (Anomaly)
   {
   
-    std::cout << " LLVPS IS  ACTIVATED" << std::endl;
+    //std::cout << " LLVPS IS  ACTIVATED" << std::endl;
   
   
   //Definition LLVPS
@@ -392,7 +392,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   {  
        
         
-         std::cout << "Starting loop" << std::endl;
+        // std::cout << "Starting loop" << std::endl;
          
          //gGeoManager->FindNextBoundaryAndStep(); // Calculate distance to the next boundary and Evolve system.
       
@@ -410,7 +410,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
          if (Dnorm <= 0.0 )
          {
 
-          std::cout << " At detector" << std::endl;
+          //std::cout << " At detector" << std::endl;
           break;
          
          }
@@ -459,11 +459,11 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
 
         
 
-         std::cout << "Current path is: " << path << " Layer radius: "  << R_i << " id: " << LabelLayer(R_i) <<  std::endl;
+         //std::cout << "Current path is: " << path << " Layer radius: "  << R_i << " id: " << LabelLayer(R_i) <<  std::endl;
 
-         std::cout << "L_i " << Li  << " rho "  << cmat->GetDensity() << " zoa " << cmat->GetZ() << " medId " << cvol->GetMedium()->GetId() << std::endl;
+         //std::cout << "L_i " << Li  << " rho "  << cmat->GetDensity() << " zoa " << cmat->GetZ() << " medId " << cvol->GetMedium()->GetId() << std::endl;
 
-         std::cout << std::endl; 
+         //std::cout << std::endl; 
 
          i += 1;
 
@@ -505,11 +505,11 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   //TCanvas *c2 = new TCanvas("c2", "c2",0,0,600,600);
 
      //Geometrical display
-   std::cout<< " " << std::endl;
-   std::cout << "Detector Geometrical settings  d1 " << d1 << " d2 " << d2 << std::endl;
-   std::cout << " Detector: "  << Det[0] << " " << Det[1] << " " << Det[2] << std::endl;
-   std::cout << " Neutrino: "  << xo << " " << yo << " " << zo << std::endl;
-   std::cout << " Neutrino: "  << sqrt(xo*xo +yo*yo + zo*zo) << std::endl;
+   //std::cout<< " " << std::endl;
+   //std::cout << "Detector Geometrical settings  d1 " << d1 << " d2 " << d2 << std::endl;
+   //std::cout << " Detector: "  << Det[0] << " " << Det[1] << " " << Det[2] << std::endl;
+   //std::cout << " Neutrino: "  << xo << " " << yo << " " << zo << std::endl;
+   //std::cout << " Neutrino: "  << sqrt(xo*xo +yo*yo + zo*zo) << std::endl;
 
    return EarthPath;
 }
