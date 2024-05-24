@@ -57,13 +57,13 @@ int main()
     // Alternative Earth Model:
 
     double h_llsvp = 700; //km
-    double R_cmb = 3500.0;
+    double R_cmb = 3480.0;
     double R_llsvp = R_cmb + h_llsvp; //km
 
-    double R_min = 3000.0;
+    double R_min = R_cmb;
     //double R_min = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
     //double R_llsvp = R_cmb + h_llsvp; //Km
-    double R_max = 4500; // Distance from the center of the Earth
+    double R_max = R_llsvp; // Distance from the center of the Earth
 
     
     double zenmax = 180-TMath::ASin( (R_min)/R_earth )*(180.0/TMath::Pi()) ; // max 180
