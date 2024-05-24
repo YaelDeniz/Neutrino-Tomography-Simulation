@@ -39,8 +39,8 @@ int main()
 
     // Number of bins
     
-    int Ebins=50 ; // # of Bins of Energy
-    int Tbins=50 ; // # of Bins of cosEta
+    int Ebins=100 ; // # of Bins of Energy
+    int Tbins=100 ; // # of Bins of cosEta
 
     int Bins[]={Tbins, Ebins};
 
@@ -60,10 +60,10 @@ int main()
     double R_cmb = 3480.0;
     double R_llsvp = R_cmb + h_llsvp; //km
 
-    double R_min = R_cmb;
+    double R_min = R_cmb-500.0;
     //double R_min = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
     //double R_llsvp = R_cmb + h_llsvp; //Km
-    double R_max = R_llsvp; // Distance from the center of the Earth
+    double R_max = R_llsvp+500.0; // Distance from the center of the Earth
 
     
     double zenmax = 180-TMath::ASin( (R_min)/R_earth )*(180.0/TMath::Pi()) ; // max 180
