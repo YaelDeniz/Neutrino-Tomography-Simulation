@@ -234,7 +234,7 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
             // Get cos(eta) from bin center, This is used to calculate the baseline.
 
             double th = hEvents->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-            double dth = (hEvents -> GetXaxis()->GetBinWidth())*(TMath::Pi()/180);
+            double dth = (hEvents -> GetXaxis()->GetBinWidth(i))*(TMath::Pi()/180);
             double cth =cos(th);
 
             if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
@@ -272,7 +272,7 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
             for (int j = 1; j <=jbins; ++j)
             { 
                 double e = hEvents->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
-                double dE = hEvents->GetYaxis()->GetBinWidth();
+                double dE = hEvents->GetYaxis()->GetBinWidth(j);
                 //Neutrino
                 PMNS_H.SetIsNuBar(false); 
                 double Ri_nu = XSec(e,nu)*( PMNS_H.Prob(numu, flvf, e)*dPsiMudE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEdE.Eval(e) );
