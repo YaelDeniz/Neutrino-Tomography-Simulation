@@ -1,11 +1,12 @@
 void FluxTest()
 {
-
+    int xbins = 1000;
+    int ybins = 1000;
     TCanvas *c1 = new TCanvas();
-    TH2F *h = new TH2F("h","h",100,0.,10.,100,0.,10.);
+    TH2F *h = new TH2F("h","h",xbins,0.,10.,ybins,0.,10.);
     TF2 *xyg = new TF2("xyg","xygaus",0,10,0,10);
     xyg->SetParameters(1,5,2,5,2); //amplitude, meanx,sigmax,meany,sigmay 
-    h->FillRandom("xyg",10000*10000); 
+    h->FillRandom("xyg",xbins*ybins); 
     h->Draw();
 
     
@@ -41,8 +42,8 @@ void FluxTest()
    
    TRandom *rand =  new TRandom(10);
 
-    double xrad = rand->Uniform(6);
-    double yrad = rand->Uniform(6);
+    double xrad = rand->Uniform(10);
+    double yrad = rand->Uniform(10);
 
  
 
