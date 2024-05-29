@@ -41,11 +41,10 @@ void FluxTest()
    
    TRandom *rand =  new TRandom(10);
 
-    //double xrad = rand->Uniform();
-    //double yrad = rand->Uniform();
+    double xrad = rand->Uniform(6);
+    double yrad = rand->Uniform(6);
 
-    double xrad = 0.5;
-    double yrad = 0.5;
+ 
 
     std::cout << xrad << " " << yrad <<  std::endl;
 
