@@ -2,7 +2,7 @@ void FluxTest()
 {
 
     TCanvas *c1 = new TCanvas();
-    TH2D *hist = new TH2D("hist","Histogram",100,-1,1,100,-1,1);
+    TH2D *hist = new TH2D("hist","Histogram",100,0,5,100,0,5);
     hist->SetStats(0);
 
     TF2 *f2 = new TF2("f2","sin(x)*sin(y)/(x*y)",0,5,0,5);
