@@ -2,7 +2,7 @@ void FluxTest()
 {
 
     TCanvas *c1 = new TCanvas();
-    TH2D *hist = new TH2F("hist","Histogram",100,-1,1,100,-1,1);
+    TH2D *hist = new TH2D("hist","Histogram",100,-1,1,100,-1,1);
     hist->SetStats(0);
 
     TRandom *rand =  new TRandom(10);
