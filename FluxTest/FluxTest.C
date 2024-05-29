@@ -22,6 +22,7 @@ void FluxTest()
 
     }
     */
+   
 
 
 
@@ -31,7 +32,12 @@ void FluxTest()
     hist->SetContour(1000);
     
     hist->Draw("COLZ");
+
+    TCanvas *c2 = new TCanvas();
+    f2->Draw();
+    
     c1->Print("./Hist2D.png");
+    c2->Print("./func.png");
    
 
 
