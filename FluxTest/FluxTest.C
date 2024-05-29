@@ -16,7 +16,8 @@ void FluxTest()
         hist->Fill(x,y);
 
     }
-
+	
+    gStyle->SetPalette(kRainBow);
     hist->Draw();
 
     hist->Draw("COLZ");
