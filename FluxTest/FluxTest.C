@@ -5,7 +5,7 @@ void FluxTest()
     TH2F *h = new TH2F("h","h",100,0.,10.,100,0.,10.);
     TF2 *xyg = new TF2("xyg","xygaus",0,10,0,10);
     xyg->SetParameters(1,5,2,5,2); //amplitude, meanx,sigmax,meany,sigmay 
-    h->FillRandom("xyg",100*100); 
+    h->FillRandom("xyg",10000*10000); 
     h->Draw();
 
     
