@@ -25,8 +25,8 @@ void FluxTest()
    
    TRandom *rand =  new TRandom(10);
 
-    double xrad = rand->Gaus(0.0,1.0);
-    double yrad = rand->Gaus(0.0,1.0);
+    double xrad = rand->Uniform();
+    double yrad = rand->Uniform();
 
     std::cout << xrad << " " << yrad <<  std::endl;
 
