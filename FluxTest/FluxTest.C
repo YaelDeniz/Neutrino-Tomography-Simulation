@@ -2,10 +2,10 @@ void FluxTest()
 {
 
     TCanvas *c1 = new TCanvas();
-    TH2D *hist = new TH2D("hist","Histogram",100,0,5,100,0,5);
+    TH2D *hist = new TH2D("hist","Histogram",100,0,1,100,0,1);
     hist->SetStats(0);
 
-    TF2 *f2 = new TF2("f2","sin(x)*sin(y)/(x*y)",0,5,0,5);
+    TF2 *f2 = new TF2("f2","sin(x)*sin(y)/(x*y)",0,1,0,1);
 
     hist->FillRandom("f2",40000);
 
@@ -30,7 +30,7 @@ void FluxTest()
 
     std::cout << xrad << " " << yrad <<  std::endl;
 
-    std::cout << "True val: " <<  f2->Eval(xrad,yrad) << hist->Interpolate(xrad,yrad) <<  std::endl;
+    std::cout << "True val: " <<  f2->Eval(xrad,yrad) << "Interpolated: " << hist->Interpolate(xrad,yrad) <<  std::endl;
 
 	
     gStyle->SetPalette(kRainBow);
