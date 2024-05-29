@@ -5,9 +5,9 @@ void FluxTest()
     TH2D *hist = new TH2D("hist","Histogram",100,0,1,100,0,1);
     hist->SetStats(0);
 
-    TF2 *f2 = new TF2("f2","sin(x)*sin(y)/(x*y)",0,1,0,1);
+    TF2 *f2 = new TF2("f2","sin(x)*sin(y)/(x*y)",0,1,0 ,1);
 
-    hist->FillRandom("f2",40000);
+    hist->FillRandom("f2",400000);
 
     /*
     TRandom *rand =  new TRandom(10);
