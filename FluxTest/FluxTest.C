@@ -2,12 +2,17 @@ void FluxTest()
 {
 
     TCanvas *c1 = new TCanvas();
-    TH2D *hist = new TH2D("hist","Histogram",100,0,1,100,0,1);
-    hist->SetStats(0);
+    TH2F *h = new TH2F("h","h",100,0.,10.,100,0.,10.);
+    TF2 *xyg = new TF2("xyg","xygaus",0,10,0,10);
+    xyg->SetParameters(1,5,2,5,2); //amplitude, meanx,sigmax,meany,sigmay 
+    h->FillRandom("xyg"); 
+    h->Draw();
 
-    TF2 *f2 = new TF2("f2","sin(x)*sin(y)/(x*y)",0,1,0 ,1);
+    
 
-    hist->FillRandom("f2",400000);
+    //TF2 *f2 = new TF2("f2","sin(x)*sin(y)/(x*y)",0,1,0 ,1);
+
+   // hist->FillRandom("f2",400000);
 
     /*
     TRandom *rand =  new TRandom(10);
@@ -21,7 +26,18 @@ void FluxTest()
         hist->Fill(x,y);
 
     }
-    */
+
+    TH2F *h = new TH2F("h","h",100,0.,10.,100,0.,10.);
+    TF2 *xyg = new TF2("xyg","xygaus",0,10,0,10);
+    xyg->SetParameters(1,5,2,5,2); //amplitude, meanx,sigmax,meany,sigmay 
+    h->FillRandom("xyg"); 
+    h->Draw();
+
+
+
+
+
+    */ 
    
    TRandom *rand =  new TRandom(10);
 
@@ -33,17 +49,17 @@ void FluxTest()
 
     std::cout << xrad << " " << yrad <<  std::endl;
 
-    std::cout << "True val: " <<  f2->Eval(xrad,yrad) << " Interpolated: " << hist->Interpolate(xrad,yrad) <<  std::endl;
+    std::cout << "True val: " <<  xyg->Eval(xrad,yrad) << " Interpolated: " << h->Interpolate(xrad,yrad) <<  std::endl;
 
 	
     gStyle->SetPalette(kRainBow);
     
-    hist->SetContour(1000);
+    h->SetContour(1000);
     
-    hist->Draw("COLZ");
+    h->Draw("COLZ");
 
     TCanvas *c2 = new TCanvas();
-    f2->Draw();
+    xyg->Draw();
     
     c1->Print("./Hist2DFunc.png");
     c2->Print("./funcTEST.png");
