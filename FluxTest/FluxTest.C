@@ -2,10 +2,10 @@ void FluxTest()
 {
 
     TCanvas *c1 = new TCanvas();
-    TH2D *hist = new TH2D("hist","Histogram",100,0,1,100,0,1);
+    TH2D *hist = new TH2D("hist","Histogram",100,-1,1,100,-1,1);
     hist->SetStats(0);
 
-    TF2 *f2 = new TF2("f2","sin(x)*sin(y)/(x*y)",0,1,0,1);
+    TF2 *f2 = new TF2("f2","sin(x)*sin(y)/(x*y)",-1,1,-1,1);
 
     hist->FillRandom("f2",40000);
 
@@ -25,8 +25,8 @@ void FluxTest()
    
    TRandom *rand =  new TRandom(10);
 
-    double xrad = rand->Gausn();
-    double yrad = rand->Gausn();
+    double xrad = rand->Gaus(0.0,1.0);
+    double yrad = rand->Gaus(0.0,1.0);
 
     std::cout << xrad << " " << yrad <<  std::endl;
 
