@@ -30,7 +30,7 @@ void FluxTest()
 
     std::cout << xrad << " " << yrad <<  std::endl;
 
-    std::cout << "True val: " <<  f2->Eval(xrad,yrad) << "Interpolated: " << hist->Interpolate(xrad,yrad) <<  std::endl;
+    std::cout << "True val: " <<  f2->Eval(xrad,yrad) << " Interpolated: " << hist->Interpolate(xrad,yrad) <<  std::endl;
 
 	
     gStyle->SetPalette(kRainBow);
