@@ -54,6 +54,7 @@
         "stdexcept": "c",
         "streambuf": "c",
         "typeinfo": "c",
-        "valarray": "c"
+        "valarray": "c",
+        "FluxTest.C": "cpp"
     }
 }
