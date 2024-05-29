@@ -23,8 +23,14 @@ void FluxTest()
     }
     */
    
+   TRandom *rand =  new TRandom(10);
 
+    double xrad = rand->Gaus();
+    double yrad = rand->Gaus();
 
+    std::cout << xrad << " " << yrad <<  std::endl;
+
+    std::cout << "True val: " <<  f2->Eval(xrad,yrad) << hist->Interpolate(xrad,yrad) <<  std::endl;
 
 	
     gStyle->SetPalette(kRainBow);
