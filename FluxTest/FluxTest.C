@@ -19,7 +19,7 @@ void FluxTest()
 	
     gStyle->SetPalette(kRainBow);
     hist->Draw();
-
+    hist->SetContour(1000);
     hist->Draw("COLZ");
     c1->Print("./Hist2D.png");
    
