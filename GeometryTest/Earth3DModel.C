@@ -499,6 +499,8 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
    
    l1->Draw("same");
    l2->Draw("same");
+   
+   c1->Print("./Earth3DwLLVP.png");
 
   //DrawPrem
 
