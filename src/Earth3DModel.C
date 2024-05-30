@@ -222,6 +222,8 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
 
       LAYER[LAYER.size()-1]-> SetVisibility(kTRUE); // Crust is vissible
 
+  /*
+
   // SECTION TO BE DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   double R_cmb = 3480.0;
   double zentest = 180-TMath::ASin( (R_cmb)/6368.0 )*(180.0/TMath::Pi()) ; // max 180
@@ -230,6 +232,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
     Anomaly = false;
   }
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  */
 
   if (Anomaly)
   {
@@ -315,6 +318,9 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   
   
   gGeoManager->SetTopVisible(); // the TOP is invisible
+
+  
+  
  
   top->Draw();
 
@@ -509,6 +515,14 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
    
    l1->Draw("same");
    l2->Draw("same");
+
+   if(Anomaly)
+   {
+
+    c1->Print("SimulationResults/3DEarthLLVP.png");
+
+   } 
+
 
   //DrawPrem
 
