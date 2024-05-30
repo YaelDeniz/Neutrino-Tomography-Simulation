@@ -39,8 +39,8 @@ int main()
 
     // Number of bins
     
-    int Ebins=100 ; // # of Bins of Energy
-    int Tbins=100 ; // # of Bins of cosEta
+    int Ebins=50 ; // # of Bins of Energy
+    int Tbins=50 ; // # of Bins of cosEta
 
     int Bins[]={Tbins, Ebins};
 
@@ -56,7 +56,7 @@ int main()
 
     // Alternative Earth Model:
 
-    double h_llsvp = 900; //km
+    double h_llsvp = 800; //km
     double R_cmb = 3480.0;
     double R_llsvp = R_cmb + h_llsvp; //km
 
@@ -137,7 +137,7 @@ int main()
 
     //Density profile PREM altered--------------------------------------------------------------------------
 
-    PREM_DEFAULT.open("/home/dehy0499/OscProb/PremTables/prem_15layers.txt");
+    PREM_DEFAULT.open("/home/dehy0499/OscProb/PremTables/prem_default.txt");
                
    // std::ofstream PREM_LLSVP("/home/dehy0499/OscProb/PremTables/prem_llsvp.txt"); //Create a file with Alternative Earth density profile 
     
