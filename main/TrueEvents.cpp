@@ -137,7 +137,7 @@ int main()
 
     //Density profile PREM altered--------------------------------------------------------------------------
 
-    PREM_DEFAULT.open("/home/dehy0499/OscProb/PremTables/prem_default.txt");
+    PREM_DEFAULT.open("/home/dehy0499/OscProb/PremTables/prem_15layers.txt");
                
    // std::ofstream PREM_LLSVP("/home/dehy0499/OscProb/PremTables/prem_llsvp.txt"); //Create a file with Alternative Earth density profile 
     

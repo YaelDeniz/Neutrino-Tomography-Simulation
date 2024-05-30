@@ -55,6 +55,7 @@
         "streambuf": "c",
         "typeinfo": "c",
         "valarray": "c",
-        "FluxTest.C": "cpp"
+        "FluxTest.C": "cpp",
+        "GeolTools.C": "cpp"
     }
 }
