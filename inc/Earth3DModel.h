@@ -24,7 +24,7 @@ class Earth3DModel
 
   bool Anomaly = false; //By Default we dont need LLVPs
   std::vector<int> WhichLayersLLVPs{1}; //Specify which layers contain an LLVPs segment
-  double aWidth = 180.0; //LLVP Angular With
+  double aWidth = 45.0; //LLVP Angular With
   double drho = 2; // 3% more dense
   double dzoa = 0.0; // 0% Chemical difference
   
