@@ -4,7 +4,7 @@ void FluxTest()
     int ybins = 1000;
     TCanvas *c1 = new TCanvas();
     TH2F *h = new TH2F("h","h",xbins,0.,10.,ybins,0.,10.);
-    TF2 *xyg = new TF2("xyg","xygaus",0,10,0,10);
+    TF2 *xyg = new TF2("xyg","xygaus",0.0,10,0.0,10);
     xyg->SetParameters(1,5,2,5,2); //amplitude, meanx,sigmax,meany,sigmay 
     h->FillRandom("xyg",xbins*ybins); 
     h->Draw();
