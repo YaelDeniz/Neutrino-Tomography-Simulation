@@ -57,6 +57,8 @@
         "valarray": "c",
         "FluxTest.C": "cpp",
         "GeolTools.C": "cpp",
-        "AsimovDataObs.C": "cpp"
+        "AsimovDataObs.C": "cpp",
+        "FluxTest copy.C": "cpp",
+        "HondaTest.C": "cpp"
     }
 }
