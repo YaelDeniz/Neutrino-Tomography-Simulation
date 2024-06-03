@@ -61,8 +61,8 @@ void FluxTest()
     TCanvas *c2 = new TCanvas();
     xyg->Draw();
     
-    c1->Print("./Hist2DFunc.png");
-    c2->Print("./funcTEST.png");
+    c1->Print("./Histogram.png");
+    c2->Print("./Function.png");
    
 
 
