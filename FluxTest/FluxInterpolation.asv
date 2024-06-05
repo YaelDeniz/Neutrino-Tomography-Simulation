@@ -1,5 +1,5 @@
 %% INTERPOLATION
-clear; clc; close all;
+clear; clc; 
 load("flux2.mat")
 
 flux = flux2
@@ -7,8 +7,8 @@ flux = flux2
 
 npts = 2000; 
 
-%logEi = log10(flux(:,1));
-logEi = log10(logspace(-1,4,101));
+logEi = log10(flux(:,1));
+lo
 %%Ei = logspace(0,4,101);
 
 %%logEi=log10(Ei);
@@ -22,16 +22,16 @@ logei = log10(flux(:,4)*10^-4);
 
 logeBari = log10(flux(:,5)*10^-4);
 
-%E = linspace(1,100,npts);
+E = linspace(1,100,npts);
 
-%LogE = log10(E); %Logarithm of points
-LogE = linspace(0,2,100);
+LogE = log10(E); %Logarithm of points
+
 %%Inerpoaltion
 
-LogMu = interp1(logEi,logMui,LogE,"linear");
-LogMuBar = interp1(logEi,logMuBari,LogE,"linear");
-Loge = interp1(logEi,logei,LogE,"linear");
-LogeBar = interp1(logEi,logeBari,LogE,"linear");
+LogMu = interp1(logEi,logMui,LogE,"cubic");
+LogMuBar = interp1(logEi,logMuBari,LogE,"cubic");
+Loge = interp1(logEi,logei,LogE,"cubic");
+LogeBar = interp1(logEi,logeBari,LogE,"cubic");
 
 Mu = 10.^(LogMu);
 MuBar = 10.^(LogMuBar);
@@ -39,10 +39,10 @@ e = 10.^(Loge);
 eBar = 10.^(LogeBar);
 
 
-numu= Mu.*((10.^LogE).^3);
-numubar = MuBar.*((10.^LogE).^3);
-nue = e.*((10.^LogE).^3);
-nuebar = eBar.*((10.^LogE).^3);
+numu= Mu.*(E.^3);
+numubar = MuBar.*(E.^3);
+nue = e.*(E.^3);
+nuebar = eBar.*(E.^3);
 
 plot(LogE,numu,"blue")
 
