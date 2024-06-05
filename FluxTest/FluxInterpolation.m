@@ -28,10 +28,10 @@ logeBari = log10(flux(:,5)*10^-4);
 LogE = linspace(0,2,100);
 %%Inerpoaltion
 
-LogMu = interp1(logEi,logMui,LogE,"linear");
-LogMuBar = interp1(logEi,logMuBari,LogE,"linear");
-Loge = interp1(logEi,logei,LogE,"linear");
-LogeBar = interp1(logEi,logeBari,LogE,"linear");
+LogMu = interp1(logEi,logMui,LogE,"cubic");
+LogMuBar = interp1(logEi,logMuBari,LogE,"cubic");
+Loge = interp1(logEi,logei,LogE,"cubic");
+LogeBar = interp1(logEi,logeBari,LogE,"cubic");
 
 Mu = 10.^(LogMu);
 MuBar = 10.^(LogMuBar);

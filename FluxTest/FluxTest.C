@@ -167,28 +167,28 @@ TH2D* ebflux =  NuFlux(4,FluxData); //EBarFlux
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 muflux->SetStats(0);
-muflux-> SetTitle("mu Flux");
+muflux-> SetTitle("#nu_{#mu} Flux");
 muflux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
 muflux->GetYaxis()->SetTitle("Cos(#theta_{z})");
-muflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
+//muflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
 
 mubflux->SetStats(0);
-mubflux-> SetTitle("mub Flux");
+mubflux-> SetTitle("#bar{#nu}_{#mu} Flux");
 mubflux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
 mubflux->GetYaxis()->SetTitle("Cos(#theta_{z})");
-mubflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
+//mubflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
 
 eflux->SetStats(0);
-eflux-> SetTitle("e Flux");
+eflux-> SetTitle("#nu_{e} Flux");
 eflux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
 eflux->GetYaxis()->SetTitle("Cos(#theta_{z})");
-eflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
+//eflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
 
 ebflux->SetStats(0);
-ebflux-> SetTitle("ebar Flux");
+ebflux-> SetTitle("#bar{#nu}_{e} Flux");
 ebflux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
 ebflux->GetYaxis()->SetTitle("Cos(#theta_{z})");
-ebflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
+//ebflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
 
 TCanvas *c = new TCanvas();
 c->Divide(2,2);
@@ -205,6 +205,15 @@ muflux->Draw("COLZ");
 
 c->cd(4);
 mubflux->Draw("COLZ");
+
+//c->SetCanvasSize(500, 500);
+
+c->SetWindowSize(1200, 800);
+
+//gStyle->SetPadLeftMargin(10000); 
+//gStyle->SetPadRightMargin(0.1);
+
+
 
 
 //Interpolation of the flux
@@ -277,6 +286,17 @@ mubflux->Draw("COLZ");
     multi->Add(numub);
     multi->Add(nue);
     multi->Add(nueb);
+
+
+
+    multi->GetXaxis()->SetLimits(0.0,2.0);
+    multi->GetXaxis()->SetTitle("log_{10}(E/GeV)");
+
+    multi->GetYaxis()->SetLimits(0.0,0.3);
+    multi->GetYaxis()->SetTitle("#Phi_{#nu}*E^{3}");
+
+    multi->SetTitle("Bilinear interpolation of Honda flux");
+
     gPad->SetGrid(1,1);
     multi->Draw("A");
 
