@@ -34,6 +34,64 @@ std::vector<std::vector<double>> reshape(const std::vector<double>& vec, int a, 
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------
+TH2D* NuFlux(int flavor, std::vector<std::vector<double>> FluxData)
+{
+
+    std::vector<double> nuflux;
+
+    for (int i = 0; i < FluxData.size(); ++i)
+    {
+        nuflux.push_back(FluxData[i][flavor]); // {log10(Enu),log10(NuMu*1e-4),log10(NuMubar*1e-4),log10(NuE*1e-4),log10(NuEbar*1e-4)}
+    }
+
+    //Create histogram
+
+    //int xbins = sizeof(Log10E) / sizeof(Log10E[0]);
+    //int ybins = sizeof(CZ) / sizeof(CZ[0]);
+
+    int xbins = 41;
+    int ybins = 20;
+
+    TH2D *flux = new TH2D("flux","flux",xbins,-0.025,2.025,ybins,-1.0,1.0);
+
+    //TGraph2D *flux2D = new TGraph2D(logEpts.size()*CosZpts.size());
+
+    std::vector<std::vector<double>> HistContent =  reshape(nuflux,20,41);
+
+    std::cout << HistContent.size() << " " << HistContent[0].size() << std::endl;
+
+    for (int j = 1; j <=xbins; ++j)
+    {
+        //int m = j - 1 ;
+
+       // std::cout << "[" <<j <<","<<m <<"]" << std::endl;
+
+        
+        for (int i = ybins; i >= 1 ; -- i) //int i = cbins; i >= 1 ; --i
+        {
+            //std::cout << flux->GetXaxis()->GetBinCenter(j) << " " << flux->GetYaxis()->GetBinCenter(i) << "[" <<j <<","<<m <<"]" << std::endl;
+            int m = j - 1 ;
+            
+            int n =(ybins) - i ;
+
+         //   std::cout << "{" << i << "," << n << "}" << std::endl;
+
+            flux->SetBinContent(j,i,HistContent[n][m]);
+
+            
+        }
+       // std::cout << " " << std::endl;
+    }
+ //delete HistContent;
+ 
+ //delete nuflux;
+
+ return flux;
+}
+//------------------
+
+
 
 
 void FluxTest()
@@ -58,16 +116,8 @@ void FluxTest()
 
     else { std::cout << "Error opening file"<<std::endl; }
 
-    double  Enu,NuMu,NuMubar,NuE,NuEbar;
-
     std::vector< std::vector<double> > FluxData;
-
-   
-
-    bool AXIS = true;
-    std::vector < double > l10E; 
-
-    double CosZ = -1.0;
+    
     while(getline(HONDA_FLUX, nline))
     {
 
@@ -76,27 +126,23 @@ void FluxTest()
 
 
             // String stream for parsing the input string
-            std::istringstream iss(nline);
+            std::istringstream DataRow(nline);
         
             // Vector to store the parsed doubles
-            std::vector<double> DataRow;
+            //std::vector<double> DataRow;
         
             // Temporary variable to store each parsed double
             double  Enu,NuMu,NuMubar,NuE,NuEbar;
         
             // Parse the input string and store the doubles in the vector
-            iss >> Enu >> NuMu >> NuMubar >> NuE >> NuEbar;
+            DataRow >> Enu >> NuMu >> NuMubar >> NuE >> NuEbar;
 
 
             if (Enu>= 1.0 && Enu<= 100.0 )
             {
               
-                //DataRow.push_back(Enu);
-                //DataRow.push_back(NuMu);
-                //DataRow.push_back(NuMubar);
-                //DataRow.push_back(NuE);
-                //DataRow.push_back(NuEbar);
-                FluxData.push_back( {CosZ,log10(Enu),log10(NuMu*1e-4),log10(NuMubar*1e-4),log10(NuE*1e-4),log10(NuEbar*1e-4)} );
+         
+                FluxData.push_back( {log10(Enu),log10(NuMu*1e-4),log10(NuMubar*1e-4),log10(NuE*1e-4),log10(NuEbar*1e-4)} );
 
              //   std::cout << Enu <<" "<< NuMu << " " << NuMubar << " " << NuE << " " << NuEbar << std::endl;
 
@@ -104,125 +150,64 @@ void FluxTest()
 
         }
 
-        else { CosZ += 0.05;
-         std::cout << " " << std::endl; }      
+        else 
+        { 
+            std::cout << " " << std::endl;
+         }      
         
     }
 
+//Matrix for Histogram & Histogram Draw
 
-    //Sort Angular Bins
-    std::vector<double> CosZpts;
+//-------------------------------------------------------------------------------------------------------------------------------
+TH2D* muflux =  NuFlux(1,FluxData); //MuFlux
+TH2D* mubflux =  NuFlux(2,FluxData); //MuBarFlux
+TH2D* eflux =  NuFlux(3,FluxData); //EFlux
+TH2D* ebflux =  NuFlux(4,FluxData); //EBarFlux
 
-    for (int i = 0; i < FluxData.size(); ++i)
-    {
-        CosZpts.push_back(FluxData[i][0]-0.1/2.0);
-    }
+//---------------------------------------------------------------------------------------------------------------------------------------
+muflux->SetStats(0);
+muflux-> SetTitle("mu Flux");
+muflux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
+muflux->GetYaxis()->SetTitle("Cos(#theta_{z})");
+muflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
 
-    //CosZpts.push_back(1.1);
+mubflux->SetStats(0);
+mubflux-> SetTitle("mub Flux");
+mubflux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
+mubflux->GetYaxis()->SetTitle("Cos(#theta_{z})");
+mubflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
 
-    set<double> s1;
-    unsigned size1 = CosZpts.size();
-    for( unsigned i = 0; i < size1; ++i ) s1.insert( CosZpts[i] );
-    CosZpts.assign( s1.begin(), s1.end() );
-    double CZ[CosZpts.size()];
-    copy(CosZpts.begin(),CosZpts.end(),CZ);
+eflux->SetStats(0);
+eflux-> SetTitle("e Flux");
+eflux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
+eflux->GetYaxis()->SetTitle("Cos(#theta_{z})");
+eflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
 
+ebflux->SetStats(0);
+ebflux-> SetTitle("ebar Flux");
+ebflux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
+ebflux->GetYaxis()->SetTitle("Cos(#theta_{z})");
+ebflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
 
-//    for (int i = 0; i < CosZpts.size(); ++i)
-  //  {
-     //   std::cout << CZ[i]<<std::endl;
-   // }
+TCanvas *c = new TCanvas();
+c->Divide(2,2);
 
-
-
-
-
-    //Sort Energy Bins
-    
-    std::vector<double> logEpts;
-
-    for (int i = 0; i < FluxData.size(); ++i)
-    {
-        logEpts.push_back(FluxData[i][1]);
-    }
-
-    set<double> s2;
-    unsigned size = logEpts.size();
-    for( unsigned i = 0; i < size; ++i ) s2.insert( logEpts[i] );
-    logEpts.assign( s2.begin(), s2.end() );
-    double Log10E[logEpts.size()];
-    copy(logEpts.begin(),logEpts.end(),Log10E);
+c->cd(1);
+eflux->Draw("COLZ");
 
 
-/*
-    for (int i = 0; i < logEpts.size(); ++i)
-    {
-        std::cout << " * " <<Log10E[i]<<std::endl;
-    }
+c->cd(2);
+ebflux->Draw("COLZ");
 
-*/
-    std::vector<double> nuflux;
-    for (int i = 0; i < FluxData.size(); ++i)
-    {
-        nuflux.push_back(FluxData[i][4]); // {CosZ,log10(Enu),log10(NuMu*1e-4),log10(NuMubar*1e-4),log10(NuE*1e-4),log10(NuEbar*1e-4)}
-    }
+c->cd(3);
+muflux->Draw("COLZ");
 
-    //Matrix for Histogram & Histogram Draw
+c->cd(4);
+mubflux->Draw("COLZ");
 
 
-    //Create histogram
-
-    //int xbins = sizeof(Log10E) / sizeof(Log10E[0]);
-    //int ybins = sizeof(CZ) / sizeof(CZ[0]);
-
-    int xbins = 41;
-    int ybins = 20;
-
-
-    TCanvas *c1 = new TCanvas();
-    TH2D *flux = new TH2D("flux","flux",xbins,-0.025,2.025,ybins,-1.0,1.0);
-
-    //TGraph2D *flux2D = new TGraph2D(logEpts.size()*CosZpts.size());
-
-    std::vector<std::vector<double>> HistContent =  reshape(nuflux,CosZpts.size(), logEpts.size());
-
-    std::cout << HistContent.size() << " " << HistContent[0].size() << std::endl;
-
-    for (int j = 1; j <=xbins; ++j)
-    {
-        //int m = j - 1 ;
-
-       // std::cout << "[" <<j <<","<<m <<"]" << std::endl;
-
-        
-        for (int i = ybins; i >= 1 ; -- i) //int i = cbins; i >= 1 ; --i
-        {
-            //std::cout << flux->GetXaxis()->GetBinCenter(j) << " " << flux->GetYaxis()->GetBinCenter(i) << "[" <<j <<","<<m <<"]" << std::endl;
-            int m = j - 1 ;
-            
-            int n =(ybins) - i ;
-
-            std::cout << "{" << i << "," << n << "}" << std::endl;
-
-            flux->SetBinContent(j,i,HistContent[n][m]);
-
-            
-        }
-        std::cout << " " << std::endl;
-    }
-
-    flux->SetStats(0);
-
-flux-> SetTitle("FLux");
-
-flux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
-flux->GetYaxis()->SetTitle("Cos(#theta_{z})");
-flux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
-
-
-flux->Draw("COLZ");
-
-
+//Interpolation of the flux
 
 
 
@@ -236,11 +221,14 @@ flux->Draw("COLZ");
 
     double hE = (100 - 1)/pts;
 
-    double Ei = 1;
+    double Eo = 1;
 
-    TCanvas *c2 = new TCanvas();
+    
 
-    TGraph  *test = new TGraph(pts);
+    TGraph  *numu = new TGraph(pts);
+    TGraph  *numub = new TGraph(pts);
+    TGraph  *nue = new TGraph(pts);
+    TGraph  *nueb = new TGraph(pts);
 
  std::cout << "----------------" << std::endl;
 
@@ -248,242 +236,50 @@ flux->Draw("COLZ");
      {
           
 
-         //double logphi = flux->Interpolate(log10(Ei),-0.9);
-
-         //std::cout << Ei + i*hE << " " << Ei << " " << log10(Ei + i*hE) << " " << pow(10, log10(Ei + i*hE)) << std::endl;
-
-         double x =  Ei + i*hE;
-
-         double logx = log10(x);
-         
-         double logphi = flux->Interpolate(logx,-0.9);
-
-         //std::cout <<  logphi << std::endl;
-
-         double y = pow(10,logphi)*x*x*x;
-
-         test -> SetPoint (i,  logx,  y);
-     } 
-
-
-
-    
-
-    test->GetXaxis()->SetTitle("log_{10}(E/GeV)");
-    
-    test->GetYaxis()->SetTitle("#Phi_{#nu}*E_{#nu}^{3}");
-
-    test->SetTitle("");
-    
-    test->Draw();
-
-
-
-
-
-
-
-    /*
-
-    std::vector<std::vector<double>> HistContent =  reshape(nuflux,CosZpts.size(), logEpts.size());
-
-    //std::cout << HistContent.size() << " " << HistContent[0].size() << std::endl;
-    /*
-    for (int i = 0; i < 5 HistContent.size() ; ++i)
-    {
-        std::cout << i <<" :  " ;
-        for (int j = 0; j < HistContent[0].size() ; ++j)
-        {
-            std::cout << HistContent[i][j] << " " ;
-
-            flux->SetBinContent(i,j,HistContent[i][j]);
-        }
-
-        std::cout << std::endl;
-    }
-    
-
-    int k = 0;
-
-    int ebins = HistContent[0].size();
-
-    int cbins = HistContent.size();
-
-    //int ebins = 3;
-
-    //int cbins = 14;
-
-    for (int j = 0; j < ebins ; ++j) //41 >
-    {
-
-        int m = (ebins-1) - j;
-
-        std::cout << " " << std::endl;
  
-        for (int i = cbins; i >= 1 ; --i) //20 ^
-        {
+
+         double Ei =  Eo + i*hE;
+
+         double logEi = log10(Ei);
          
-            int n =(cbins) - i ;
+         double logphimu = muflux->Interpolate(logEi,-0.9);
+         double logphimub = mubflux->Interpolate(logEi,-0.9);
+         double logphie = eflux->Interpolate(logEi,-0.9);
+         double logphieb = ebflux->Interpolate(logEi,-0.9);
 
-            std::cout << "Index check " << i << " " << n << std::endl;
-
-            flux->SetBinContent(j,i,HistContent[n][j]);
-
-
-            //flux2D->SetPoint(k,1,1, 1 );
-            k++;
-        
-        }
-
-    } 
-
-flux->SetStats(0);
-
-flux-> SetTitle("FLux");
-
-flux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
-flux->GetYaxis()->SetTitle("Cos(#theta_{z})");
-flux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
-
-
-flux->Draw("COLZ");
-
-TH1D *Bins = new TH1D("bins","bins",41,-0.025, 2.025 );
-
-
-
-for (int i = 1; i <= 41; ++i)
-{
-    std::cout <<   Bins->GetBinCenter(i) << std::endl; 
-    std::cout <<   Bins->GetBinWidth(i) << std::endl; 
-    std::cout <<   Bins->GetBinLowEdge(i)<< std::endl;
-    std::cout << " " << std::endl;
-}
-
-
- /*
-TCanvas *c3 = new TCanvas();
-flux2D->Draw("surf1");
-
-
-    double Emax = 100;
-
-    double Emin = 1;
-
-    double pts = 1000; 
-
-    double hE = (100 - 1)/pts;
-
-    double Ei = 1;
-
-    TCanvas *c2 = new TCanvas();
-
-    TGraph  *test = new TGraph(pts);
-
- std::cout << "----------------" << std::endl;
-
-    for (int i = 0; i < pts; ++i)
-     {
-          
-
-         //double logphi = flux->Interpolate(log10(Ei),-0.9);
-
-         //std::cout << Ei + i*hE << " " << Ei << " " << log10(Ei + i*hE) << " " << pow(10, log10(Ei + i*hE)) << std::endl;
-
-         double x =  Ei + i*hE;
-
-         double logx = log10(x);
          
-         double logphi = flux->Interpolate(logx,-0.9);
 
-         //std::cout <<  logphi << std::endl;
+         double phimu = pow(10,logphimu)*Ei*Ei*Ei;
+         double phimub = pow(10,logphimub)*Ei*Ei*Ei;
+         double phie = pow(10,logphie)*Ei*Ei*Ei;
+         double phieb = pow(10,logphieb)*Ei*Ei*Ei;
 
-         double y = pow(10,logphi)*x*x*x;
-
-         test -> SetPoint (i,  logx,  y);
+         numu -> SetPoint (i,  logEi,  phimu);
+         numub -> SetPoint (i,  logEi,  phimub);
+         nue -> SetPoint (i,  logEi,  phie);
+         nueb -> SetPoint (i,  logEi,  phieb);
      } 
 
 
 
-    
-
-    test->GetXaxis()->SetTitle("log_{10}(E/GeV)");
-    
-    test->GetYaxis()->SetTitle("#Phi_{#nu}*E_{#nu}^{3}");
-
-    test->SetTitle("");
-    
-    test->Draw();
-
-
-
-
-    //Populate histogram
-
-    //std::cout <<  "Matrix Visualization" << " "  << FluxData.size() << " " << FluxData[0].size()   << std::endl;
-
-
-    //for (int j = 0; j < ybins; ++j)
-    //{
-
-      //  flux->SetBinContent(j,j,j) ;
-    //}
-
-
-/*
-    for (int j = 0; j < ybins; ++j)
-    {
-        for (int i = 0; i < xbins; ++i)
-        {
-            //std::cout <<  FluxData[i][j]<< " " ; 
-
-            std::cout << j << " " << i << " "  << FluxData[i][0] << " "  << FluxData[i][1] << std::endl;
-
-
-        }
-        
-        std::cout << std::endl ;  
-    }
-
-
- */
-
-
-
-    
-
-
-
-
-    /*
-
-    set<double> s;
-    unsigned size = l10E.size();
-    for( unsigned i = 0; i < size; ++i ) s.insert( l10E[i] );
-    l10E.assign( s.begin(), s.end() );
-    double Log10E[l10E.size()];
-    copy(l10E.begin(),l10E.end(),Log10E);
-
-
-    
-    for (int i = 0; i < l10E.size(); ++i)
-    {
-        std::cout <<"*" << Log10E[i] << " " <<std::endl;
-    }
-
-    std::vector < double > zen;
-
-    for (int i = 0; i <= 20; ++i)
-    {
-        zen.push_back(-1.0+i*0.1);
-        std::cout <<  zen[i] << std::endl;
-    }
-
-    int xbins = Log10E.size();
-    int ybins = zen.size();
-
     TCanvas *c1 = new TCanvas();
-    TH2D *flux = new TH2D("flux","flux",xbins,0.0,2.0,ybins,-1.0,1.0);
-  */
+    TMultiGraph * multi = new TMultiGraph();
 
+    numu->SetLineColor(4);
+    nue->SetLineColor(2);
+    numub->SetLineColor(4);
+    nueb->SetLineColor(2);
+
+    numub->SetLineStyle(9);
+    nueb->SetLineStyle(9);
+
+    multi->Add(numu);
+    multi->Add(numub);
+    multi->Add(nue);
+    multi->Add(nueb);
+    gPad->SetGrid(1,1);
+    multi->Draw("A");
+
+   
+   
 }
