@@ -61,6 +61,7 @@
         "FluxTest copy.C": "cpp",
         "HondaTest.C": "cpp",
         "NuFlux.C": "cpp",
-        "NuFlux_ClassTest.C": "cpp"
+        "NuFlux_ClassTest.C": "cpp",
+        "PhyTools.C": "cpp"
     }
 }

@@ -28,6 +28,7 @@ OBJECTS_AsivTrue = MathTools.o PhyTools.o Earth3DModel.o AsimovDataTrue.o
 OBJECTS_AsivObs  = MathTools.o PhyTools.o AsimovDataObs.o 
 OBJECTS_Res  = MathTools.o PhyTools.o  DetectorResolution.o 
 OBJECTS_OscProb  = MathTools.o PhyTools.o  OscProbEarth.o 
+OBJECTS_Flux = PhyTools.o
 
 
 #OBJECTSProb = GetProbPREM.o
@@ -37,7 +38,9 @@ OBJECTS_OscProb  = MathTools.o PhyTools.o  OscProbEarth.o
 
 #TARGETS
 
-all: TrueEvents ObservedEvents  StatsAnaObs OscProbEarth #DetectorResolution   # All targets #Add StatsAnaTrue laters
+all: TrueEvents ObservedEvents  StatsAnaObs OscProbEarth HondaFlux #DetectorResolution   # All targets #Add StatsAnaTrue laters
+
+
 
 
 TrueEvents: $(MAIN_DIR)/TrueEvents.cpp $(OBJECTS_AsivTrue) 
@@ -74,6 +77,13 @@ OscProbEarth: $(MAIN_DIR)/OscProbEarth.cpp $(OBJECTS_OscProb)
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
 	@echo " "
 	@echo "Probabilities Done"
+
+HondaFlux: $(MAIN_DIR)/FluxMain.cpp $(OBJECTS_Flux) 
+	@echo " "
+	@echo "Generating Application for Neutrino Flux visualization"
+	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
+	@echo " "
+	@echo "Neutrino Flux vis generator Done"
 
 #Build Objects
 
@@ -115,4 +125,4 @@ Earth3DModel.o: $(SRC_DIR)/Earth3DModel.C
 
 clean:
 	@echo "Removing Objects"
-	rm *.o  TrueEvents ObservedEvents StatsAnaTrue StatsAnaObs OscProbEarth
+	rm *.o  TrueEvents ObservedEvents StatsAnaObs OscProbEarth HondaFlux 
