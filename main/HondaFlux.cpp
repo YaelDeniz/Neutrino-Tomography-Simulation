@@ -10,6 +10,7 @@
 #include "TCanvas.h"
 #include "TH2.h"
 #include "TGraph.h"
+#include "TMultiGraph.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TTree.h"
