@@ -105,7 +105,7 @@ void FluxTest()
     //HONDA_FLUX.open("./AziAveraged-solmin/grn-nu-20-01-000.d"); //km3net
   
 
-    HONDA_FLUX.open("./SP_AziAveraged_solmin.d");
+    HONDA_FLUX.open("./SP_AziAveraged_solmin/spl-nu-20-01-000.d"); //ICE CUBE
 
         //Parameters for looping the Honda File
 
