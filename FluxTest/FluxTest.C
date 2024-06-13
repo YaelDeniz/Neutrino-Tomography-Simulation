@@ -300,6 +300,9 @@ c->SetWindowSize(1200, 800);
     gPad->SetGrid(1,1);
     multi->Draw("A");
 
+    c->SaveAs("./FluxHist.jpg");
+    c1->SaveAs("./FluxInterpol.jpg");
+
    
    
 }
