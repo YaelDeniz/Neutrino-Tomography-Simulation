@@ -23,7 +23,7 @@
 
 
 //------------------
-in main()
+int main()
 {
  
 NuFlux SPflux;
