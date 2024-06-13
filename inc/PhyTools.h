@@ -47,7 +47,10 @@ class NuFlux
     std::vector<std::vector<double>> reshape(const std::vector<double>& vec, int a, int b); //Reshape colum vector into matrix
     
     // By default we use South Pole Flux with Sol Min
-    std::vector< std::vector<double> > SetFluxData( std::string nuFluxFile = "../NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d" );
+
+    std::string FileName = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d";
+    
+    std::vector< std::vector<double> > SetFluxData( std::string nuFluxFile = FileName );
     
     TH2D*GetFluxHist(int flavor, std::vector<std::vector<double>> FluxData); // Create 2D Histogram
 
