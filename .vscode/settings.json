@@ -59,6 +59,8 @@
         "GeolTools.C": "cpp",
         "AsimovDataObs.C": "cpp",
         "FluxTest copy.C": "cpp",
-        "HondaTest.C": "cpp"
+        "HondaTest.C": "cpp",
+        "NuFlux.C": "cpp",
+        "NuFlux_ClassTest.C": "cpp"
     }
 }
