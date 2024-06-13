@@ -19,7 +19,7 @@ class NuFlux
     TH2D*GetFluxHist(int flavor, std::vector<std::vector<double>> FluxData); // Create 2D Histogram
 
     
-}
+};
 
 
 bool NuFlux::DataHeader (const std::string &aline) 
@@ -197,10 +197,10 @@ std::vector< std::vector<double> > FluxData = SPflux.SetFluxData();
 //Matrix for Histogram & Histogram Draw
 
 //-------------------------------------------------------------------------------------------------------------------------------
-TH2D* muflux =  GetFluxHist(1,FluxData); //MuFlux
-TH2D* mubflux =  GetFluxHist(2,FluxData); //MuBarFlux
-TH2D* eflux =  GetFluxHist(3,FluxData); //EFlux
-TH2D* ebflux =  GetFluxHist(4,FluxData); //EBarFlux
+TH2D* muflux =  SPflux.GetFluxHist(1,FluxData); //MuFlux
+TH2D* mubflux =  SPflux.GetFluxHist(2,FluxData); //MuBarFlux
+TH2D* eflux =  SPflux.GetFluxHist(3,FluxData); //EFlux
+TH2D* ebflux =  SPflux.GetFluxHist(4,FluxData); //EBarFlux
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 muflux->SetStats(0);
