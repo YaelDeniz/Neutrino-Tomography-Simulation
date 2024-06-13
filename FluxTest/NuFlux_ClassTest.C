@@ -4,7 +4,7 @@ class NuFlux
     public: 
 
     //Neutrino Energies
-    double Enu_min= 1.0; \\GeV
+    double Enu_min= 1.0; //GeV
     double Enu_max= 100.0;
 
     //Detector Locations
