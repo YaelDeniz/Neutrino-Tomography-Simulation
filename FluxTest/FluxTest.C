@@ -292,7 +292,7 @@ c->SetWindowSize(1200, 800);
     multi->GetXaxis()->SetLimits(0.0,2.0);
     multi->GetXaxis()->SetTitle("log_{10}(E/GeV)");
 
-    multi->GetYaxis()->SetLimits(0.0,0.3);
+    multi->GetYaxis()->SetLimits(0.0,0.03);
     multi->GetYaxis()->SetTitle("#Phi_{#nu}*E^{3}");
 
     multi->SetTitle("Bilinear interpolation of Honda flux");
