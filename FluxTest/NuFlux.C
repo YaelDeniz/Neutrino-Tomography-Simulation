@@ -110,7 +110,7 @@ TH2D* NuFlux::GetFluxHist(int flavor, std::vector<std::vector<double>> FluxData)
 }
 //------------------
 
- std::vector< std::vector<double> > NuFlux::SetFluxData( std::string nuFluxFile = "./SP_AziAveraged_solmin/spl-nu-20-01-000.d" )
+ std::vector< std::vector<double> > NuFlux::SetFluxData( std::string nuFluxFile )
 {
 
 
