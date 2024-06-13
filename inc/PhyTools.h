@@ -48,9 +48,9 @@ class NuFlux
     
     // By default we use South Pole Flux with Sol Min
 
-    std::string FileName = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d";
+    //std::string FileName = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d";
     
-    std::vector< std::vector<double> > SetFluxData( std::string nuFluxFile = FileName );
+    std::vector< std::vector<double> > SetFluxData( std::string nuFluxFile = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d" );
     
     TH2D*GetFluxHist(int flavor, std::vector<std::vector<double>> FluxData); // Create 2D Histogram
 
