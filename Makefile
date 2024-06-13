@@ -78,7 +78,7 @@ OscProbEarth: $(MAIN_DIR)/OscProbEarth.cpp $(OBJECTS_OscProb)
 	@echo " "
 	@echo "Probabilities Done"
 
-HondaFlux: $(MAIN_DIR)/FluxMain.cpp $(OBJECTS_Flux) 
+HondaFlux: $(MAIN_DIR)/HondaFlux.cpp $(OBJECTS_Flux) 
 	@echo " "
 	@echo "Generating Application for Neutrino Flux visualization"
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
