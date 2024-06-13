@@ -102,7 +102,10 @@ void FluxTest()
 
     //Density profile PREM altered--------------------------------------------------------------------------
 
-    HONDA_FLUX.open("./AziAveraged-solmin/grn-nu-20-01-000.d");
+    //HONDA_FLUX.open("./AziAveraged-solmin/grn-nu-20-01-000.d"); //km3net
+  
+
+    HONDA_FLUX.open("./SP_AziAveraged_solmin.d");
 
         //Parameters for looping the Honda File
 
@@ -300,8 +303,8 @@ c->SetWindowSize(1200, 800);
     gPad->SetGrid(1,1);
     multi->Draw("A");
 
-    c->SaveAs("./FluxHist.jpg");
-    c1->SaveAs("./FluxInterpol.jpg");
+    c->SaveAs("./FluxHistSP.jpg");
+    c1->SaveAs("./FluxInterpolSP.jpg");
 
    
    
