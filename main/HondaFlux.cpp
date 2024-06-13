@@ -183,8 +183,8 @@ c->SetWindowSize(1200, 800);
     gPad->SetGrid(1,1);
     multi->Draw("A");
 
-    c->SaveAs("SimulationResults/NeutrinoFlux/FluxHistSP.jpg");
-    c1->SaveAs("SimulationResults/NeutrinoFlux/FluxInterpolSP.jpg");
+    c->SaveAs("/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/NeutrinoFlux/FluxHistSP.jpg");
+    c1->SaveAs("/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/NeutrinoFlux/FluxInterpolSP.jpg");
 
    return 0;
    
