@@ -26,6 +26,7 @@
 #include "TF1.h"
 #include "TMath.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TSystem.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -58,70 +59,96 @@ using namespace std;
 //# define years2sec 3.154E7 // Years in Seconds
 
 // Make oscillogram for given final flavour and MH
-TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<int> layers,  int flvf, double Region[], int Bins[], double NnT)
+
+class AsimovSimulation()
+{
+    Public:
+
+    //Earth Settings
+    std::string PremModel;
+    bool MantleAnomaly;
+    std::vector<int> AnomalousLayers;
+
+    //Neutrino Settings
+    int flvf;
+    double EnuMin = 1.00; //GeV
+    double EnuMax = 10.00; //GeV
+
+    double ZenMin; // Min 90;
+    double ZenMax; // Max 180;
+
+    double AziMin=0; // Min 0;
+    double AziMax=360; //Max 360;
+
+    //Simulation Settings
+    int nbinsZen; //Bins in Zenith
+    int nbinsAzi; //Bins in Azimuth
+    int nbinsE; //Bins in Energy
+
+    double NnT; //Detector Exposure
+
+    TH3D * GetTrueEvents3D();
+
+
+
+};
+TH3D* AsimovSimulation::GetTrueEvents3D(std::string modelname, bool MantleAnomaly , std::vector<int> layers,  int flvf, double Region[], int Bins[], double NnT)
 {  
-    std::cout << "Generating Asimov data set: Reimann Integration Method" << std::endl;
+    std::cout << "Simulation of True events assuming Asimov data set" << std::endl;
 
-    double total = 0;
+    std::string PremFile = PremModel+".txt";
 
-    std::string MODELNAME = modelname+".txt";
-
-    //std::vector< std::vector<double> >  matrixtest = NuPATHS3D (PREM_MODELTEST, 180.0, 0.0 kFALSE); 
-
-    //Data Storage -----------------------------------------------------------------------------------------------------
-    // std::string model = "/home/dehy0499/OscProb/PremTables/"+MODELNAME+".txt";
-    //std::string model_default = "/home/dehy0499/OscProb/PremTables/prem_default.txt";
-    
-    std::cout << modelname <<std::endl;
+     std::cout << premmodel <<std::endl;
 
     std::string location = "SimulationResults/AsimovData/" ;
     
-    std::string Earthmodel= modelname;
     
-    std::string title = "_Asimov_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
     
-    std::string filename = location+Earthmodel+title;
+    //std::string details = "_asmv_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
+    
+    std::string nudetails = "nu"+std::to_string(flvf)+"E"+std::to_string(EnuMin)+std::to_string(EnuMax);
+   
+    std::string simdetails = "asmvtrue"+std::to_string(nbinsZen)+std::to_string(nbinsAzi)+std::to_string(nbinsE);
+   
+    std::string filename = location+PremModel+nudetails+simdetails+".csv";
     
     ofstream TrueEvents(filename, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
     
-    double N_ij = 0   ;   //Poisson mean for bin ij.
+   
   
 
     //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
 
     //Energy Intervals
-    double Emin      = Region[0];//Lower limit for Energy
-    double Emax      = Region[1];//Upper limit for Energy
+    double Emin      = EnuMin;//Lower limit for Energy
+    double Emax      = EnuMax;//Upper limit for Energy
 
-    //double etamin   = ( 180-Region[3] )*TMath::Pi()/180;
-    //double etamax   = ( 180-Region[2] )*TMath::Pi()/180;
+    //Angular Intervals
+    double thmin = ZenMin; //[min 90]
+    double thmax = ZenMax;  //[max 180]
 
-    double thmin = Region[2]; //[min 90]
-    double thmax = Region[3];  //[max 180]
+    double phimin = AziMin; //[min 0]
+    double phimax = AziMax;  //[max 360]
 
 
-
-    //Zenith Angle Interval
-    //double etamax   = ( 180-Region[2] )*TMath::Pi()/180;//Lower limit for angle
-    //double etamin   = ( 180-Region[3])*TMath::Pi()/180;//Upperlimit for angle
-    //double cetamin   = cos((180-etamax)*TMath::Pi()/180); 
-    //double cetamax   = cos((180-etamin)*TMath::Pi()/180);
 
     //Phi/Azimuthal Intervals
     double dAz = Region[4]*TMath::Pi()/180;
 
     //Bins
-    int ibins = Bins[0]; // Number of  angular bins of True event distribution
-    int jbins = Bins[1]; // Number of  energy bins of True event distribution
-    //double dth = (thmax - thmin)/(ibins); //< Bin width/2
-    //double dE = (Emax - Emin)/(jbins); //< Bin width/2
+    int ibins = nbinsZen; //Bins in Zenith
+    int jbins = nbinsAzi; //Bins in Azimuth
+    int kbins = nbinsE;   //Bins in Energy
 
-    /* Create 2D histogram for Event Oscillogram,
-     xbins correspond to energy values and ybins to zenith angle cosEta*/
-    TH2D* hEvents = new TH2D("hEvents","Neutrino Events",ibins,thmin,thmax,jbins,Emin,Emax); 
-    //TH2D* hEvents_k= new TH2D("hEvents_k","True Events; #eta ; #E",ibins,etamin,etamax,jbins,Emin,Emax); //Store data for each pseudo-experiment.
-    //TH2D* hEvents_means= new TH2D("hEvents_means","True Events( Means ); #eta ; #E",ibins,etamin,etamax,jbins,Emin,Emax); //Store data for each pseudo-experiment.
+    double N_ijk = 0   ;   //Poisson mean for bin ijk.
+
+    /* Create 3D histogram for Event distribution. X-axis = Zenith direction, Y-axis = Azimuth direction, Z-axis = Energy */
+
+    //TH2D* hEvents = new TH2D("hEvents","Neutrino Events",ibins,thmin,thmax,jbins,Emin,Emax); 
+
+    TH3D * TrueHist("TrueHist","True Event Histrogram", ibins,thmin,thmax,jbins,phimin,phimax,kbins,Emin,Emax)
+    
     
     //Neutrino event generation-----------------------------------------------------------------------------------------
 
@@ -167,88 +194,60 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
 
 
+    //SET ATMOSPHERIC FLUX DATA
+
+    NuFlux SPflux;
+
+    std::vector< std::vector<double> > FluxData = SPflux.SetFluxData();
+
+    //Matrix for Histogram & Histogram Draw
+
+    TH2D* muflux =  SPflux.GetFluxHist(1,FluxData); //MuFlux
+    TH2D* mubflux =  SPflux.GetFluxHist(2,FluxData); //MuBarFlux
+    TH2D* eflux =  SPflux.GetFluxHist(3,FluxData); //EFlux
+    TH2D* ebflux =  SPflux.GetFluxHist(4,FluxData); //EBarFlux
 
 
-    // Atmospheric Neutrino Flux data:
-    TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope)
-    //TFile *HF = new TFile("./NuFlux/TestFlux.root","read"); //Flux Test
-   
-    // Set Avarege flux for a range of cosEta
-    TDirectory *Zen;
-    Zen = (TDirectory*) HF->Get("CosZ_all"); // Avg Flux for -0.9 <~ CosEta < -0.8
-    TTree *flux= (TTree*) Zen->Get("FluxData"); //Opens data file      
     
-    double Enu,NuMu,NuMubar,NuE,NuEbar;
-    flux->SetBranchAddress("Enu",&  Enu  );
-    flux->SetBranchAddress("NuMu",&  NuMu );
-    flux->SetBranchAddress("NuMubar",& NuMubar );
-    flux->SetBranchAddress("NuE",& NuE );
-    flux->SetBranchAddress("NuEbar",& NuEbar );
-
-    int n = flux->GetEntries();
-    std::vector <double> EPsi,PsiNuMu,PsiNuMubar,PsiNuE,PsiNuEbar;
-            
-    for (int i = 0; i < n-1 ; ++i)
-    {
-        flux->GetEntry(i);
-        EPsi.push_back(Enu);
-        PsiNuMu.push_back(NuMu);
-        PsiNuMubar.push_back(NuMubar);
-        PsiNuE.push_back(NuE);
-        PsiNuEbar.push_back(NuEbar);
-    }
-    
-    //Interpolate Neutrino flux data:
-    //Muon-neutrino flux
-    ROOT::Math::Interpolator dPsiMudE(EPsi,PsiNuMu, ROOT::Math::Interpolation::kCSPLINE);// Muon Neutrino Flux Interpolation
-    ROOT::Math::Interpolator dPsiMubardE(EPsi,PsiNuMubar, ROOT::Math::Interpolation::kCSPLINE);// Muon Antineutrino Flux Interpolation
-    //Electron-neutrinos flux
-    ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kCSPLINE);// Electron Neutrino Flux Interpolation
-    ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE);// Electron Antineutrino Flux Interpolation
 
 
-
+    //SET EARTH MODEL
     
      Earth3DModel MyEarthModel;
 
-     MyEarthModel.SetModel(MODELNAME);
+     MyEarthModel.SetModel(PremFile);
 
      MyEarthModel.ActiveHeterogeneity( MantleAnomaly );
 
-    // MyEarthModel.aWidth = 40;
-
-     // std::vector<int> LLVPSegments {25,26,27,28};
-
      MyEarthModel.WhichLayersLLVPs = layers;
 
+    double l,d,z,ly;
 
 
-    
-
-
-        double l,d,z,ly;
-
-        for(int i=1; i<= ibins ; i++) //Loop in Angular bins
+    for (int j = 1; j <= jbins; j++) //Loop In Azimuth
+    {
+        double phi = TrueHist->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
+        
+        double dphi = (TrueHist -> GetYaxis()->GetBinWidth(j))*(TMath::Pi()/180); //In Radians
+        
+      
+        for(int i=1; i<= ibins ; i++) //Loop in Zenith
         {    
 
             // Get cos(eta) from bin center, This is used to calculate the baseline.
 
-            double th = hEvents->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-            double dth = (hEvents -> GetXaxis()->GetBinWidth(i))*(TMath::Pi()/180);
+            double th = TrueHist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+            double dth = (TrueHist -> GetXaxis()->GetBinWidth(i))*(TMath::Pi()/180);
             double cth =cos(th);
 
             if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
             
             //std::vector< std::vector<double> >  PathMatrix = NuPATHS3D (PREM_MODELTEST, eta , 0.0, LLVP);
 
-            MyEarthModel.SetDirection(th, 0.0);
+            MyEarthModel.SetDirection(th,phi); 
 
             std::vector<std::vector<double>> EarthPath = MyEarthModel.Create3DPath();
 
-
-
-
-        
             l = EarthPath[0][0];
             d = EarthPath[0][1];
             z = EarthPath[0][2];
@@ -269,34 +268,70 @@ TH2D*  AsimovTrueEvents(std::string modelname, bool MantleAnomaly , std::vector<
             
             } 
             
-            for (int j = 1; j <=jbins; ++j)
+            for (int k = 1; k <=kbins; ++k)
             { 
-                double e = hEvents->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
-                double dE = hEvents->GetYaxis()->GetBinWidth(j);
-                //Neutrino
+                double e = TrueHist->GetZaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
+                double dE = TrueHist->GetZaxis()->GetBinWidth(k);
+                double logEi = log10(e);
+                //Neutrino Contribution;
+
+                //Neutrino Fluxes
+
+                 double logdPsiMu = muflux->Interpolate(logEi,cth);
+                 double logdPsiMub = mubflux->Interpolate(logEi,cth);
+                 double logdPsiE = eflux->Interpolate(logEi,cth);
+                 double logdPsiEb = ebflux->Interpolate(logEi,cth);
+
+         
+
+                 double dPsiMudEdct = pow(10,logdPsiMu);     //Muon neutrino flux
+                 double dPsiMubardEdct = pow(10,logdPsiMub); //Muon anti-neutrino flux
+                 double dPsiEdEdct = pow(10,logdPsiE);        //Electron neutrino flux
+                 double dPsiEbardEdct = pow(10,logdPsiEb);    //Electron anti-neutrino flux
+
+
+
+                // 
+
                 PMNS_H.SetIsNuBar(false); 
-                double Ri_nu = XSec(e,nu)*( PMNS_H.Prob(numu, flvf, e)*dPsiMudE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEdE.Eval(e) );
+
+                double dPsiEdE = eflux->Interpolate(logEi,-0.9)
+
+                double Ri_e = XSec(e,nu)*( PMNS_H.Prob(nue,flvf,e)*dPsiEdEdct); //Electron neutrino contribution
+
+                double  Ri_mu = XSec(e,nu)*(PMNS_H.Prob(numu, flvf, e)*dPsiMudEdct); //Muon neutrino contribution  
+                
+                double Ri_nu = Ri_e + Ri_mu;
+
+                //double Ri_nu = XSec(e,nu)*( PMNS_H.Prob(numu, flvf, e)*dPsiMudE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEdE.Eval(e) );
                 
                 //Antineutrino contribution
                 PMNS_H.SetIsNuBar(true); 
-                double Ri_nubar = XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
 
-                double N_ij = NnT*(Ri_nu + Ri_nubar)*dE*dth*dAz;
+                double Ri_eb=XSec(e,nubar)*(PMNS_H.Prob(nue,flvf,e)*dPsiEbardEdct ); //Electron anti-neutrino contribution
+
+                double Ri_mub=XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardEdct ); //Muon anti-neutrino contribution
+
+                double Ri_nubar = Ri_eb + Ri_mub;
+
+                //double Ri_nubar = XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
+
+                //Events at bin
+                double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dth*dphi;
+                //double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi;
 
 
-                TrueEvents << th << ", " << e << ", "<< N_ij  << "\n";
+                TrueEvents << th << "," << phi <<" , " << e << ", "<< N_ijk  << "\n";
 
-                hEvents->SetBinContent(i,j, N_ij); //Create histogram for  kth Pseudo-Experimens
+                TrueHist->SetBinContent(i,j,k, N_ijk); //Create histogram for  kth Pseudo-Experimens
 
             } // loop energy
 
-        } // Loop eta
+        } // Loop zenith
 
+    } //Loop in Azimuth
 
     TrueEvents.close();
-
-    delete HF;
-            
-             
-    return hEvents;
+           
+    return TrueHist;
 }

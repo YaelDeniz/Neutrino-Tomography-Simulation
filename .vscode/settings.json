@@ -62,6 +62,8 @@
         "HondaTest.C": "cpp",
         "NuFlux.C": "cpp",
         "NuFlux_ClassTest.C": "cpp",
-        "PhyTools.C": "cpp"
+        "PhyTools.C": "cpp",
+        "AsimovDataTrue copy.C": "cpp",
+        "AsimovDataTrue_backup.C": "cpp"
     }
 }
