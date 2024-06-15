@@ -1,12 +1,87 @@
 #ifndef TRUEEVENTGENERATOR_H
 #define TRUEEVENTGENERATOR_H
 
-#include "TH2.h"
-#include "TObjArray.h"
+//C++
 #include <string.h>
 #include <stdlib.h>
+#include <vector>
 
-TH2D*  AsimovTrueEvents(std::string modelname,bool LLVP,  std::vector<int> layers, int flvf, double Region[], int Bins[], double NnT);
+//CERN ROOT
+#include "TH2.h"
+#include "TH3.h"
+#include "TObjArray.h"
+
+
+using namespace std;
+
+//TH2D*  AsimovTrueEvents(std::string modelname,bool LLVP,  std::vector<int> layers, int flvf, double Region[], int Bins[], double NnT);
+
+class AsimovSimulation()
+{
+    Public:
+
+    //Earth Settings
+    std::string PremModel="prem_14layers";
+    bool MantleAnomaly;
+    std::vector<int> AnomalousLayers;
+
+    //Neutrino Settings
+    int flvf;
+    double EnuMin = 1.00; //GeV
+    double EnuMax = 10.00; //GeV
+
+    double ZenMin; // Min 90;
+    double ZenMax; // Max 180;
+
+    double AziMin=0; // Min 0;
+    double AziMax=360; //Max 360;
+
+    //Simulation Settings
+    int nbinsZen; //Bins in Zenith
+    int nbinsAzi; //Bins in Azimuth
+    int nbinsE; //Bins in Energy
+
+    double NnT; //Detector Exposure
+
+    void SetIntervals(double zlow, double zup, double alow, double aup, double elow, double eup)
+    {
+        ZenMin = zlow;
+        ZenMax = zup;
+
+        AziMin = alow;
+        AziMax = aup;
+        
+        EnuMin = elow;
+        EnuMax = eup;
+
+    }
+
+    void SetBinning(int zbins, int abins, int ebins)
+    {
+        nbinsZen = zbins;
+        nbinsAzi = abins;
+        nbinsE   = ebins;
+    }
+
+    void SetExposure(double exposure) 
+    {
+
+        NnT = exposure;
+
+    }
+
+    TH3D * GetTrueEvents3D();
+
+
+
+};
+
+
+
+
+
+
+
 
 TH2D*  OscProbEarth(std::string modelname, int flvf, double Region[], int Bins[], double NnT);
 

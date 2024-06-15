@@ -41,19 +41,18 @@ int main()
 
     // Number of bins
     
-    int zbins=100 ; // # Bins in zenith/cos(zenith)
-    int abins=100 ; // # Bins in azimuth
-    int ebins=100 ; // bins in energy
-    
+    int Ebins=100 ; // # of Bins of Energy
+    int Tbins=100 ; // # of Bins of cosEta
 
-    //Interval of integration in Zenith, Azimuth and E for Neutrino Events
+    int Bins[]={Tbins, Ebins};
 
-    //Energy interval (in GeV)--------------------------------------------
+    //Range in Theta and E for Event Oscillogram
+
+    //Energy interval (in GeV):
     double Emin=1.0 ; 
     double Emax=10.0 ;
 
-    //Zenith Angle Interval-----------------------------------------------
-
+    //Zenith Angle Interval:
     //double Etamin = 33.0;
     //double Etamax = 38.0;
 
@@ -89,24 +88,40 @@ int main()
     //double Etamin =10 ;
     //double Etamax =30 ;
 
-    //Azimuthal Interal-------------------------------------------------------------------------
+
     double Phim = 0.0;
     double PhiM = 80.0 ;
     //double PhiM = 360.0 ; 
 
-    //Detector size-----------------------------------------------------------------------------
-
+     //DETECTOR PROPERTIES
     double DetMass = 10.0*MTon; //Mass in megaton units
     double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
     double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
 
-    double NnT = Nn*T; // Exposure Mton*years
+    double NnT = Nn*T; 
+
+
+    /*  
+    double Emin = 4.0; 
+    double Emax = 6.0;
+
+    double Etamin = 10.0;
+    double Etamax = 30.0;
+    
+    double Phim    = 0.0;
+    double PhiM    = 360.0 ;
+    */
+
+    double dAz = PhiM-Phim;
+
+
+    double Region[] = {Emin,Emax,zenmin,zenmax,dAz};
 
     //Density contrast
     double drho_dp = 2.0; // 2 % density contrats
 
-    
-    
+    // neutrino state options nue (0), numu (1) or nutau (2)
+    int flvf = 1;
 
     //Simulation Information
       std::cout << "Energy Range in GeV: [" << Emin << " - " << Emax << "]" << "Angular Range(zenith): [" << zenmin << " - " <<zenmax << "]" <<std::endl;
@@ -114,9 +129,11 @@ int main()
       std::cout << "Simulation set up- Angular bins: " << Tbins << " Energy bins: "  << Ebins<<std::endl;
       std::cout << "PREM tables located in /OscProb/PremTables"<< std::endl;
 
+
+    //
     
     
-    std::string prem_llsvp, prem_default;
+    //std::string prem_llsvp, prem_default;
     
     std::ifstream PREM_DEFAULT;
 
@@ -165,53 +182,23 @@ int main()
    
 
 
-   //Event generation-----------------------------------------------------------------------------------------
-   int nuflv = 1; // neutrino  final state options nue (0), numu (1) or nutau (2)
+
+    //------------------------------------------------------------------------------------------------------
+    //std::ifstream StdPrem;
     
-   // Standard Earth model
     
-    /*
+
+    //prem_test   = "/home/dehy0499/OscProb/PremTables/prem_test.txt"; //Specify PREM table from OscProb
+    std::cout<< "PREM DATA--------------"<< std::endl;  
+    
     std::string prem_default   = "prem_default"; //Specify PREM table from OscProb
     TH2D* nullhist = AsimovTrueEvents(prem_default,false, layers ,flvf , Region,  Bins,  NnT);
-    */
 
-   AsimovSimulation StandardEarth;
+    std::cout<< "ALT DATA--------------"<< std::endl;  
 
-   StandartEarth.PremModel = "prem_default";
-   StandardEarth.MantleAnomaly = "False";
-   StandardEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
-   StandardEarth.SetBinning(zbins,abins,ebins);
-   StandardEarth.SetExposure(NnT);
-   StandardEarth.flvf(nuflv);
-
-   TH3D * TrueStd = StandardEarth.GetTrueEvents3D();
-
-    // Alternative Earth Model
-
-   AsimovSimulation AlternativeEarth;
-
-   AlternativeEarth.PremModel = "prem_default";
-   AlternativeEarth.MantleAnomaly = "False";
-   AlternativeEarth.AnomalousLayers = layers;
-   AlternativeEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
-   AlternativeEarth.SetBinning(zbins,abins,ebins);
-   AlternativeEarth.SetExposure(NnT);
-   AlternativeEarth.flvf(nuflv);
-
-   TH3D * TrueAlt = AlternativeEarth.GetTrueEvents3D();
-
-
-
-
-
-
-
-    
-    /*
     std::string prem_llsvp   = "prem_default"; //Specify PREM table from OscProb
     TH2D* althist = AsimovTrueEvents(prem_llsvp,true, layers, flvf , Region,  Bins,  NnT);
-    */
-    
+
     std::cout << "True data is stored inside './SimulationResults" << std::endl;
 
     

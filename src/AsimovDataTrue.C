@@ -1,7 +1,9 @@
 /*
- Changes:
-    1.-HondaFlux was chaged to Flux Avaraged for al Azimuthal directions
-    2.-Events account for neutrinos and Antineutrinos
+Notes:
+
+All angular inputs are in degrees
+
+All angular variables are in radias
 
 */
 #include "GetTrueEvents.h"
@@ -60,6 +62,7 @@ using namespace std;
 
 // Make oscillogram for given final flavour and MH
 
+/*
 class AsimovSimulation()
 {
     Public:
@@ -92,7 +95,10 @@ class AsimovSimulation()
 
 
 };
-TH3D* AsimovSimulation::GetTrueEvents3D(std::string modelname, bool MantleAnomaly , std::vector<int> layers,  int flvf, double Region[], int Bins[], double NnT)
+
+*/
+
+TH3D* AsimovSimulation::GetTrueEvents3D()
 {  
     std::cout << "Simulation of True events assuming Asimov data set" << std::endl;
 
@@ -125,16 +131,22 @@ TH3D* AsimovSimulation::GetTrueEvents3D(std::string modelname, bool MantleAnomal
     double Emax      = EnuMax;//Upper limit for Energy
 
     //Angular Intervals
-    double thmin = ZenMin; //[min 90]
-    double thmax = ZenMax;  //[max 180]
 
-    double phimin = AziMin; //[min 0]
-    double phimax = AziMax;  //[max 360]
+    //Zenith (given  in degrees -> transformed to radians)
+    double thmin = ZenMin*TMath::Pi()/180; //[min pi/2]
+    double thmax = ZenMax*TMath::Pi()/180;  //[max pi]
+
+    double cthmin = cos(thmax); //min cth = -1 
+    double cthmax = cos(thmin); // max cth = 0
+
+    //Azimuth (given  in degrees -> transformed to radians)
+    double phimin = AziMin*TMath::Pi()/180; //[min 0]
+    double phimax = AziMax*TMath::Pi()/180;  //[max 2pi]
 
 
 
     //Phi/Azimuthal Intervals
-    double dAz = Region[4]*TMath::Pi()/180;
+    //double dAz = Region[4]*TMath::Pi()/180;
 
     //Bins
     int ibins = nbinsZen; //Bins in Zenith
@@ -147,7 +159,11 @@ TH3D* AsimovSimulation::GetTrueEvents3D(std::string modelname, bool MantleAnomal
 
     //TH2D* hEvents = new TH2D("hEvents","Neutrino Events",ibins,thmin,thmax,jbins,Emin,Emax); 
 
-    TH3D * TrueHist("TrueHist","True Event Histrogram", ibins,thmin,thmax,jbins,phimin,phimax,kbins,Emin,Emax)
+   // TH3D * TrueHist("TrueHist","True Event Histrogram", ibins,thmin,thmax,jbins,phimin,phimax,kbins,Emin,Emax) //binning in th
+
+    
+    TH3D * TrueHist("TrueHist","True Event Histrogram", ibins,cthmin,cthmax,jbins,phimin,phimax,kbins,Emin,Emax) //binning in cth 
+
     
     
     //Neutrino event generation-----------------------------------------------------------------------------------------
@@ -219,7 +235,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D(std::string modelname, bool MantleAnomal
 
      MyEarthModel.ActiveHeterogeneity( MantleAnomaly );
 
-     MyEarthModel.WhichLayersLLVPs = layers;
+     MyEarthModel.WhichLayersLLVPs = AnomalousLayers;
 
     double l,d,z,ly;
 
@@ -236,9 +252,9 @@ TH3D* AsimovSimulation::GetTrueEvents3D(std::string modelname, bool MantleAnomal
 
             // Get cos(eta) from bin center, This is used to calculate the baseline.
 
-            double th = TrueHist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-            double dth = (TrueHist -> GetXaxis()->GetBinWidth(i))*(TMath::Pi()/180);
-            double cth =cos(th);
+            double cth = TrueHist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+            double dcth = (TrueHist -> GetXaxis()->GetBinWidth(i))*(TMath::Pi()/180);
+            double th =acos(cth);
 
             if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
             
@@ -273,7 +289,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D(std::string modelname, bool MantleAnomal
                 double e = TrueHist->GetZaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
                 double dE = TrueHist->GetZaxis()->GetBinWidth(k);
                 double logEi = log10(e);
-                //Neutrino Contribution;
+                
 
                 //Neutrino Fluxes
 
@@ -291,11 +307,9 @@ TH3D* AsimovSimulation::GetTrueEvents3D(std::string modelname, bool MantleAnomal
 
 
 
-                // 
+                //Neutrino Contribution;
 
                 PMNS_H.SetIsNuBar(false); 
-
-                double dPsiEdE = eflux->Interpolate(logEi,-0.9)
 
                 double Ri_e = XSec(e,nu)*( PMNS_H.Prob(nue,flvf,e)*dPsiEdEdct); //Electron neutrino contribution
 
@@ -317,7 +331,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D(std::string modelname, bool MantleAnomal
                 //double Ri_nubar = XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
 
                 //Events at bin
-                double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dth*dphi;
+                double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi;
                 //double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi;
 
 
