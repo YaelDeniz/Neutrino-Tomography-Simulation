@@ -100,18 +100,17 @@ class AsimovSimulation()
 
 TH3D* AsimovSimulation::GetTrueEvents3D()
 {  
+
+//Saving information-----------------------------------------------------------------------------------------------------------
+    
     std::cout << "Simulation of True events assuming Asimov data set" << std::endl;
 
     std::string PremFile = PremModel+".txt";
 
-     std::cout << premmodel <<std::endl;
+    std::cout << premmodel <<std::endl;
 
     std::string location = "SimulationResults/AsimovData/" ;
-    
-    
-    
-    //std::string details = "_asmv_"+std::to_string(flvf)+"_"+std::to_string(Bins[0])+"_"+std::to_string(Bins[1])+"_"+std::to_string(Region[0])+"_"+std::to_string(Region[1])+".csv";
-    
+       
     std::string nudetails = "nu"+std::to_string(flvf)+"E"+std::to_string(EnuMin)+std::to_string(EnuMax);
    
     std::string simdetails = "asmvtrue"+std::to_string(nbinsZen)+std::to_string(nbinsAzi)+std::to_string(nbinsE);
@@ -120,11 +119,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
     
     ofstream TrueEvents(filename, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
-    
-   
-  
-
-    //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
+//Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
 
     //Energy Intervals
     double Emin      = EnuMin;//Lower limit for Energy
@@ -143,11 +138,6 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
     double phimin = AziMin*TMath::Pi()/180; //[min 0]
     double phimax = AziMax*TMath::Pi()/180;  //[max 2pi]
 
-
-
-    //Phi/Azimuthal Intervals
-    //double dAz = Region[4]*TMath::Pi()/180;
-
     //Bins
     int ibins = nbinsZen; //Bins in Zenith
     int jbins = nbinsAzi; //Bins in Azimuth
@@ -155,38 +145,35 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
     double N_ijk = 0   ;   //Poisson mean for bin ijk.
 
-    /* Create 3D histogram for Event distribution. X-axis = Zenith direction, Y-axis = Azimuth direction, Z-axis = Energy */
+//Histrogram--------------------------------------------------------------------------------------------------------------------
 
-    //TH2D* hEvents = new TH2D("hEvents","Neutrino Events",ibins,thmin,thmax,jbins,Emin,Emax); 
+    // TH3D * TrueHist("TrueHist","True Event Histrogram", ibins,thmin,thmax,jbins,phimin,phimax,kbins,Emin,Emax) //binning in th
 
-   // TH3D * TrueHist("TrueHist","True Event Histrogram", ibins,thmin,thmax,jbins,phimin,phimax,kbins,Emin,Emax) //binning in th
-
-    
     TH3D * TrueHist("TrueHist","True Event Histrogram", ibins,cthmin,cthmax,jbins,phimin,phimax,kbins,Emin,Emax) //binning in cth 
-
     
-    
-    //Neutrino event generation-----------------------------------------------------------------------------------------
+//Neutrino event generation-----------------------------------------------------------------------------------------
 
-    // Neutrino flavour
+    // Neutrino final flavour
     int nue        = 0;  // electron neutrino  
     int numu       = 1; // muon neutrino
+
     // Particle type
     int nu         = 1; //neutrino
     int nubar      = -1; //antineutrino
 
-    //Neutrino Oscillation Probabilities calculation--------------------------------------------------------------------
+//Neutrino Oscillation Probabilities calculation--------------------------------------------------------------------
     OscProb::PMNS_Fast PMNS_H; // Create PMNS objects
     
 
     /*
-    // Set parameters to PDG
+    // Get parameters to PDG
     double dm21 = 7.42e-5;
     double dm31 = 2.533e-3;
     double th12 = 33.7712*TMath::Pi()/180;
     double th13 = 8.588*TMath::Pi()/180;
     double th23 = 48.504*TMath::Pi()/180;
     double dcp  = 214.2*TMath::Pi()/180;
+
     // Set PMNS parameters
     PMNS_H.SetDm(2, dm21);
     PMNS_H.SetDm(3, dm31);
@@ -198,19 +185,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
     
     PMNS_H.SetStdPars(); // Set PDG 3-flavor parameters
 
-   
-    //Earth model for neutrino propagation 
-    //OscProb::PremModel prem_model(model);
-    //OscProb::PremModel prem(model_default); //Default PREM table
-
-
-    double R_lim = 3480.0; // Distance from the center of the Earth , 3500 Km CMB
-       
-    //double EtaLim = TMath::Pi() - TMath::ASin( (R_lim)/R_earth ) ;
-    //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
-
-
-    //SET ATMOSPHERIC FLUX DATA
+//Honda flux distribution-----------------------------------------------------------------------------------------------------
 
     NuFlux SPflux;
 
@@ -223,11 +198,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
     TH2D* eflux =  SPflux.GetFluxHist(3,FluxData); //EFlux
     TH2D* ebflux =  SPflux.GetFluxHist(4,FluxData); //EBarFlux
 
-
-    
-
-
-    //SET EARTH MODEL
+//Set earth model -------------------------------------------------------------------------------------------------------------
     
      Earth3DModel MyEarthModel;
 
@@ -237,8 +208,9 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
      MyEarthModel.WhichLayersLLVPs = AnomalousLayers;
 
+//Event Calculation
+    
     double l,d,z,ly;
-
 
     for (int j = 1; j <= jbins; j++) //Loop In Azimuth
     {
@@ -291,7 +263,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
                 double logEi = log10(e);
                 
 
-                //Neutrino Fluxes
+                //Neutrino Flux interpolation
 
                  double logdPsiMu = muflux->Interpolate(logEi,cth);
                  double logdPsiMub = mubflux->Interpolate(logEi,cth);
@@ -332,10 +304,10 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
                 //Events at bin
                 double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi;
-                //double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi;
+                //double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dth*dphi;
 
 
-                TrueEvents << th << "," << phi <<" , " << e << ", "<< N_ijk  << "\n";
+                TrueEvents << cth << "," << phi <<" , " << e << ", "<< N_ijk  << "\n";
 
                 TrueHist->SetBinContent(i,j,k, N_ijk); //Create histogram for  kth Pseudo-Experimens
 

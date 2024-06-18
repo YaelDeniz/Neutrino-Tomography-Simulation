@@ -73,6 +73,10 @@ int main()
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
     double zenmin = 180-TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ; // min 90
 
+    double cz_min = cos(zenmax*TMath::Pi()/180.0);
+    
+    double cz_max = cos(zenmin*TMath::Pi()/180.0);
+
     std::cout << zenmin << " " << zenmax <<  std::endl;
 
     
@@ -178,7 +182,7 @@ int main()
    AsimovSimulation StandardEarth;
 
    StandartEarth.PremModel = "prem_default";
-   StandardEarth.MantleAnomaly = "False";
+   StandardEarth.MantleAnomaly = false;
    StandardEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
    StandardEarth.SetBinning(zbins,abins,ebins);
    StandardEarth.SetExposure(NnT);
@@ -191,7 +195,7 @@ int main()
    AsimovSimulation AlternativeEarth;
 
    AlternativeEarth.PremModel = "prem_default";
-   AlternativeEarth.MantleAnomaly = "False";
+   AlternativeEarth.MantleAnomaly = true;
    AlternativeEarth.AnomalousLayers = layers;
    AlternativeEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
    AlternativeEarth.SetBinning(zbins,abins,ebins);
@@ -202,53 +206,47 @@ int main()
 
 
 
+    //Difference in events
 
+   TH3D* TrueDiff = new TH3D("TrueDiff","Percentage difference in  neutrino events",zbins,cz_min,cz_max,abins,Phim,PhiM,ebins,EnuMin,EnuMax); 
 
-
-
-    
-    /*
-    std::string prem_llsvp   = "prem_default"; //Specify PREM table from OscProb
-    TH2D* althist = AsimovTrueEvents(prem_llsvp,true, layers, flvf , Region,  Bins,  NnT);
-    */
-    
-    std::cout << "True data is stored inside './SimulationResults" << std::endl;
-
-    
-  
-
-    TH2D* diffhist = new TH2D("diffhist"," Events percentage difference; #eta ; E",Tbins,zenmin,zenmax,Ebins,Emin,Emax); 
-
-    // Data visualization
    
-   std::ofstream EventDiff("SimulationResults/TrueEventsResults/Mydata.csv"); 
-   double zen, e, nexp, nobs, dn;
+   // Data visualization
+   
+   std::ofstream EventDiff("SimulationResults/TrueEventsResults/3DSimulation.csv"); 
+   double zen, azi, e, nexp, nobs, dn;
 
-    for(int i=1; i<= Tbins  ; i++) 
-    {    
-        zen = nullhist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-
-                    
-                    for (int j=1; j <= Ebins ; j++)
-                    { 
-                        e = nullhist->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
-                        
-                        nexp = nullhist->GetBinContent(i,j); // expected
-                        nobs = althist->GetBinContent(i,j); // obserbed
-
-                        dn = 100.0*(nobs-nexp)/nexp;
-
-                        diffhist->SetBinContent(i,j, dn); //Create histogram for  kth Pseudo-Experiment
-
-                        EventDiff<<  zen << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
-
-                        std::cout<<  zen << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << std::endl;
-
+    for (int j = 1; i <= abins; j++)
+    {
+        phi = TrueDiff->GetYaxis()->GetBinCenter(j);
+        
+        for(int i=1; i<= zbins  ; i++) 
+        {    
+            cth = TrueDiff->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
 
                         
-                    } // loop energy
+                        for (int k=1; k <= ebins ; k++)
+                        { 
+                            e = TrueDiff->GetZaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
+                            
+                            nexp = TrueStd->GetBinContent(i,j,k); // expected
+                            nobs = TrueAlt->GetBinContent(i,j,k); // obserbed
 
-    } // Loop eta
+                            dn = 100.0*(nobs-nexp)/nexp;
+
+                            diffhist->SetBinContent(i,j, dn); //Create histogram for  kth Pseudo-Experiment
+
+                            EventDiff<<  zen << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
+
+                            std::cout<<  zen << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << std::endl;
+
+
+                            
+                        } // loop energy
+
+        } // Loop eta
+
+    }
 
     EventDiff.close();
 

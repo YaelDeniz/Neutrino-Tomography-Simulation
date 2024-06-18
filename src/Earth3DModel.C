@@ -60,10 +60,10 @@ void Earth3DModel::SetModel(std::string model)
 
 // Direction
 
- void Earth3DModel::SetDirection(double theta , double phi ) //In Degrees
+ void Earth3DModel::SetDirection(double theta , double phi ) //Input in radias -> trasnformed back to degrees
   {
-    zenith =  theta; /*Polar direction*/
-    azimuth = phi;   /*Azimuthal direction*/
+    zenith =  theta*180.0/TMath::Pi(); /*Polar direction*/
+    azimuth = phi*180.0/TMath::Pi();   /*Azimuthal direction*/
   } 
 
 //LLVP
@@ -131,25 +131,17 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
 
   gSystem->Load("libGeom");
 
-  std::cout << " ************************************************************************************** Using model: " << MODEL << std::endl;
+  std::cout << "Earth Model: " << MODEL << std::endl;
 
   std::vector< std::vector<double> > PremMatrix = GetPremData(MODEL); // Sort PREM model into a readable matrix
 
   std::vector< std::vector<double> > LLVPMatrix = GetPremData(MODEL); // A Copy of PREM model matrix to construct LLVPs
-
-  
-
-
 
   double rPREM = PremMatrix.back()[0]; // Outermost Layer in the PREM model
 
   std::vector< std::vector<double> > EarthPath;  // Store Paths inside the Earth for oscillation calculations
 
   std::vector< int > EarthPathId;  // Store ID layer for each Paths inside the Earth for oscillation calculations
-
-
-
-  
 
   TCanvas *c1 = new TCanvas("3D Earth", "3D Earth",0,0,600,600);
  
@@ -236,10 +228,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
 
   if (Anomaly)
   {
-  
-    //std::cout << " LLVPS IS  ACTIVATED" << std::endl;
-  
-  
+    
   //Definition LLVPS
 
   // In this version of the Code LLVPs are just segmets of SPHERE inside specific layers in the Lower Mantle
@@ -249,8 +238,6 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   std::vector<TGeoVolume*> LLVPLAYER; //Vector to define Volume for each LLVP segment
   
   TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);// Some Geometrical trasformation that move LLVPs to the right place
-
-  //int LLVPIdLayers[1] = {7}; //Layers to be modified
 
   int LLVPint = WhichLayersLLVPs.size();
 
