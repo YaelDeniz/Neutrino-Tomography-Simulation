@@ -283,7 +283,7 @@ void Segments()
        
       if (layerb > lb )
       {
-         std::cout << "Current layer " << layerb << std::endl;
+         std::cout << "*Current layer " << layerb << std::endl;
 
 
          lslabL = lslabL + (layerb - lbs );
