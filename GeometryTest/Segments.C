@@ -334,29 +334,38 @@ void Segments()
    for (int i = 0; i < PremMatrix.size(); ++i)
    {
 
-      double lmb = PremMatrix[i][0]; //Lower boundary of current layer
+      double layerm = PremMatrix[i][0]; //Lower boundary of current layer
        
-      if (lmb >= mb )
+      if (layerm > mb )
       {
 
 
-         mslabL = mslabL + (lmb - mbs );
+         mslabL = mslabL + (layerm - mbs );
 
-         r.push_back(dh-mslabL);
+         //r.push_back(dh-mslabL);
 
          if (mslabL > dh)
          {
-            std::cout << "top" << mbs << " " << mbs + r[k-1] << " " << mslabL << " " <<  r[k] << std::endl;
-            ub = mbs + r[k-1];
+            double excess2 = dh-mslabL
+            srmin= mbs;
+            srmax= layerm + excess2;
+            std::cout << "top of middle segment: " << srmin << " " << srmax << " " << mslabL + excess2 << " " << srmax-srmin << std::endl;
+            ub = srmax;
             r.clear();
             break;
          }
 
          else
          {
-         std::cout << mbs << " " << lmb << " " << mslabL << " " <<  r[k] << std::endl;
+      
+
+            srmin = mbs;
+            srmax = layerm;
+            r.push_back(dh-lslabL);
+            std::cout << srmin << " " << srmax << " " << mslabL << " " << srmax-srmin << std::endl;
+
          }
-         mbs = lmb;
+         mbs = layerm;
         
         
          
