@@ -107,7 +107,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
     std::string PremFile = PremModel+".txt";
 
-    std::cout << premmodel <<std::endl;
+    std::cout << PremModel <<std::endl;
 
     std::string location = "SimulationResults/AsimovData/" ;
        
@@ -149,7 +149,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
     // TH3D * TrueHist("TrueHist","True Event Histrogram", ibins,thmin,thmax,jbins,phimin,phimax,kbins,Emin,Emax) //binning in th
 
-    TH3D * TrueHist("TrueHist","True Event Histrogram", ibins,cthmin,cthmax,jbins,phimin,phimax,kbins,Emin,Emax) //binning in cth 
+    TH3D * TrueHist = new TH3D("TrueHist","True Event Histrogram", ibins,cthmin,cthmax,jbins,phimin,phimax,kbins,Emin,Emax); //binning in cth 
     
 //Neutrino event generation-----------------------------------------------------------------------------------------
 

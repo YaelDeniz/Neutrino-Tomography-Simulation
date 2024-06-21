@@ -49,8 +49,8 @@ int main()
     //Interval of integration in Zenith, Azimuth and E for Neutrino Events
 
     //Energy interval (in GeV)--------------------------------------------
-    double Emin=1.0 ; 
-    double Emax=10.0 ;
+    double EnuMin=1.0 ; 
+    double EnuMax=10.0 ;
 
     //Zenith Angle Interval-----------------------------------------------
 
@@ -113,11 +113,12 @@ int main()
     
 
     //Simulation Information
+    /*
       std::cout << "Energy Range in GeV: [" << Emin << " - " << Emax << "]" << "Angular Range(zenith): [" << zenmin << " - " <<zenmax << "]" <<std::endl;
       std::cout << "LLSVP information-  density contrats(%): " << drho_dp << " Height(km): "<< h_llsvp << std::endl;
       std::cout << "Simulation set up- Angular bins: " << Tbins << " Energy bins: "  << Ebins<<std::endl;
       std::cout << "PREM tables located in /OscProb/PremTables"<< std::endl;
-
+    */
     
     
     std::string prem_llsvp, prem_default;
@@ -181,12 +182,12 @@ int main()
 
    AsimovSimulation StandardEarth;
 
-   StandartEarth.PremModel = "prem_default";
+   StandardEarth.PremModel = "prem_default";
    StandardEarth.MantleAnomaly = false;
    StandardEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
    StandardEarth.SetBinning(zbins,abins,ebins);
    StandardEarth.SetExposure(NnT);
-   StandardEarth.flvf(nuflv);
+   StandardEarth.flvf=nuflv;
 
    TH3D * TrueStd = StandardEarth.GetTrueEvents3D();
 
@@ -200,7 +201,7 @@ int main()
    AlternativeEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
    AlternativeEarth.SetBinning(zbins,abins,ebins);
    AlternativeEarth.SetExposure(NnT);
-   AlternativeEarth.flvf(nuflv);
+   AlternativeEarth.flvf=nuflv;
 
    TH3D * TrueAlt = AlternativeEarth.GetTrueEvents3D();
 
@@ -212,11 +213,11 @@ int main()
 
    
    // Data visualization
-   
+   /*
    std::ofstream EventDiff("SimulationResults/TrueEventsResults/3DSimulation.csv"); 
    double zen, azi, e, nexp, nobs, dn;
 
-    for (int j = 1; i <= abins; j++)
+    for (int j = 1; j <= abins; j++)
     {
         phi = TrueDiff->GetYaxis()->GetBinCenter(j);
         
@@ -254,7 +255,7 @@ int main()
     TCanvas *c = new TCanvas();
     diffhist->Draw("COLZ");
     c->Print("SimulationResults/Histograms/3DModel.png");
-    
+    */
 
     
 

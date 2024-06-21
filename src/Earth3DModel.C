@@ -24,6 +24,7 @@
 #include "TPolyLine3D.h"
 #include "TView.h"
 
+
 //Geometry manager
 
 #include "TGeoManager.h"
@@ -36,37 +37,50 @@
 
 using namespace std;
 
-
-
-//Set Things
-
-//	Model
+//Set the Prem Model
 
 void Earth3DModel::SetModel(std::string model)
-  {
+{
     filename = model;
-  } 
+} 
   
-// Detectpr
+//Set the Detector Location
 
-  void Earth3DModel::SetDetector(double Position[3]) 
-  {
-  
+void Earth3DModel::SetDetector(double Position[3]) 
+{
    Det[0] = Position[0];
    Det[1] = Position[1];
    Det[2] = Position[2];
+}
 
-  }
+//Set Neutrino Direction
 
-// Direction
+void Earth3DModel::SetDirection(double cth , double phi ) //Input in radias -> trasnformed back to degrees
+{
+    //zenith =  acos(cth); /*Polar direction*/
 
- void Earth3DModel::SetDirection(double theta , double phi ) //Input in radias -> trasnformed back to degrees
-  {
-    zenith =  theta*180.0/TMath::Pi(); /*Polar direction*/
-    azimuth = phi*180.0/TMath::Pi();   /*Azimuthal direction*/
-  } 
+      // Check if the total number of elements matches
+    if (cth < -1 || cth > 1) {
+        throw std::invalid_argument("Invalid argument for neutrino direction, zenith direction must be in terms of cos(zen)");
+    }
 
-//LLVP
+    else
+    {
+
+    zenith = TMath::Pi() - acos(cth); /*Polar direction*/
+
+
+    // double th = TMath::Pi()*( 1-(zen/180.0) ); //Polar angle in spherical coordinates in rads [pi/2, pi] 
+
+    
+    azimuth = phi*TMath::Pi()/180.0;   /*Azimuthal direction in degrees*/
+    
+    std::cout <<"Direction: " <<  zenith*180.0/TMath::Pi() << " " << azimuth*180.0/TMath::Pi() << std::endl;
+
+    }
+} 
+
+//Define if LLVP exist
 
 void Earth3DModel::ActiveHeterogeneity( bool value ) { Anomaly = value; } // Activate the LLVPs
 
@@ -78,10 +92,10 @@ std::vector< std::vector<double> > Earth3DModel::GetPremData( std::string PREM_M
 
    //--- open PREM model 
    std::vector< std::vector<double> > PremMatrix; // Matrix data  form of Prem tables
+
    std::vector<double> PremRow(4);               // [radius density z/a, layer ID]
 
-   // Variables for storing table rows
-   double radius, density, zoa, layer;
+   double radius, density, zoa, layer; // Variables for storing Prem table values
 
    std::ifstream PREM_DATA;
 
@@ -100,7 +114,6 @@ std::vector< std::vector<double> > Earth3DModel::GetPremData( std::string PREM_M
     }
 
    return PremMatrix;
-
 }
 
 //Label PREM Layers
@@ -109,7 +122,6 @@ int Earth3DModel::LabelLayer (double radius)
 {
   int id;
 
-  
   if( 0 <= radius && radius <= 1221.5) { id = 0;}
   else if(1221.5 < radius && radius <= 3480.0) {id = 1;}
   else if(3480.0 < radius && radius <= 5701.0) {id = 2;}
@@ -118,14 +130,86 @@ int Earth3DModel::LabelLayer (double radius)
   else if(6368.0 < radius && radius <= 6371.0) {id = 5;}
   else if(6371.0 < radius && radius <= 6390.0) {id = 6;}
   // else {id = 0;}
-
   return id;
+}
+
+
+//CONSTRUCT LLVP
+
+void Earth3DModel::CreateLLVP(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > LLVPMatrix )
+{
+
+  //PANCAKE MODEL 
+
+  /*LLVPs are modeled as segments of a spehere. PANCAKE model means a single layer*/
+
+  std::vector<TGeoMaterial*> LLVPMat; //Vector to define material for each LLVP segment ( A X% anomaly in local Density or Z/A)
+
+  std::vector<TGeoMedium*> LLVPMed;   //Vector to define medium for each LLVP segment
+
+  std::vector<TGeoVolume*> LLVPLAYER; //Vector to define Volume for each LLVP segment
+  
+  TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);// Some Geometrical trasformation that move LLVPs to the right place
+
+  int LLVPint = WhichLayersLLVPs.size();
+
+  //double gamma = 45.0/LLVPint; // Angular width of each LLVP segment
+  
+  double rminLLVP, rmaxLLVP, daWidth, aWidthi, Localchem, Localdensity;
+
+  //double drho, dzoa, gammai, rminLLVP, rmaxLLVP;
+ 
+  for (int i = 0; i < LLVPint; ++i)
+  {
+
+    int index = WhichLayersLLVPs[i]-1; //Index of the layer that will contain LLVPs
+
+    //Generate segment names
+    char integer_string[32];
+    
+    sprintf(integer_string, "%d", i+1);
+
+    char llvpmaterial_string[64]="LLVPMaterial";
+    strcat(llvpmaterial_string, integer_string);
+    const char *llvpMatName = llvpmaterial_string;
+
+    char llvpmedium_string[64]="LLVPMedium";
+    strcat(llvpmedium_string, integer_string);
+    const char *llvpMedName = llvpmedium_string;
+    
+    char llvplayer_string[64]="LLVPLayer";
+    strcat(llvplayer_string, integer_string);
+    const char *llvpLayerName= llvplayer_string;
+
+    rminLLVP = LLVPMatrix[index-1][0];
+
+    rmaxLLVP = LLVPMatrix[index][0];
+
+    Localdensity = (1.0 + drho/100.0)*LLVPMatrix[index][1];
+
+    Localchem = (1.0 + dzoa/100.0 )*LLVPMatrix[index][2];
+    
+    LLVPMat.push_back( new TGeoMaterial(llvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
+  
+    LLVPMed.push_back( new TGeoMedium(llvpMedName,1,LLVPMat[i]) ); // Create LLVP medium
+
+    LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[i] , rminLLVP , rmaxLLVP , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
+
+    LLVPLAYER[i]->SetLineColor(kGreen);
+
+    LAYER[index]->AddNode(LLVPLAYER[i],1,rot1);
+
+  }
+
+   //CAKE
 
 }
 
+
+
 // CONSTRUCT THE 3D MODEL
 
-std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double azi, std::string MODEL )
+std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double phi, std::string MODEL )
 {
   //Read Prem Data
 
@@ -143,7 +227,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
 
   std::vector< int > EarthPathId;  // Store ID layer for each Paths inside the Earth for oscillation calculations
 
-  TCanvas *c1 = new TCanvas("3D Earth", "3D Earth",0,0,600,600);
+  EarthCanvas = new TCanvas("3D Earth", "3D Earth",0,0,600,600);
  
   new TGeoManager("EarthModel3D", "Simple 3D geometry");
 
@@ -154,7 +238,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   
   TGeoMedium *vac = new TGeoMedium("VACUUM",99,VAC);
   
-  TGeoVolume *top = gGeoManager->MakeBox("TOP",vac,rPREM,rPREM,rPREM);
+  TGeoVolume *top = gGeoManager->MakeBox("TOP",vac,rPREM+5000,rPREM+5000,rPREM+5000);
 
   gGeoManager->SetTopVolume(top);
 
@@ -167,6 +251,9 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   std::vector<TGeoMaterial*> MAT; //Vector to define material for each layer en in PREM (Density & Z/A)
   std::vector<TGeoMedium*>  MED;  //Vector to define medium for each layer en in PREM 
   std::vector<TGeoVolume*> LAYER; //Vector to define a  volume for each layer en in PREM
+
+    std::cout << "***************************THE EARTH***************************" << std::endl; 
+
 
   for (int i = 0; i < PremMatrix.size(); ++i)
    {
@@ -224,11 +311,17 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
     Anomaly = false;
   }
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
   */
+
+  std::cout << "***************************THE LLVP***************************" << std::endl; 
+//-+++++++++++++++++++++++++++++++++++++++++++++-----++-+-+-+-+--+
 
   if (Anomaly)
   {
-    
+  
+  /*  
   //Definition LLVPS
 
   // In this version of the Code LLVPs are just segmets of SPHERE inside specific layers in the Lower Mantle
@@ -289,10 +382,15 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
     LAYER[index]->AddNode(LLVPLAYER[i],1,rot1);
 
   }
- 
+  */
+  
   
 
+  CreateLLVP(LAYER, LLVPMatrix );
+
   }
+
+  //-+++++++++++++++++++++++++++++++++++++++++++++-----++-+-+-+-+--+
   //Add Earth Layers to TOP Volume
 
   for (int i = 0; i < PremMatrix.size(); ++i)
@@ -327,11 +425,13 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
 
  // double azi = 0.0;  //Azimuthal angle respect to the detector location in degrees [0,360]
 
-  double th = TMath::Pi()*( 1-(zen/180.0) ); //Polar angle in spherical coordinates in rads [pi/2, pi] 
+  
+  // double th = TMath::Pi()*( 1-(zen/180.0) ); //Polar angle in spherical coordinates in rads [pi/2, pi] 
 
-  double phi = TMath::Pi()*(azi)/180.0; //Azimuthal angle in spehericla coordinates in rads [0, 2*pi]
+  //double phi = TMath::Pi()*(azi)/180.0; //Azimuthal angle in spehericla coordinates in rads [0, 2*pi]
    
-   
+
+
   double r = rPREM; // Max Radius
 
   //double Det[3]= {0.0,0.0,-6371.0}; //Detector location in cartesian coordinates
@@ -358,10 +458,6 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   double d2 = (-b-sqrt(b*b -4*a*c))/(2*a); // Distance 2 from the origin of the Line (Detector Location)
 
   
-
- 
-
-  
   //Coordinates of the Neutrino Positionin the Earth
 
   double xo = o[0]+d1*u[0];
@@ -380,6 +476,11 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   l1->SetPoint( 0 , o[0],o[1],o[2]); //Detector
   l1->SetPoint( 1 ,xo,yo,zo); //Incoming Neutrino
 
+
+
+  std::cout << o[0] << " " << o[1] << " " << o[2] << std::endl;
+  std::cout << xo << " " << yo << " " << zo << "R: " << sqrt(xo*xo + yo*yo + zo*zo) <<std::endl;
+
   TPolyLine3D *l2 = new TPolyLine3D(); // Lines that represent neutrino Paths.
   
 
@@ -391,10 +492,14 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
   double sumL = 0; //Track Total Baseile
 
   //Neutrino Propagation inside the Earth
+  
+  std::cout << "***************************Setting Neutrino***************************" << std::endl; 
+  double v = 0;
   while (!gGeoManager->IsOutside ())
   {  
-       
-        
+       ++v;
+       std::cout << v << std::endl;
+
         // std::cout << "Starting loop" << std::endl;
          
          //gGeoManager->FindNextBoundaryAndStep(); // Calculate distance to the next boundary and Evolve system.
@@ -503,10 +608,14 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
    l1->Draw("same");
    l2->Draw("same");
 
+   EarthCanvas->Modified();
+   EarthCanvas->Update();
+
+
    if(Anomaly)
    {
 
-    c1->Print("SimulationResults/3DEarthLLVP.png");
+    //EarthCanvas->Print("SimulationResults/3DEarthLLVP.png");
 
    } 
 
@@ -522,7 +631,10 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double zen, double a
    //std::cout << " Neutrino: "  << xo << " " << yo << " " << zo << std::endl;
    //std::cout << " Neutrino: "  << sqrt(xo*xo +yo*yo + zo*zo) << std::endl;
 
+   std::cout << "***************************world created***************************" << std::endl; 
    return EarthPath;
+
+
 }
 
 // Create LLVP

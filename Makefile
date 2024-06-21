@@ -29,6 +29,7 @@ OBJECTS_AsivObs  = MathTools.o PhyTools.o AsimovDataObs.o
 OBJECTS_Res  = MathTools.o PhyTools.o  DetectorResolution.o 
 OBJECTS_OscProb  = MathTools.o PhyTools.o  OscProbEarth.o 
 OBJECTS_Flux = PhyTools.o
+OBJECTS_EARTHMODEL = Earth3DModel.o
 
 
 #OBJECTSProb = GetProbPREM.o
@@ -38,7 +39,7 @@ OBJECTS_Flux = PhyTools.o
 
 #TARGETS
 
-all: TrueEvents ObservedEvents  StatsAnaObs OscProbEarth HondaFlux #DetectorResolution   # All targets #Add StatsAnaTrue laters
+all: TrueEvents ObservedEvents  StatsAnaObs OscProbEarth HondaFlux Earth3D #DetectorResolution   # All targets #Add StatsAnaTrue laters
 
 
 
@@ -84,6 +85,13 @@ HondaFlux: $(MAIN_DIR)/HondaFlux.cpp $(OBJECTS_Flux)
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
 	@echo " "
 	@echo "Neutrino Flux vis generator Done"
+
+Earth3D: $(MAIN_DIR)/Earth3DVis.cpp $(OBJECTS_EARTHMODEL) 
+	@echo " "
+	@echo "Generating Application for Model visualization"
+	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
+	@echo " "
+	@echo "3D Earth Modelvis generator Done"
 
 #Build Objects
 

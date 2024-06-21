@@ -10,7 +10,17 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
+#include <math.h> 
+
+
+//CERN ROOT
+#include "TCanvas.h"
+
+#include "TGeoManager.h"
+#include "TGeoMatrix.h"
+#include "TGeoMedium.h"
+#include "TGeoMaterial.h"
+#include "TGeoVolume.h"
 
 class Earth3DModel
 {
@@ -27,6 +37,8 @@ class Earth3DModel
   double aWidth = 45.0; //LLVP Angular With
   double drho = 3; // 3% more dense
   double dzoa = 0.0; // 0% Chemical difference
+
+  TCanvas *EarthCanvas;
   
   // std::vector< std::vector < double > > TheNuPath;
 
@@ -60,6 +72,8 @@ class Earth3DModel
   int LabelLayer (double radius);
 
   std::vector<std::vector<double>> Earth3DPath ( double zen , double azi, std::string MODEL);
+
+  void CreateLLVP(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > LLVPMatrix );
 
   std::vector<std::vector<double>> Create3DPath ();
 

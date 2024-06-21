@@ -16,9 +16,9 @@ using namespace std;
 
 //TH2D*  AsimovTrueEvents(std::string modelname,bool LLVP,  std::vector<int> layers, int flvf, double Region[], int Bins[], double NnT);
 
-class AsimovSimulation()
+class AsimovSimulation
 {
-    Public:
+    public:
 
     //Earth Settings
     std::string PremModel="prem_14layers";

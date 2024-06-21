@@ -182,25 +182,124 @@ void Segments()
    std::vector< std::vector<double> > PremMatrix = SortPREMdata("prem_44layers.txt"); // Sort PREM model into a readable matrix
 
    double sumr = 0;
+
+   double h = 1000;
+
+   double dh = h/3;
+
+   double Rmax1 = 3480 + dh;
+   double Rmax2 = 3480 + 2*dh;
+   double Rmax3 = 3480 + 3*dh;
+
+   //double r = 0;
+
+   int k = 0; // Index tracker
+
+   double rmin1,rmax1,rmin2,rmax2,rmin3,rmax3;
+
+   double lb,lt,mb,mt,ub,ut;
+
+   lb = 3480;
+   lt = 3480 + dh;
+
+   mt = 3480 + 2*dh;
+
+   ut = 3480 + 3*dh;
+
+   std::vector <double> r;
+
+//Segment 1-----------------------------------------------------------------------------------------------------------------------
    
+   std::cout << "Segement 1: " << std::endl;
+
    for (int i = 0; i < PremMatrix.size(); ++i)
    {
-      double rmin = PremMatrix[i][0];
-      
-
-      
-      if (rmin>= 3480 && rmin<= 3480 + 1000)
+      double rc = PremMatrix[i][0]; //Lower boundary of current layer
+       
+      if (rc >= lb && rc<= lt) //Between lower bottom or lower top
       {
-         double rmax = PremMatrix[i+1][0];
+         double rc_top = PremMatrix[i+1][0]; //Upper boundary of current layer
 
-         sumr = sumr + (rmax - rmin);
-   
-         std::cout << rmin << " " << rmax - rmin << " " << sumr <<  std::endl;
-   
+         sumr = sumr + (rc_top - rc); // Current thicknes (sum of layer thickness) 
+
+         r.push_back(dh-sumr); // Reminder height of llvp segment
+
+
+         //std::cout << "k: " << k << " " <<   rmin << " " << rmax << " " << rmax - rmin << " " << sumr << " " << r[k] << std::endl;
+
+
+         //If Current thickness is larger than the segment thickness, add the reminder to the current lower boundary.
+         if (sumr > dh)
+         {
+            //sumr = sumr + (h-sumr); 
+
+            std::cout << "top sublayer of segment 1: " << rc << " " << rc + r[k-1] << " " << rc + r[k-1] - 3480 << std::endl;
+
+            mb = rc + r[k-1]; //Create the lower end for the second LLVP segment
+
+            r.clear();
+
+         }
+
+         else
+         {
+            //std::cout << "sublayer of segment 1: " << k << " " <<   rmin << " " << rmax << " " << rmax - rmin << " " << sumr << " " << r[k] << std::endl;
+            std::cout << "sublayer of segment 1: " << rc << " " << rc_top  << std::endl;
+
+         }
+
+         ++k;
+         
       }
 
 
    }
+   std::cout << " " << std::endl;
+
+   std::cout << "Next segment should start at" << mb << std::endl;
+
+//Segment 2------------------------------------------------------------------------------------------------------------------------
+   k =0; // restart loop
+
+   sumr = 0;
+
+   std::cout << "Segement 2: " << mb << " " << mt << std::endl;
+
+   double rc2 = mb;
+
+   for (int i = 0; i < PremMatrix.size(); ++i)
+   {
+
+      double rc_top2 = PremMatrix[i][0]; //Lower boundary of current layer
+       
+      if (rc_top2>= mb && rc_top2<= mt)
+      {
+
+
+         sumr = sumr + (rc_top2 - rc2 );
+
+         r.push_back(dh-sumr);
+         
+         std::cout << "sublayer of segment 1: " << rc2 << " " << rc_top2 << " " << sumr << " " << r[k] << std::endl;
+
+         double nextdiff = (PremMatrix[i+1][0] - rc_top2);
+         double nextr = dh-(nextdiff+sumr);
+
+         std::cout << "next layer is" << rc_top2 << " " << PremMatrix[i+1][0] + nextr << " " << nextdiff << " " << sumr << " " << nextr << std::endl; 
+         ++k;
+
+
+         rc2 = rc_top2;
+
+
+
+         
+      }
+
+
+   }
+
+//Segement 3--------------------------------------------------------------------------------------------------------------------
 
   
  }
