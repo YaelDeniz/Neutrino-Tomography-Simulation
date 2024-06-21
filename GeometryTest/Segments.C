@@ -13,7 +13,7 @@ L --- Column vector of Neutrino Baselines
 
 
 //#include <vector> 
-std::vector< std::vector<double> > SortPREMdata( std::string PREM_MODEL = "prem_15layers.txt" )
+std::vector< std::vector<double> > SortPREMdata( std::string PREM_MODEL = "prem_44layers.txt" )
 {
    std::string PREM_PATH = "/home/dehy0499/OscProb/PremTables/"+PREM_MODEL;
 
