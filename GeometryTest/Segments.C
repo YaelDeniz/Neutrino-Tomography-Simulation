@@ -379,6 +379,65 @@ void Segments()
 
 
    }
+
+   //Segment 3------------------------------------------------------------------------------------------------------------------------
+   k =0; // restart loop
+
+   double uslabL = 0; //mid slab length
+
+   std::cout << "Segement 3: " << ub << " " << ut << std::endl;
+
+   double rc2 = ub;
+
+   double ubs = ub;
+
+   for (int i = 0; i < PremMatrix.size(); ++i)
+   {
+
+      double layeru = PremMatrix[i][0]; //Lower boundary of current layer
+       
+      if (layeru > ub )
+      {
+
+
+         uslabL = uslabL + (layeru - ubs );
+
+         //r.push_back(dh-mslabL);
+
+         if (uslabL > dh)
+         {
+            double excess3 = dh-uslabL;
+            srmin= ubs;
+            srmax= layeru + excess3;
+            std::cout << "top of upper segment: " << srmin << " " << srmax << " " << uslabL + excess3 << " " << srmax-srmin << std::endl;
+            r.clear();
+            break;
+         }
+
+         else
+         {
+      
+
+            srmin = ubs;
+            srmax = layeru;
+            r.push_back(dh-uslabL);
+            std::cout << srmin << " " << srmax << " " << uslabL << " " << srmax-srmin << std::endl;
+
+         }
+         mbs = layerm;
+        
+        
+         
+         ++k;
+
+
+
+
+         
+      }
+
+
+   }
 /*
 //Segement 3--------------------------------------------------------------------------------------------------------------------
 
