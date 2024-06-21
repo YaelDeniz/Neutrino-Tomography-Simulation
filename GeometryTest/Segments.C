@@ -340,7 +340,7 @@ void Segments()
          {
             srmin= ubs;
             srmax= ubs + r[k-1];
-            std::cout << "top of upper segment: " << srmin << " " << srmax << " " << srmax - srmin << " " <<  r[k] << std::endl;
+            std::cout << "top of upper segment: " << srmin << " " << srmax << " "<< " " << uslabL << " " << srmax - srmin << " " <<  r[k] << std::endl;
             
             break;
          }
@@ -350,7 +350,7 @@ void Segments()
             srmin = ubs;
             srmax = lub;
             r.push_back(dh-uslabL);
-         std::cout << srmin << " " << srmax << " " << srmax-srmin << " " <<  r[k] << std::endl;
+         std::cout << srmin << " " << srmax << " " << uslabL << " " << srmax-srmin << " " <<  r[k] << std::endl;
          }
          ubs = lub;
         
