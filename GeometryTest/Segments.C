@@ -282,15 +282,19 @@ void Segments()
 
          r.push_back(dh-mslabL);
 
-         
-         std::cout << mbs << " " << lmb << " " << mslabL << " " <<  r[k] << std::endl;
+         if (mslabL > dh)
+         {
+            std::cout << "top" << mbs << " " << mbs + r[k-1] << " " << mslabL << " " <<  r[k] << std::endl;
+            break;
+         }
 
+         else
+         {
+         std::cout << mbs << " " << lmb << " " << mslabL << " " <<  r[k] << std::endl;
+         }
          mbs = lmb;
         
-         if (mslabL > 2000)
-         {
-            break; 
-         }
+        
          
          ++k;
 
