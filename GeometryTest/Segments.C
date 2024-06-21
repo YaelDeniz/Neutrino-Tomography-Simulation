@@ -179,7 +179,7 @@ void Segments()
   
    std::vector<double> PathData(4); // Row [L, rho, z/a, layer]
   
-   std::vector< std::vector<double> > PremMatrix = SortPREMdata("prem_44layers.txt"); // Sort PREM model into a readable matrix
+   std::vector< std::vector<double> > PremMatrix = SortPREMdata("prem_defult.txt"); // Sort PREM model into a readable matrix
 
    double sumr = 0;
 
