@@ -324,7 +324,8 @@ void Segments()
    k =0; // restart loop
 
    double mslabL = 0; //mid slab length
-
+   
+   std::cout << " " << std::endl;
    std::cout << "Segement 2: " << mb << " " << mt << std::endl;
 
    
@@ -384,6 +385,7 @@ void Segments()
 
    double uslabL = 0; //mid slab length
 
+   std::cout << " " << std::endl;
    std::cout << "Segement 3: " << ub << " " << ut << std::endl;
 
 
