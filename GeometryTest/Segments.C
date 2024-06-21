@@ -295,7 +295,8 @@ void Segments()
             double excess = dh - lslabL;
             srmin= lbs;
             srmax= layerb + excess;
-            std::cout << "top of lower segment: " << srmin << " " << srmax << " "<< " " << lslabL + excess << " " << srmax - srmin  << std::endl;
+            std::cout << "top of lower segment: " << srmin << " " << srmax << " " << lslabL + excess << " " << srmax-srmin << std::endl;
+            mb = srmax;
             r.clear();
             break;
          }
@@ -318,7 +319,7 @@ void Segments()
 
    }
 
-/*
+
 //Segment 2------------------------------------------------------------------------------------------------------------------------
    k =0; // restart loop
 
@@ -369,7 +370,7 @@ void Segments()
 
 
    }
-
+/*
 //Segement 3--------------------------------------------------------------------------------------------------------------------
 
    k =0; // restart loop
