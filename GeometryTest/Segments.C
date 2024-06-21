@@ -341,7 +341,7 @@ void Segments()
             srmin= ubs;
             srmax= ubs + r[k-1];
             std::cout << "top of upper segment: " << srmin << " " << srmax << " "<< " " << uslabL << " " << srmax - srmin << " " <<  r[k] << std::endl;
-            
+            r.clear();
             break;
          }
 
@@ -353,6 +353,65 @@ void Segments()
          std::cout << srmin << " " << srmax << " " << uslabL << " " << srmax-srmin << " " <<  r[k] << std::endl;
          }
          ubs = lub;
+        
+        
+         
+         ++k;
+
+
+
+
+         
+      }
+
+
+   }
+
+   
+// Segment 1 test
+
+   k =0; // restart loop
+
+   double lslabL = 0; //upper slab length
+
+   double srmin = 0;
+   double srmax = 0;
+
+   std::cout << " " << std::endl;
+   std::cout << " Segement 1: " << lb << " " << lt << std::endl;
+
+   double lbs = lb;
+
+      for (int i = 0; i < PremMatrix.size(); ++i)
+   {
+
+      double llb = PremMatrix[i][0]; //Lower boundary of current layer
+       
+      if (llb >= lb )
+      {
+
+
+         lslabL = lslabL + (llb - lbs );
+
+         
+
+         if (lslabL > dh)
+         {
+            srmin= lbs;
+            srmax= lbs + r[k-1];
+            std::cout << "top of lower segment: " << srmin << " " << srmax << " "<< " " << lslabL << " " << srmax - srmin << " " <<  r[k] << std::endl;
+            r.clear();
+            break;
+         }
+
+         else
+         {
+            srmin = lbs;
+            srmax = llb;
+            r.push_back(dh-lslabL);
+         std::cout << srmin << " " << srmax << " " << lslabL << " " << srmax-srmin << " " <<  r[k] << std::endl;
+         }
+         lbs = llb;
         
         
          
