@@ -341,7 +341,7 @@ void Segments()
 
          else
          {
-         std::cout << ubs << " " << umb << " " << uslabL << " " <<  r[k] << std::endl;
+         std::cout << ubs << " " << lub << " " << uslabL << " " <<  r[k] << std::endl;
          }
          ubs = lub;
         
