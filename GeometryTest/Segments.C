@@ -300,11 +300,11 @@ void Segments()
          else
          {
             srmin = lbs;
-            srmax = llb;
+            srmax = layerb;
             r.push_back(dh-lslabL);
             std::cout << srmin << " " << srmax << " " << lslabL << " " << srmax-srmin << " " <<  r[k] << std::endl;
          }
-         lbs = llb;
+         lbs = layerb;
         
         
          
