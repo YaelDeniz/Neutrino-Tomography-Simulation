@@ -279,10 +279,11 @@ void Segments()
 
       double layerb = PremMatrix[i][0]; //Lower boundary of current layer
 
-      std::cout << "Current layer " << layerb << std::endl;
+      
        
       if (layerb > lb )
       {
+         std::cout << "Current layer " << layerb << std::endl;
 
 
          lslabL = lslabL + (layerb - lbs );
