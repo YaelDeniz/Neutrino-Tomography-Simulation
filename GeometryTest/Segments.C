@@ -285,7 +285,7 @@ void Segments()
          
          std::cout << mbs << " " << lmb << " " << mslabL << " " <<  r[k] << std::endl;
 
-         mbs = lmb
+         mbs = lmb;
         
          if (mslabL > 2000)
          {
