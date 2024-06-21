@@ -346,7 +346,7 @@ void Segments()
 
          if (mslabL > dh)
          {
-            double excess2 = dh-mslabL
+            double excess2 = dh-mslabL;
             srmin= mbs;
             srmax= layerm + excess2;
             std::cout << "top of middle segment: " << srmin << " " << srmax << " " << mslabL + excess2 << " " << srmax-srmin << std::endl;
