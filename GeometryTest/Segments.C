@@ -313,9 +313,13 @@ void Segments()
 
    k =0; // restart loop
 
-   double uslabL = 0; //mid slab length
+   double uslabL = 0; //upper slab length
 
-   std::cout << "Segement 3: " << ub << " " << ut << std::endl;
+   double srmin = 0;
+   double srmax = 0;
+
+   std::cout << " " << std::endl;
+   std::cout << " Segement 3: " << ub << " " << ut << std::endl;
 
    double ubs = ub;
 
@@ -330,18 +334,23 @@ void Segments()
 
          uslabL = uslabL + (lub - ubs );
 
-         r.push_back(dh-uslabL);
+         
 
          if (uslabL > dh)
          {
-            std::cout << "top" << ubs << " " << ubs + r[k-1] << " " << uslabL << " " <<  r[k] << std::endl;
+            srmin= ubs;
+            srmax= ubs + r[k-1];
+            std::cout << "top of upper segment: " << srmin << " " << srmax << " " << srmax - srmin << " " <<  r[k] << std::endl;
             
             break;
          }
 
          else
          {
-         std::cout << ubs << " " << lub << " " << uslabL << " " <<  r[k] << std::endl;
+            srmin = ubs;
+            srmax = lub;
+            r.push_back(dh-uslabL);
+         std::cout << srmin << " " << srmax << " " << srmax-srmin << " " <<  r[k] << std::endl;
          }
          ubs = lub;
         
