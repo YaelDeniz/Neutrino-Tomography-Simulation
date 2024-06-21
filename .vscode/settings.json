@@ -64,6 +64,7 @@
         "NuFlux_ClassTest.C": "cpp",
         "PhyTools.C": "cpp",
         "AsimovDataTrue copy.C": "cpp",
-        "AsimovDataTrue_backup.C": "cpp"
+        "AsimovDataTrue_backup.C": "cpp",
+        "Segments.C": "cpp"
     }
 }

@@ -261,35 +261,39 @@ void Segments()
 //Segment 2------------------------------------------------------------------------------------------------------------------------
    k =0; // restart loop
 
-   sumr = 0;
+   double mslabL = 0; //mid slab length
 
    std::cout << "Segement 2: " << mb << " " << mt << std::endl;
 
    double rc2 = mb;
 
+   double mbs = mb;
+
    for (int i = 0; i < PremMatrix.size(); ++i)
    {
 
-      double rc_top2 = PremMatrix[i][0]; //Lower boundary of current layer
+      double lmb = PremMatrix[i][0]; //Lower boundary of current layer
        
-      if (rc_top2>= mb && rc_top2<= mt)
+      if (lmb >= mb )
       {
 
 
-         sumr = sumr + (rc_top2 - rc2 );
+         mslabL = mslabL + (lmb - mbs );
 
-         r.push_back(dh-sumr);
+         r.push_back(dh-mslabL);
+
          
-         std::cout << "sublayer of segment 1: " << rc2 << " " << rc_top2 << " " << sumr << " " << r[k] << std::endl;
+         std::cout << mbs << " " << lmb << " " << mslabL << " " <<  r[k] << std::endl;
 
-         double nextdiff = (PremMatrix[i+1][0] - rc_top2);
-         double nextr = dh-(nextdiff+sumr);
-
-         std::cout << "next layer is" << rc_top2 << " " << PremMatrix[i+1][0] + nextr << " " << nextdiff << " " << sumr << " " << nextr << std::endl; 
+         mbs = lmb
+        
+         if (mslabL > 2000)
+         {
+            break; 
+         }
+         
          ++k;
 
-
-         rc2 = rc_top2;
 
 
 
