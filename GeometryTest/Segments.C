@@ -374,8 +374,8 @@ void Segments()
 
    double lslabL = 0; //upper slab length
 
-   double srmin = 0;
-   double srmax = 0;
+   srmin = 0;
+   srmax = 0;
 
    std::cout << " " << std::endl;
    std::cout << " Segement 1: " << lb << " " << lt << std::endl;
