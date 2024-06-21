@@ -327,8 +327,7 @@ void Segments()
 
    std::cout << "Segement 2: " << mb << " " << mt << std::endl;
 
-   double rc2 = mb;
-
+   
    double mbs = mb;
 
    for (int i = 0; i < PremMatrix.size(); ++i)
@@ -387,7 +386,7 @@ void Segments()
 
    std::cout << "Segement 3: " << ub << " " << ut << std::endl;
 
-   double rc2 = ub;
+
 
    double ubs = ub;
 
@@ -424,7 +423,7 @@ void Segments()
             std::cout << srmin << " " << srmax << " " << uslabL << " " << srmax-srmin << std::endl;
 
          }
-         mbs = layerm;
+         ubs = layeru;
         
         
          
