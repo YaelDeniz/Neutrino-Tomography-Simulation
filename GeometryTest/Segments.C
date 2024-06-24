@@ -185,7 +185,11 @@ void Segments()
 
    double h = 1000;
 
-   double dh = h/3;
+   double dh = h/3; //Slab Thickness
+
+   double PileThickness = 1000;
+
+   double thicknessOfSection = PileThickness/3.0; // Salabas have same thickness
 
    double Rmax1 = 3480 + dh;
    double Rmax2 = 3480 + 2*dh;
@@ -193,127 +197,68 @@ void Segments()
 
    //double r = 0;
 
-   int k = 0; // Index tracker
 
    double rmin1,rmax1,rmin2,rmax2,rmin3,rmax3;
 
    double lb,lt,mb,mt,ub,ut;
 
-   lb = 3480;
-   lt = 3480 + dh;
+   double lowerBottom, lowerTop, midBottom, midTop, upperBottom, upperTop;
 
-   mt = 3480 + 2*dh;
+   lowerBottom = 3480;
 
-   ut = 3480 + 3*dh;
+   lowerTop = 3480 + dh;
 
-   std::vector <double> r;
-   //std::vector <double> exces;
+   midTop = 3480 + 2*dh;
 
-//Segment 1-----------------------------------------------------------------------------------------------------------------------
-/*
-   std::cout << "Segement 1: " << std::endl;
+   upperTop = 3480 + 3*dh;
 
-   for (int i = 0; i < PremMatrix.size(); ++i)
-   {
-      double rc = PremMatrix[i][0]; //Lower boundary of current layer
-       
-      if (rc >= lb && rc<= lt) //Between lower bottom or lower top
-      {
-         double rc_top = PremMatrix[i+1][0]; //Upper boundary of current layer
-
-         sumr = sumr + (rc_top - rc); // Current thicknes (sum of layer thickness) 
-
-         r.push_back(dh-sumr); // Reminder height of llvp segment
-
-
-         //std::cout << "k: " << k << " " <<   rmin << " " << rmax << " " << rmax - rmin << " " << sumr << " " << r[k] << std::endl;
-
-
-         //If Current thickness is larger than the segment thickness, add the reminder to the current lower boundary.
-         if (sumr > dh)
-         {
-            //sumr = sumr + (h-sumr); 
-
-            std::cout << "top sublayer of segment 1: " << rc << " " << rc + r[k-1] << " " << rc + r[k-1] - 3480 << std::endl;
-
-            mb = rc + r[k-1]; //Create the lower end for the second LLVP segment
-
-            r.clear();
-
-         }
-
-         else
-         {
-            //std::cout << "sublayer of segment 1: " << k << " " <<   rmin << " " << rmax << " " << rmax - rmin << " " << sumr << " " << r[k] << std::endl;
-            std::cout << "sublayer of segment 1: " << rc << " " << rc_top  << std::endl;
-
-         }
-
-         ++k;
-         
-      }
-
-
-   }
-   std::cout << " " << std::endl;
-
-   std::cout << "Next segment should start at" << mb << std::endl;
-
-   */
 // Segment 1 test
 
-   k =0; // restart loop
 
-   double lslabL = 0; //upper slab length
+   double slabLength =0;
 
-   double srmin = 0;
-   double srmax = 0;
+   double InnerR = 0;
+   double OuterR = 0;
 
    std::cout << " " << std::endl;
-   std::cout << " Segement 1: " << lb << " " << lt << std::endl;
+   std::cout << " Segement 1 radius: " << lowerBottom << " - " << lowerTop << std::endl;
 
-   double lbs = lb;
+   double lowerSegment = lowerBottom; //Lower Radius of a segment in Pile section
 
       for (int i = 0; i < PremMatrix.size(); ++i)
       {
 
-      double layerb = PremMatrix[i][0]; //Lower boundary of current layer
+      double RadiusInBottom = PremMatrix[i][0]; //Lower boundary of current layer
 
       
        
-      if (layerb > lb )
+      if (RadiusInBottom > lowerBottom )
       {
-         std::cout << "*Current layer " << layerb << std::endl;
+         std::cout << " Radius of layer above lower bottom  " << RadiusInBottom << std::endl;
 
 
-         lslabL = lslabL + (layerb - lbs );
+         slabLength = slabLength + (RadiusInBottom - lowerSegment ); //Calculate segement lenght 
 
-         
-
-         if (lslabL > dh)
+         if (slabLength > thicknessOfSection)
          { 
-            double excess = dh - lslabL;
-            srmin= lbs;
-            srmax= layerb + excess;
-            std::cout << "top of lower segment: " << srmin << " " << srmax << " " << lslabL + excess << " " << srmax-srmin << std::endl;
-            mb = srmax;
-            r.clear();
+            double excess = thicknessOfSection - slabLength;
+            InnerR= lowerSegment;
+            OuterR= RadiusInBottom + excess;
+            std::cout << "top of lower segment: " << InnerR << " " << OuterR << std::endl;
+            midBottom = OuterR;
             break;
          }
     
          else
          {
-            srmin = lbs;
-            srmax = layerb;
-            r.push_back(dh-lslabL);
-            std::cout << srmin << " " << srmax << " " << lslabL << " " << srmax-srmin << std::endl;
+            InnerR = lowerSegment;
+            OuterR = RadiusInBottom;
+            //r.push_back(dh-lslabL);
+       std::cout << "Radius of lower section's segements: "<< InnerR << " " << OuterR << std::endl;
          }
-         lbs = layerb;
+
+         lowerSegment = RadiusInBottom;
         
-        
-         
-         ++k;
-  
       }
 
 
@@ -321,37 +266,38 @@ void Segments()
 
 
 //Segment 2------------------------------------------------------------------------------------------------------------------------
-   k =0; // restart loop
-
-   double mslabL = 0; //mid slab length
+   slabLength =0;
+   InnerR = 0;
+   OuterR = 0;
    
    std::cout << " " << std::endl;
-   std::cout << "Segement 2: " << mb << " " << mt << std::endl;
+   std::cout << " Segement 2 radius: " << midBottom << " - " << midTop << std::endl;
 
    
-   double mbs = mb;
+   double midSegment = midBottom; //Lower Radius of a segment in Pile section
 
    for (int i = 0; i < PremMatrix.size(); ++i)
    {
 
-      double layerm = PremMatrix[i][0]; //Lower boundary of current layer
+      double RadiusInMiddle = PremMatrix[i][0]; //Lower boundary of current layer
        
-      if (layerm > mb )
+      if (RadiusInMiddle > midBottom )
       {
+         std::cout << " Radius of layer above middle bottom  " << RadiusInMiddle << std::endl;
 
 
-         mslabL = mslabL + (layerm - mbs );
+         slabLength = slabLength + (RadiusInMiddle - midSegment ); //Calculate segment lenght 
+
 
          //r.push_back(dh-mslabL);
 
-         if (mslabL > dh)
+         if (slabLength > thicknessOfSection)
          {
-            double excess2 = dh-mslabL;
-            srmin= mbs;
-            srmax= layerm + excess2;
-            std::cout << "top of middle segment: " << srmin << " " << srmax << " " << mslabL + excess2 << " " << srmax-srmin << std::endl;
-            ub = srmax;
-            r.clear();
+            double midExcess = thicknessOfSection-slabLength;
+            InnerR= midSegment;
+            OuterR= RadiusInMiddle + midExcess;
+            std::cout << "top of middle segment: " << InnerR << " " << OuterR << std::endl;
+            upperBottom = OuterR;
             break;
          }
 
@@ -359,84 +305,61 @@ void Segments()
          {
       
 
-            srmin = mbs;
-            srmax = layerm;
-            r.push_back(dh-lslabL);
-            std::cout << srmin << " " << srmax << " " << mslabL << " " << srmax-srmin << std::endl;
+            InnerR = midSegment;
+            OuterR = RadiusInMiddle;
+       std::cout << "Radius of middle section's segements: "<< InnerR << " " << OuterR << std::endl;
 
          }
-         mbs = layerm;
-        
-        
-         
-         ++k;
 
+         midSegment = RadiusInMiddle;
 
-
-
-         
       }
-
 
    }
 
    //Segment 3------------------------------------------------------------------------------------------------------------------------
-   k =0; // restart loop
-
-   double uslabL = 0; //mid slab length
-
+   slabLength =0;
+   InnerR = 0;
+   OuterR = 0;
+   
    std::cout << " " << std::endl;
-   std::cout << "Segement 3: " << ub << " " << ut << std::endl;
+   std::cout << " Segement 3 radius: " << upperBottom << " - " << upperTop << std::endl;
 
 
 
-   double ubs = ub;
+   double upperSegment = upperBottom;
 
    for (int i = 0; i < PremMatrix.size(); ++i)
    {
 
-      double layeru = PremMatrix[i][0]; //Lower boundary of current layer
+      double RadiusInTop = PremMatrix[i][0]; //Lower boundary of current layer
        
-      if (layeru > ub )
+      if (RadiusInTop > upperBottom )
       {
 
+         std::cout << " Radius of layer above uppper bottom  " << RadiusInTop << std::endl;
 
-         uslabL = uslabL + (layeru - ubs );
+         slabLength = slabLength + (RadiusInTop - upperSegment );
 
          //r.push_back(dh-mslabL);
 
-         if (uslabL > dh)
+         if (slabLength > thicknessOfSection)
          {
-            double excess3 = dh-uslabL;
-            srmin= ubs;
-            srmax= layeru + excess3;
-            std::cout << "top of upper segment: " << srmin << " " << srmax << " " << uslabL + excess3 << " " << srmax-srmin << std::endl;
-            r.clear();
+            double topExcess = thicknessOfSection-slabLength;
+            InnerR= upperSegment;
+            OuterR= RadiusInTop + topExcess;
+            std::cout << "top of upper segment: " << InnerR << " " << OuterR << std::endl;
             break;
          }
 
          else
          {
-      
-
-            srmin = ubs;
-            srmax = layeru;
-            r.push_back(dh-uslabL);
-            std::cout << srmin << " " << srmax << " " << uslabL << " " << srmax-srmin << std::endl;
-
+            InnerR = upperSegment;
+            OuterR = RadiusInTop;
+            std::cout << "Radius of top section's segements: "<< InnerR << " " << OuterR << std::endl;
          }
-         ubs = layeru;
-        
-        
-         
-         ++k;
-
-
-
-
-         
+         upperSegment = RadiusInTop;
       }
-
 
    }
 /*
