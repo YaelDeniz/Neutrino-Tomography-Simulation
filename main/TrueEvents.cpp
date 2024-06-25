@@ -197,6 +197,7 @@ int main()
 
    AlternativeEarth.PremModel = "prem_default";
    AlternativeEarth.MantleAnomaly = true;
+   AlternativeEarth.AnomalyShape="cake";
    AlternativeEarth.AnomalousLayers = layers;
    AlternativeEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
    AlternativeEarth.SetBinning(zbins,abins,ebins);

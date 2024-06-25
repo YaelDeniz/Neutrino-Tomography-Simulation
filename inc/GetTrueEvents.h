@@ -23,6 +23,7 @@ class AsimovSimulation
     //Earth Settings
     std::string PremModel="prem_14layers";
     bool MantleAnomaly;
+    std::string AnomalyShape;
     std::vector<int> AnomalousLayers;
 
     //Neutrino Settings

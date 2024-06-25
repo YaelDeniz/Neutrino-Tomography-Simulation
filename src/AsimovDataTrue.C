@@ -204,7 +204,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
      MyEarthModel.SetModel(PremFile);
 
-     MyEarthModel.ActiveHeterogeneity( MantleAnomaly );
+     MyEarthModel.ActiveHeterogeneity( MantleAnomaly, AnomalyShape );
 
      MyEarthModel.WhichLayersLLVPs = AnomalousLayers;
 

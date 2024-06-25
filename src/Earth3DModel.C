@@ -82,7 +82,11 @@ void Earth3DModel::SetDirection(double cth , double phi ) //Input in radias -> t
 
 //Define if LLVP exist
 
-void Earth3DModel::ActiveHeterogeneity( bool value ) { Anomaly = value; } // Activate the LLVPs
+void Earth3DModel::ActiveHeterogeneity( bool value , std::string shape) 
+{ 
+  Anomaly = value; 
+  AnomalyShape = shape;
+} // Activate the LLVPs
 
 
 // Create a matrix from PremTables
@@ -136,13 +140,11 @@ int Earth3DModel::LabelLayer (double radius)
 
 //CONSTRUCT LLVP
 
-void Earth3DModel::CreateLLVP(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > LLVPMatrix )
+void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix, std::vector< std::vector<double> > check )
 {
 
-  //PANCAKE MODEL 
-
-  /*LLVPs are modeled as segments of a spehere. PANCAKE model means a single layer*/
-
+  //Baker----------------------------------------------------------------------------------------------------------------------
+  
   std::vector<TGeoMaterial*> LLVPMat; //Vector to define material for each LLVP segment ( A X% anomaly in local Density or Z/A)
 
   std::vector<TGeoMedium*> LLVPMed;   //Vector to define medium for each LLVP segment
@@ -151,59 +153,535 @@ void Earth3DModel::CreateLLVP(std::vector<TGeoVolume*> LAYER, std::vector< std::
   
   TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);// Some Geometrical trasformation that move LLVPs to the right place
 
-  int LLVPint = WhichLayersLLVPs.size();
+  double PileThickness = 1000;
 
-  //double gamma = 45.0/LLVPint; // Angular width of each LLVP segment
+  double Bottom,Top;
+
+  double Localdensity;
+
+  double Localchem;
+
+  Bottom = 3480;
   
-  double rminLLVP, rmaxLLVP, daWidth, aWidthi, Localchem, Localdensity;
+  Top = 3480 + PileThickness;
 
-  //double drho, dzoa, gammai, rminLLVP, rmaxLLVP;
+   // Segment 1 test
+   double slabLength =0;
+
+   double InnerR = 0;
+   double OuterR = 0;
+
+   int PileId = 0;
+
+   std::cout << " " << std::endl;
+   std::cout << " Pile radius: " << Bottom << " - " << Top << std::endl;
+
+   double lowerSegment = Bottom; //Lower Radius of a segment in Pile section
+
+   for (int i = 0; i < PremMatrix.size(); ++i)
+   {
+
+      double RadiusInPile = PremMatrix[i][0]; //Lower boundary of current layer
+
+      if (RadiusInPile > Bottom )
+      {
+
+          char integer_string[32];
+            
+          sprintf(integer_string, "%d", i);//Layer Index
+
+          char llvpmaterial_string[64]="LLVPMaterial";
+          strcat(llvpmaterial_string, integer_string);
+          const char *llvpMatName = llvpmaterial_string;
+          
+
+          char llvpmedium_string[64]="LLVPMedium";
+          strcat(llvpmedium_string, integer_string);
+          const char *llvpMedName = llvpmedium_string;
+            
+          char llvplayer_string[64]="LLVPLayer";
+          strcat(llvplayer_string, integer_string);
+          const char *llvpLayerName= llvplayer_string;
+        
+         slabLength = slabLength + (RadiusInPile - lowerSegment ); //Calculate segement lenght 
+
+         if (slabLength > PileThickness)
+         { 
+
+            double excess = PileThickness - slabLength;
+            InnerR= lowerSegment;
+            OuterR= RadiusInPile + excess;
+  
+          //std::cout << "top of lower segment: " << InnerR << " " << OuterR << std::endl;
  
-  for (int i = 0; i < LLVPint; ++i)
-  {
+            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
+            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
+            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
+            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+            
+            
+            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
 
-    int index = WhichLayersLLVPs[i]-1; //Index of the layer that will contain LLVPs
-
-    //Generate segment names
-    char integer_string[32];
+            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
     
-    sprintf(integer_string, "%d", i+1);
-
-    char llvpmaterial_string[64]="LLVPMaterial";
-    strcat(llvpmaterial_string, integer_string);
-    const char *llvpMatName = llvpmaterial_string;
-
-    char llvpmedium_string[64]="LLVPMedium";
-    strcat(llvpmedium_string, integer_string);
-    const char *llvpMedName = llvpmedium_string;
-    
-    char llvplayer_string[64]="LLVPLayer";
-    strcat(llvplayer_string, integer_string);
-    const char *llvpLayerName= llvplayer_string;
-
-    rminLLVP = LLVPMatrix[index-1][0];
-
-    rmaxLLVP = LLVPMatrix[index][0];
-
-    Localdensity = (1.0 + drho/100.0)*LLVPMatrix[index][1];
-
-    Localchem = (1.0 + dzoa/100.0 )*LLVPMatrix[index][2];
-    
-    LLVPMat.push_back( new TGeoMaterial(llvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
+            LLVPMat.push_back( new TGeoMaterial(llvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
   
-    LLVPMed.push_back( new TGeoMedium(llvpMedName,1,LLVPMat[i]) ); // Create LLVP medium
+            LLVPMed.push_back( new TGeoMedium(llvpMedName,1,LLVPMat[PileId]) ); // Create LLVP medium
 
-    LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[i] , rminLLVP , rmaxLLVP , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
+            LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
-    LLVPLAYER[i]->SetLineColor(kGreen);
+            LLVPLAYER[PileId]->SetLineColor(kBlue);
 
-    LAYER[index]->AddNode(LLVPLAYER[i],1,rot1);
+            LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
 
-  }
+            LLVPMat.clear();
+            
+            LLVPMed.clear();
+            
+            LLVPLAYER.clear();
 
-   //CAKE
+            break;
+         }
+    
+         else
+         {
+            InnerR = lowerSegment;
+            OuterR = RadiusInPile;
+            
+            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
+            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
+            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
+            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+          
+            //std::cout << "Radius of lower section's segements: "<< InnerR << " " << OuterR << std::endl;
 
+            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+
+            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+    
+            LLVPMat.push_back( new TGeoMaterial(llvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
+  
+            LLVPMed.push_back( new TGeoMedium(llvpMedName,1,LLVPMat[PileId]) ); // Create LLVP medium
+
+            LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
+
+            LLVPLAYER[PileId]->SetLineColor(kBlue);
+
+            LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
+
+            ++PileId;
+
+         }
+
+         lowerSegment = RadiusInPile;
+      }
+   }
 }
+
+void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix, std::vector<std::vector<double>> check )
+{
+
+  //Baker----------------------------------------------------------------------------------------------------------------------
+  
+  std::vector<TGeoMaterial*> LLVPMat; //Vector to define material for each LLVP segment ( A X% anomaly in local Density or Z/A)
+
+  std::vector<TGeoMedium*> LLVPMed;   //Vector to define medium for each LLVP segment
+
+  std::vector<TGeoVolume*> LLVPLAYER; //Vector to define Volume for each LLVP segment
+  
+  //Naming Convention
+
+  //Generate segment names
+  //char integer_string[32];
+    
+  //sprintf(integer_string, "%d", i+1);
+
+  //char llvpmaterial_string[64]="LLVPMaterial";
+  //char llvpmaterial_string[64];
+  //strcat(llvpmaterial_string, integer_string);
+  //const char *llvpMatName = llvpmaterial_string;
+  //const char *llvpMatName;
+
+  //char llvpmedium_string[64]="LLVPMedium";
+  //strcat(llvpmedium_string, integer_string);
+  //const char *llvpMedName = llvpmedium_string;
+  //const char *llvpMedName;
+    
+  //llvplayer_string[64]="LLVPLayer";
+  //strcat(llvplayer_string, integer_string);
+  //const char *llvpLayerName= llvplayer_string;
+  //const char *llvpLayerName;
+
+
+   TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);// Some Geometrical trasformation that move LLVPs to the right place
+
+   double PileThickness = 1000;
+
+   double thicknessOfSection = PileThickness/3.0; // Salabas have same thickness
+
+   double lowerBottom, lowerTop, midBottom, midTop, upperBottom, upperTop;
+
+   double Localdensity;
+
+   double Localchem;
+
+   lowerBottom = 3480;
+
+   lowerTop = 3480 + thicknessOfSection;
+
+   midTop = 3480 + 2*thicknessOfSection;
+
+   upperTop = 3480 + 3*thicknessOfSection;
+
+   // Segment 1 test
+   double slabLength =0;
+
+   double InnerR = 0;
+   double OuterR = 0;
+
+   int PileId = 0;
+
+   std::cout << " " << std::endl;
+   std::cout << " Segement 1 radius: " << lowerBottom << " - " << lowerTop << std::endl;
+
+   double lowerSegment = lowerBottom; //Lower Radius of a segment in Pile section
+
+   for (int i = 0; i < PremMatrix.size(); ++i)
+   {
+
+      double RadiusInBottom = PremMatrix[i][0]; //Lower boundary of current layer
+
+      if (RadiusInBottom > lowerBottom )
+      {
+
+          char lowinteger_string[32];
+            
+          sprintf(lowinteger_string, "%d", i);//Layer Index
+
+          char lowllvpmaterial_string[64]="lowLLVPMaterial";
+          strcat(lowllvpmaterial_string, lowinteger_string);
+          const char *lowllvpMatName = lowllvpmaterial_string;
+          
+
+          char lowllvpmedium_string[64]="lowLLVPMedium";
+          strcat(lowllvpmedium_string, lowinteger_string);
+          const char *lowllvpMedName = lowllvpmedium_string;
+            
+          char lowllvplayer_string[64]="lowLLVPLayer";
+          strcat(lowllvplayer_string, lowinteger_string);
+          const char *lowllvpLayerName= lowllvplayer_string;
+        
+         slabLength = slabLength + (RadiusInBottom - lowerSegment ); //Calculate segement lenght 
+
+         if (slabLength > thicknessOfSection)
+         { 
+
+            double excess = thicknessOfSection - slabLength;
+            InnerR= lowerSegment;
+            OuterR= RadiusInBottom + excess;
+  
+          //std::cout << "top of lower segment: " << InnerR << " " << OuterR << std::endl;
+ 
+            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
+            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
+            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
+            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+            
+            
+            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+
+            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+    
+            LLVPMat.push_back( new TGeoMaterial(lowllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
+  
+            LLVPMed.push_back( new TGeoMedium(lowllvpMedName,1,LLVPMat[PileId]) ); // Create LLVP medium
+
+            LLVPLAYER.push_back( gGeoManager -> MakeSphere(lowllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
+
+            LLVPLAYER[PileId]->SetLineColor(kBlue);
+
+            LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
+
+            LLVPMat.clear();
+            
+            LLVPMed.clear();
+            
+            LLVPLAYER.clear();
+
+            midBottom = OuterR;
+            
+            break;
+         }
+    
+         else
+         {
+            InnerR = lowerSegment;
+            OuterR = RadiusInBottom;
+            
+            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
+            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
+            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
+            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+          
+            //std::cout << "Radius of lower section's segements: "<< InnerR << " " << OuterR << std::endl;
+
+            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+
+            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+    
+            LLVPMat.push_back( new TGeoMaterial(lowllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
+  
+            LLVPMed.push_back( new TGeoMedium(lowllvpMedName,1,LLVPMat[PileId]) ); // Create LLVP medium
+
+            LLVPLAYER.push_back( gGeoManager -> MakeSphere(lowllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
+
+            LLVPLAYER[PileId]->SetLineColor(kBlue);
+
+            LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
+
+            ++PileId;
+
+         }
+
+         lowerSegment = RadiusInBottom;
+      }
+   }
+
+  
+   //Segment 2------------------------------------------------------------------------------------------------------------------------
+   PileId=0;
+
+   slabLength =0;
+   InnerR = 0;
+   OuterR = 0;
+   
+   std::cout << " " << std::endl;
+   std::cout << " Segement 2 radius: " << midBottom << " - " << midTop << std::endl;
+   
+   double midSegment = midBottom; //Lower Radius of a segment in Pile section
+
+   for (int i = 0; i < PremMatrix.size(); ++i)
+   {
+
+      double RadiusInMiddle = PremMatrix[i][0]; //Lower boundary of current layer
+       
+      if (RadiusInMiddle > midBottom )
+      {
+        char midinteger_string[32];
+            
+        sprintf(midinteger_string, "%d", i);//Layer Index
+
+        char midllvpmaterial_string[64]="midLLVPMaterial";
+        strcat(midllvpmaterial_string, midinteger_string);
+        const char *midllvpMatName = midllvpmaterial_string;
+          
+
+        char midllvpmedium_string[64]="midLLVPMedium";
+        strcat(midllvpmedium_string, midinteger_string);
+        const char *midllvpMedName = midllvpmedium_string;
+            
+        char midllvplayer_string[64]="midLLVPLayer";
+        strcat(midllvplayer_string, midinteger_string);
+        const char *midllvpLayerName= midllvplayer_string;
+
+         std::cout << " Radius of layer above middle bottom  " << RadiusInMiddle << std::endl;
+
+
+         slabLength = slabLength + (RadiusInMiddle - midSegment ); //Calculate segment lenght 
+
+         if (slabLength > thicknessOfSection)
+         {
+            double midExcess = thicknessOfSection-slabLength;
+            InnerR= midSegment;
+            OuterR= RadiusInMiddle + midExcess;
+
+
+            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
+            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
+            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
+            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+            
+            
+            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+
+            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+    
+            LLVPMat.push_back( new TGeoMaterial(midllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
+  
+            LLVPMed.push_back( new TGeoMedium(midllvpMedName,1,LLVPMat[PileId]) ); // Create LLVP medium
+
+            double midwidth= (2.0/3.0)*aWidth;
+
+            LLVPLAYER.push_back( gGeoManager -> MakeSphere(midllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, midwidth ,0 ,360 ) ); // DEFINE LLVP Segment
+
+            LLVPLAYER[PileId]->SetLineColor(kGreen);
+
+            LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
+
+            LLVPMat.clear();
+            
+            LLVPMed.clear();
+            
+            LLVPLAYER.clear();
+
+            upperBottom = OuterR;
+
+            break;
+         }
+
+         else
+         {
+          InnerR = midSegment;
+          OuterR = RadiusInMiddle;
+
+          std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
+          std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
+          std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
+          std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+          
+          
+          Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+
+          Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+  
+          LLVPMat.push_back( new TGeoMaterial(midllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
+
+          LLVPMed.push_back( new TGeoMedium(midllvpMedName,1,LLVPMat[PileId]) ); // Create LLVP medium
+
+          double midwidth= (2.0/3.0)*aWidth;
+
+          LLVPLAYER.push_back( gGeoManager -> MakeSphere(midllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, midwidth ,0 ,360 ) ); // DEFINE LLVP Segment
+
+          LLVPLAYER[PileId]->SetLineColor(kGreen);
+
+          LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1); 
+
+          ++PileId; 
+
+         }
+         midSegment = RadiusInMiddle;
+      }
+
+   }
+   //Segment 3------------------------------------------------------------------------------------------------------------------------
+   PileId=0;
+   slabLength =0;
+   InnerR = 0;
+   OuterR = 0;
+   
+   std::cout << " " << std::endl;
+   
+   std::cout << " Segement 3 radius: " << upperBottom << " - " << upperTop << std::endl;
+
+   double upperSegment = upperBottom;
+
+   for (int i = 0; i < PremMatrix.size(); ++i)
+   {
+
+      double RadiusInTop = PremMatrix[i][0]; //Lower boundary of current layer
+       
+      if (RadiusInTop > upperBottom )
+      {
+
+
+        char upinteger_string[32];
+            
+        sprintf(upinteger_string, "%d", i);//Layer Index
+
+        char upllvpmaterial_string[64]="upLLVPMaterial";
+        strcat(upllvpmaterial_string, upinteger_string);
+        const char *upllvpMatName = upllvpmaterial_string;
+          
+
+        char upllvpmedium_string[64]="upLLVPMedium";
+        strcat(upllvpmedium_string, upinteger_string);
+        const char *upllvpMedName = upllvpmedium_string;
+            
+        char upllvplayer_string[64]="upLLVPLayer";
+        strcat(upllvplayer_string, upinteger_string);
+        const char *upllvpLayerName= upllvplayer_string;
+
+         std::cout << " Radius of layer above uppper bottom  " << RadiusInTop << std::endl;
+
+         slabLength = slabLength + (RadiusInTop - upperSegment );
+
+         //r.push_back(dh-mslabL);
+
+         if (slabLength > thicknessOfSection)
+         {
+            double topExcess = thicknessOfSection-slabLength;
+            InnerR= upperSegment;
+            OuterR= RadiusInTop + topExcess;
+
+            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
+            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
+            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
+            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+            
+            
+            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+
+            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+    
+            LLVPMat.push_back( new TGeoMaterial(upllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
+  
+            LLVPMed.push_back( new TGeoMedium(upllvpMedName,1,LLVPMat[PileId]) ); // Create LLVP medium
+
+            double upwidth= (1.0/3.0)*aWidth;
+
+            LLVPLAYER.push_back( gGeoManager -> MakeSphere(upllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, upwidth ,0 ,360 ) ); // DEFINE LLVP Segment
+
+            LLVPLAYER[PileId]->SetLineColor(kRed);
+
+            LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
+
+            LLVPMat.clear();
+            
+            LLVPMed.clear();
+            
+            LLVPLAYER.clear();
+
+            break;
+         }
+
+         else
+         {
+            InnerR = upperSegment;
+            OuterR = RadiusInTop;
+                        std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
+            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
+            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
+            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+            
+            
+            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+
+            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+    
+            LLVPMat.push_back( new TGeoMaterial(upllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
+  
+            LLVPMed.push_back( new TGeoMedium(upllvpMedName,1,LLVPMat[PileId]) ); // Create LLVP medium
+
+            double upwidth= (1.0/3.0)*aWidth;
+
+            LLVPLAYER.push_back( gGeoManager -> MakeSphere(upllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, upwidth ,0 ,360 ) ); // DEFINE LLVP Segment
+
+            LLVPLAYER[PileId]->SetLineColor(kRed);
+
+            LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
+
+            ++PileId;
+
+         }
+         upperSegment = RadiusInTop;
+      }
+
+   }
+   
+}
+
+
+
 
 
 
@@ -251,6 +729,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
   std::vector<TGeoMaterial*> MAT; //Vector to define material for each layer en in PREM (Density & Z/A)
   std::vector<TGeoMedium*>  MED;  //Vector to define medium for each layer en in PREM 
   std::vector<TGeoVolume*> LAYER; //Vector to define a  volume for each layer en in PREM
+  std::vector<std::vector<double>> check;
 
     std::cout << "***************************THE EARTH***************************" << std::endl; 
 
@@ -292,6 +771,8 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
        
       MED.push_back( new TGeoMedium( MedName , 1 , MAT[i]) ); //Define Medium for ith Layer 
 
+      check.push_back({rmin,rmax});
+
       LAYER.push_back( gGeoManager->MakeSphere(LayerName,MED[i], rmin,rmax,0,180,0,360) ); // Define Volume for the ith Layer
 
       if (rmax == 3480.0 ) { LAYER[i]->SetVisibility(kTRUE);} //Outer Core is visible
@@ -320,73 +801,17 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
   if (Anomaly)
   {
-  
-  /*  
-  //Definition LLVPS
 
-  // In this version of the Code LLVPs are just segmets of SPHERE inside specific layers in the Lower Mantle
-
-  std::vector<TGeoMaterial*> LLVPMat; //Vector to define material for each LLVP segment ( A X% anomaly in local Density or Z/A)
-  std::vector<TGeoMedium*> LLVPMed;   //Vector to define medium for each LLVP segment
-  std::vector<TGeoVolume*> LLVPLAYER; //Vector to define Volume for each LLVP segment
-  
-  TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);// Some Geometrical trasformation that move LLVPs to the right place
-
-  int LLVPint = WhichLayersLLVPs.size();
-
-  //double gamma = 45.0/LLVPint; // Angular width of each LLVP segment
-  
-  double rminLLVP, rmaxLLVP, daWidth, aWidthi, Localchem, Localdensity;
-
-  //double drho, dzoa, gammai, rminLLVP, rmaxLLVP;
- 
-  for (int i = 0; i < LLVPint; ++i)
+  if (AnomalyShape == "cake")
   {
-
-    int index = WhichLayersLLVPs[i]-1; //Index of the layer that will contain LLVPs
-
-    //Generate segment names
-    char integer_string[32];
-    
-    sprintf(integer_string, "%d", i+1);
-
-    char llvpmaterial_string[64]="LLVPMaterial";
-    strcat(llvpmaterial_string, integer_string);
-    const char *llvpMatName = llvpmaterial_string;
-
-    char llvpmedium_string[64]="LLVPMedium";
-    strcat(llvpmedium_string, integer_string);
-    const char *llvpMedName = llvpmedium_string;
-    
-    char llvplayer_string[64]="LLVPLayer";
-    strcat(llvplayer_string, integer_string);
-    const char *llvpLayerName= llvplayer_string;
-
-    rminLLVP = LLVPMatrix[index-1][0];
-    rmaxLLVP = LLVPMatrix[index][0];
-    Localdensity = (1.0 + drho/100.0)*LLVPMatrix[index][1];
-    Localchem = (1.0 + dzoa/100.0 )*LLVPMatrix[index][2];
-    
-    daWidth = aWidth/LLVPint;
-
-    aWidthi =(LLVPint - i)*daWidth;
-    
-    LLVPMat.push_back( new TGeoMaterial(llvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
-  
-    LLVPMed.push_back( new TGeoMedium(llvpMedName,1,LLVPMat[i]) ); // Create LLVP medium
-
-    LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[i] , rminLLVP , rmaxLLVP , 0, aWidth,0 ,360 ) ); // DEFINE LLVP Segment
-
-    LLVPLAYER[i]->SetLineColor(kGreen);
-
-    LAYER[index]->AddNode(LLVPLAYER[i],1,rot1);
-
+     CreateCake(LAYER, LLVPMatrix,check );
   }
-  */
-  
-  
 
-  CreateLLVP(LAYER, LLVPMatrix );
+  else if (AnomalyShape == "pancake")
+  {
+     CreatePanCake(LAYER, LLVPMatrix, check );
+  }
+  
 
   }
 

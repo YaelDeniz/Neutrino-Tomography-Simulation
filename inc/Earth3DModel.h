@@ -33,6 +33,7 @@ class Earth3DModel
   double Det[3]= {0.0,0.0,-6371.0}; //South Pole is the Default location
 
   bool Anomaly = false; //By Default we dont need LLVPs
+  std::string AnomalyShape;
   std::vector<int> WhichLayersLLVPs{1}; //Specify which layers contain an LLVPs segment
   double aWidth = 45.0; //LLVP Angular With
   double drho = 3; // 3% more dense
@@ -51,7 +52,7 @@ class Earth3DModel
   
   //LLVPs
 
-  void ActiveHeterogeneity( bool value ); // Activate the LLVPs
+  void ActiveHeterogeneity( bool value, std::string shape ); // Activate the LLVPs
 
   /*
 
@@ -67,13 +68,16 @@ class Earth3DModel
 
   */
 
-  std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_15layers.txt" );
+  std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_44layers.txt" );
 
   int LabelLayer (double radius);
 
   std::vector<std::vector<double>> Earth3DPath ( double zen , double azi, std::string MODEL);
 
-  void CreateLLVP(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > LLVPMatrix );
+  void CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > LLVPMatrix , std::vector< std::vector<double> > check);
+
+  void CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix, std::vector<std::vector<double>> check );
+
 
   std::vector<std::vector<double>> Create3DPath ();
 
