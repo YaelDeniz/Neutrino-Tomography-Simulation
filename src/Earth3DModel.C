@@ -174,7 +174,7 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
    int PileId = 0;
 
    std::cout << " " << std::endl;
-   std::cout << " Pile radius: " << Bottom << " - " << Top << std::endl;
+   std::cout << "Pile radius: " << Bottom << " - " << Top << std::endl;
 
    double lowerSegment = Bottom; //Lower Radius of a segment in Pile section
 
@@ -214,10 +214,11 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
   
           //std::cout << "top of lower segment: " << InnerR << " " << OuterR << std::endl;
  
-            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
-            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
-            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
-            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+
+            double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
+            double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
+            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
             
             
             Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
@@ -248,10 +249,12 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
             InnerR = lowerSegment;
             OuterR = RadiusInPile;
             
-            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
-            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
-            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
-            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+            double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
+            double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
+            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            
+            
           
             //std::cout << "Radius of lower section's segements: "<< InnerR << " " << OuterR << std::endl;
 
@@ -382,10 +385,11 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
   
           //std::cout << "top of lower segment: " << InnerR << " " << OuterR << std::endl;
  
-            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
-            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
-            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
-            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+            double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
+            double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
+            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            
             
             
             Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
@@ -418,10 +422,12 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
             InnerR = lowerSegment;
             OuterR = RadiusInBottom;
             
-            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
-            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
-            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
-            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+            double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
+            double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
+            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            
+            
           
             //std::cout << "Radius of lower section's segements: "<< InnerR << " " << OuterR << std::endl;
 
@@ -496,10 +502,12 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
             OuterR= RadiusInMiddle + midExcess;
 
 
-            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
-            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
-            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
-            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+            double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
+            double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
+            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            
+            
             
             
             Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
@@ -534,11 +542,12 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
           InnerR = midSegment;
           OuterR = RadiusInMiddle;
 
-          std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
-          std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
-          std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
-          std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
-          
+          double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
+          double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
+          std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+          std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            
+            
           
           Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
 
@@ -613,10 +622,12 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
             InnerR= upperSegment;
             OuterR= RadiusInTop + topExcess;
 
-            std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
-            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
-            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
-            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+            double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
+            double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
+            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            
+            
             
             
             Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
@@ -648,10 +659,12 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
          {
             InnerR = upperSegment;
             OuterR = RadiusInTop;
-                        std::cout<<"TGeoMan|" << " rho:" << LAYER[i]->GetMedium()->GetMaterial()->GetDensity() << " zoa: " << LAYER[i]->GetMedium()->GetMaterial()->GetZ()<< std::endl;
-            std::cout <<"LayerGeom| rmin: " << check[i][0] << "rmax: " << check[i][1] << std::endl; 
-            std::cout<<"PREM| " << " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2] << std::endl;
-            std::cout<<"PREM| rmin: " <<InnerR << " rmax: " << OuterR << std::endl;
+
+            double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
+            double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
+            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            
             
             
             Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
