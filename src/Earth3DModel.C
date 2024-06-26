@@ -795,36 +795,40 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
       LAYER[LAYER.size()-1]-> SetVisibility(kTRUE); // Crust is vissible
 
-  /*
+  
 
-  // SECTION TO BE DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //SECTION TO BE DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   double R_cmb = 3480.0;
-  double zentest = 180-TMath::ASin( (R_cmb)/6368.0 )*(180.0/TMath::Pi()) ; // max 180
-  if (zen  > zentest )
+  double thtest = TMath::ASin( (R_cmb)/6368.0 ) ; // max 180
+
+  bool TestBoolLLVP = Anomaly;
+
+  std::cout << " Test of angles: " << th*180.0/TMath::Pi() << " " << thtest*180.0/TMath::Pi() << " " << Anomaly << " " << TestBoolLLVP <<std::endl;
+  if (th  <  thtest )
   {
-    Anomaly = false;
+    TestBoolLLVP = false;
+    std::cout << "LLVP IS OFF " << th*180.0/TMath::Pi() << " " << thtest*180.0/TMath::Pi() << " " << Anomaly << " " << TestBoolLLVP <<std::endl;
   }
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-  */
+  
 
   std::cout << "***************************THE LLVP***************************" << std::endl; 
 //-+++++++++++++++++++++++++++++++++++++++++++++-----++-+-+-+-+--+
 
-  if (Anomaly)
+  if (TestBoolLLVP /*After test, variable should be Anomaly*/)
   {
 
-  if (AnomalyShape == "cake")
-  {
-     CreateCake(LAYER, LLVPMatrix,check );
-  }
+      if (AnomalyShape == "cake")
+      {
+         CreateCake(LAYER, LLVPMatrix,check );
+      }
 
-  else if (AnomalyShape == "pancake")
-  {
-     CreatePanCake(LAYER, LLVPMatrix, check );
-  }
-  
+      else if (AnomalyShape == "pancake")
+      {
+         CreatePanCake(LAYER, LLVPMatrix, check );
+      }
 
   }
 

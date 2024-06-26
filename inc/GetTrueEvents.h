@@ -73,13 +73,14 @@ class AsimovSimulation
 
     TH3D * GetTrueEvents3D();
 
+    TH2D * GetTrueEvents2D(); //Azimuth independet
+
+    TH2D * TestTrueEvents2D();
+
+
 
 
 };
-
-
-
-
 
 
 

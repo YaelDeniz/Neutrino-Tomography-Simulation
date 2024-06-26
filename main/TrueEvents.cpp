@@ -9,6 +9,8 @@
 #include <math.h>
 
 //Cern ROOT
+#include "TApplication.h"
+#include "TRootCanvas.h"
 #include "TCanvas.h"
 #include "TH2.h"
 #include "TGraph.h"
@@ -33,7 +35,7 @@
 using namespace std;
 
 
-int main()
+int main(int argc, char **argv)
 {
     // Plot and Histogram2D settings
 
@@ -182,35 +184,139 @@ int main()
 
    AsimovSimulation StandardEarth;
 
-   StandardEarth.PremModel = "prem_default";
+   StandardEarth.PremModel = "prem_44layers";
    StandardEarth.MantleAnomaly = false;
    StandardEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
    StandardEarth.SetBinning(zbins,abins,ebins);
    StandardEarth.SetExposure(NnT);
    StandardEarth.flvf=nuflv;
 
-   TH3D * TrueStd = StandardEarth.GetTrueEvents3D();
+   TH2D * TrueStd = StandardEarth.TestTrueEvents2D();
 
     // Alternative Earth Model
 
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    std::cout << " + " <<  std::endl;
+
+    
+   std::cout <<  " *********------Alternative Earth------********* " <<  std::endl;
+
    AsimovSimulation AlternativeEarth;
 
-   AlternativeEarth.PremModel = "prem_default";
+   AlternativeEarth.PremModel = "prem_44layers";
    AlternativeEarth.MantleAnomaly = true;
-   AlternativeEarth.AnomalyShape="cake";
+   AlternativeEarth.AnomalyShape="pancake";
    AlternativeEarth.AnomalousLayers = layers;
    AlternativeEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
    AlternativeEarth.SetBinning(zbins,abins,ebins);
    AlternativeEarth.SetExposure(NnT);
    AlternativeEarth.flvf=nuflv;
 
-   TH3D * TrueAlt = AlternativeEarth.GetTrueEvents3D();
+   TH2D * TrueAlt = AlternativeEarth.TestTrueEvents2D();
+
+//   TH2D* TrueDiff = new TH2D("TrueDiff","Percentage difference in  neutrino events",zbins,cz_min,cz_max,ebins,EnuMin,EnuMax); 
+
+    TH2D* TrueDiff = new TH2D("TrueDiff","Percentage difference in  neutrino events",zbins,zenmin,zenmax,ebins,EnuMin,EnuMax); 
 
 
+
+
+   // Data visualization
+
+std::ofstream EventDiff("SimulationResults/TrueEventsResults/Testdata.csv"); 
+
+
+   //std::ofstream EventDiff("SimulationResults/TrueEventsResults/3DSimulation.csv"); 
+   double th, e, nexp, nobs, dn;
+   
+   for(int i=1; i<= zbins  ; i++) 
+   {    
+     th = TrueDiff->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+
+                        
+     for (int k=1; k <= ebins ; k++)
+    { 
+
+        e = TrueDiff->GetYaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
+        
+        nexp = TrueStd->GetBinContent(i,k); // expected
+        nobs = TrueAlt->GetBinContent(i,k); // obserbed
+
+        dn = 100.0*abs(nobs-nexp)/nexp;
+
+        TrueDiff->SetBinContent(i,k, dn); //Create histogram for  kth Pseudo-Experiment
+
+        //EventDiff<<  zen << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
+
+        EventDiff<<  th << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
+
+
+        //std::cout<<  th << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << std::endl;
+
+
+                            
+    } // loop energy
+
+   } // Loop eta
+
+   EventDiff.close();
+
+
+   TApplication app("app", &argc, argv);
+
+   TCanvas *c = new TCanvas();
+   gStyle->SetPalette(kBird);
+   TrueDiff->Draw("COLZ");
+   TrueDiff->SetStats(0);
+   gPad->Update();
+
+   c->Modified(); c->Update();
+
+  
+    TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
+    rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+    app.Run();
+
+    
 
     //Difference in events
 
-   TH3D* TrueDiff = new TH3D("TrueDiff","Percentage difference in  neutrino events",zbins,cz_min,cz_max,abins,Phim,PhiM,ebins,EnuMin,EnuMax); 
+   //TH3D* TrueDiff = new TH3D("TrueDiff","Percentage difference in  neutrino events",zbins,cz_min,cz_max,abins,Phim,PhiM,ebins,EnuMin,EnuMax); 
 
    
    // Data visualization

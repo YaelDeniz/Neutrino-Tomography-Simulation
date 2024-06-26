@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 
   test.SetModel("prem_44layers.txt");
 
-  double th = 140.0;
+  double th = 180.0-34;
 
   double cth = cos(th*TMath::Pi()/180.0);
 
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
   //void SetLLVPAtt( LLVPSegments, aWidth, 3.0, 0);
   
-  test.ActiveHeterogeneity( true, "cake" );
+  test.ActiveHeterogeneity( true, "pancake" );
    
   
   std::vector<std::vector<double>> EarthPath = test.Create3DPath( );
