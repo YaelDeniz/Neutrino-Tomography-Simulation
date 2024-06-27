@@ -292,28 +292,6 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
   std::vector<TGeoVolume*> LLVPLAYER; //Vector to define Volume for each LLVP segment
   
-  //Naming Convention
-
-  //Generate segment names
-  //char integer_string[32];
-    
-  //sprintf(integer_string, "%d", i+1);
-
-  //char llvpmaterial_string[64]="LLVPMaterial";
-  //char llvpmaterial_string[64];
-  //strcat(llvpmaterial_string, integer_string);
-  //const char *llvpMatName = llvpmaterial_string;
-  //const char *llvpMatName;
-
-  //char llvpmedium_string[64]="LLVPMedium";
-  //strcat(llvpmedium_string, integer_string);
-  //const char *llvpMedName = llvpmedium_string;
-  //const char *llvpMedName;
-    
-  //llvplayer_string[64]="LLVPLayer";
-  //strcat(llvplayer_string, integer_string);
-  //const char *llvpLayerName= llvplayer_string;
-  //const char *llvpLayerName;
 
 
    TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);// Some Geometrical trasformation that move LLVPs to the right place
@@ -814,7 +792,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
   
 
-  std::cout << "***************************THE LLVP***************************" << std::endl; 
+  std::cout << "***************************THE LLVP*************************** " << drho << std::endl; 
 //-+++++++++++++++++++++++++++++++++++++++++++++-----++-+-+-+-+--+
 
   if (TestBoolLLVP /*After test, variable should be Anomaly*/)
