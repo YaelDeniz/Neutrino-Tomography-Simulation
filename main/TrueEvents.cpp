@@ -191,7 +191,7 @@ int main(int argc, char **argv)
    StandardEarth.SetExposure(NnT);
    StandardEarth.flvf=nuflv;
 
-   TH2D * TrueStd = StandardEarth.TestTrueEvents2D();
+   TH2D * TrueStd = StandardEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_default.txt");
 
     // Alternative Earth Model
 
@@ -247,7 +247,7 @@ int main(int argc, char **argv)
    AlternativeEarth.SetExposure(NnT);
    AlternativeEarth.flvf=nuflv;
 
-   TH2D * TrueAlt = AlternativeEarth.TestTrueEvents2D();
+   TH2D * TrueAlt = AlternativeEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_llsvp.txt");
 
 //   TH2D* TrueDiff = new TH2D("TrueDiff","Percentage difference in  neutrino events",zbins,cz_min,cz_max,ebins,EnuMin,EnuMax); 
 

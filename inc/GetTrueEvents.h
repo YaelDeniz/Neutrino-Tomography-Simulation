@@ -75,7 +75,7 @@ class AsimovSimulation
 
     TH2D * GetTrueEvents2D(); //Azimuth independet
 
-    TH2D * TestTrueEvents2D();
+    TH2D * TestTrueEvents2D(std::string model_std , std::string model_alt);
 
 
 

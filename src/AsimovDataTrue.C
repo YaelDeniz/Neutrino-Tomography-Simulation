@@ -289,7 +289,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 }
 
 
-TH2D* AsimovSimulation::GetTrueEvents2D() //To be Deleted
+TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 {  
 
 //Saving information-----------------------------------------------------------------------------------------------------------
@@ -519,7 +519,9 @@ TH2D* AsimovSimulation::GetTrueEvents2D() //To be Deleted
     return TrueHist;
 }
 
-TH2D* AsimovSimulation::TestTrueEvents2D()
+
+
+TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string model_alt)
 {  
 
 //Saving information-----------------------------------------------------------------------------------------------------------
@@ -559,6 +561,8 @@ TH2D* AsimovSimulation::TestTrueEvents2D()
     double phimin = AziMin*TMath::Pi()/180; //[min 0]
     double phimax = AziMax*TMath::Pi()/180;  //[max 2pi]
     double dphi = phimax - phimin;
+
+
     //Bins
     int ibins = nbinsZen; //Bins in Zenith
     int jbins = nbinsAzi; //Bins in Azimuth
@@ -676,9 +680,19 @@ TH2D* AsimovSimulation::TestTrueEvents2D()
 
      MyEarthModel.WhichLayersLLVPs = AnomalousLayers;
 
+     double l,d,z,ly;
 //Event Calculation
+//Previous approach------------------------------------------------------------------------------------------------------------
+//Earth model for neutrino propagation 
     
-    double l,d,z,ly;
+    OscProb::PremModel prem_std(model_std);
+    
+    OscProb::PremModel prem_alt(model_alt); //Default PREM table
+
+      //SECTION TO BE DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        double R_cmb = 3480.0;
+        double thtest = TMath::Pi() - TMath::ASin( (R_cmb)/6368.0 ) ; // max 180
+
 
         double phi = 0.0; //< This will defined a constant L por different values of ct provided Dct is Small
     
@@ -697,7 +711,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D()
             double dth = (TrueHist -> GetXaxis()->GetBinWidth(i))*(TMath::Pi()/180);
 
             if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
-            
+            /*
             //std::vector< std::vector<double> >  PathMatrix = NuPATHS3D (PREM_MODELTEST, eta , 0.0, LLVP);
 
             MyEarthModel.SetDirection(cth,phi); 
@@ -722,7 +736,34 @@ TH2D* AsimovSimulation::TestTrueEvents2D()
                 
                 PMNS_H.AddPath(l,d,z);
             
-            } 
+            }
+            */
+
+             if (th > thtest ) 
+             {
+
+                std::cout << th << " " << thtest << " --- " << std::endl;
+
+                prem_std.FillPath(cth); // Fill paths from PREM model
+
+                PMNS_H.SetPath(prem_std.GetNuPath()); // Set paths in OscProb  
+
+              }
+              else
+
+              {
+
+                std::cout << th << " " << thtest << " *** " << std::endl;
+
+                prem_alt.FillPath(cth); // Fill paths from PREM model
+
+                PMNS_H.SetPath(prem_alt.GetNuPath()); // Set paths in OscProb  
+              }
+
+
+
+
+
             
             for (int k = 1; k <=kbins; ++k)
             { 
@@ -789,7 +830,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D()
 
                 TrueEvents << th << "," << phi <<" , " << e << ", "<< N_ik  << "\n";
 
-                std::cout << "Simulation: "<< th*180.0/TMath::Pi() << "," << e << ", " << dphi << " , "<< N_ik  << "\n";
+                std::cout << "Simulation: "<< AziMin << " " << AziMax << " " << th*180.0/TMath::Pi() << "," << e << ", " << dphi << " , "<< N_ik  << "\n";
 
                 TrueHist->SetBinContent(i,k, N_ik); //Create histogram for  kth Pseudo-Experimens
 
