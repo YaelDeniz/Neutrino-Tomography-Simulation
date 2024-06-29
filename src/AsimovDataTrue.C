@@ -526,7 +526,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
 
 //Saving information-----------------------------------------------------------------------------------------------------------
     
-    std::cout << "Simulation of True events assuming Asimov data set" << std::endl;
+    std::cout << "TEST OF NEUTRINO EVENT CALCULATION" << std::endl;
 
     std::string PremFile = PremModel+".txt";
 
@@ -561,6 +561,14 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
     double phimin = AziMin*TMath::Pi()/180; //[min 0]
     double phimax = AziMax*TMath::Pi()/180;  //[max 2pi]
     double dphi = phimax - phimin;
+
+
+     //SECTION TO BE DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    double R_cmb = 3480.0;
+    double thtest = TMath::Pi() - TMath::ASin( (R_cmb)/6368.0 ) ; // max 180
+
+
+    std::cout << "Region: " << thmin*180.0/TMath::Pi() << " " <<  thmax*180.0/TMath::Pi() << " " << thtest*180.0/TMath::Pi() << " " << Emin << " " << Emax << std::endl;
 
 
     //Bins
@@ -671,7 +679,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
 
 
 //Set earth model -------------------------------------------------------------------------------------------------------------
-    
+    /*
      Earth3DModel MyEarthModel;
 
      MyEarthModel.SetModel(PremFile);
@@ -679,6 +687,8 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
      MyEarthModel.ActiveHeterogeneity( MantleAnomaly, AnomalyShape );
 
      MyEarthModel.WhichLayersLLVPs = AnomalousLayers;
+
+     */
 
      double l,d,z,ly;
 //Event Calculation
@@ -689,10 +699,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
     
     OscProb::PremModel prem_alt(model_alt); //Default PREM table
 
-      //SECTION TO BE DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        double R_cmb = 3480.0;
-        double thtest = TMath::Pi() - TMath::ASin( (R_cmb)/6368.0 ) ; // max 180
-
+     
 
         double phi = 0.0; //< This will defined a constant L por different values of ct provided Dct is Small
     
@@ -780,21 +787,21 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
                  double logdPsiE = eflux->Interpolate(logEi,cth);
                  double logdPsiEb = ebflux->Interpolate(logEi,cth);
 
-                
+                /*
                  std::cout << "Interpolation of the 2d honda flux "<< std::endl;
                  double dPsiMudEdct = pow(10,logdPsiMu);     //Muon neutrino flux
                  double dPsiMubardEdct = pow(10,logdPsiMub); //Muon anti-neutrino flux
                  double dPsiEdEdct = pow(10,logdPsiE);        //Electron neutrino flux
                  double dPsiEbardEdct = pow(10,logdPsiEb);    //Electron anti-neutrino flux
+                 */
                  
                  
-                 /*
                  std::cout << "Interpolation of the 1d honda flux "<< std::endl;
                  double dPsiMudEdct = dPsiMudE.Eval(e);     //Muon neutrino flux
                  double dPsiMubardEdct = dPsiMubardE.Eval(e); //Muon anti-neutrino flux
                  double dPsiEdEdct = dPsiEdE.Eval(e);        //Electron neutrino flux
                  double dPsiEbardEdct = dPsiEbardE.Eval(e);    //Electron anti-neutrino flux
-                 */
+                 
 
                 //Neutrino Contribution;
 
