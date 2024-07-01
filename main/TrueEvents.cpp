@@ -35,6 +35,8 @@
 using namespace std;
 
 
+void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff);
+
 int main(int argc, char **argv)
 {
     // Plot and Histogram2D settings
@@ -43,9 +45,9 @@ int main(int argc, char **argv)
 
     // Number of bins
     
-    int zbins=100 ; // # Bins in zenith/cos(zenith)
-    int abins=100 ; // # Bins in azimuth
-    int ebins=100 ; // bins in energy
+    int czbins=20 ; // # Bins in zenith/cos(zenith)
+    int abins=20 ; // # Bins in azimuth
+    int ebins=20 ; // bins in energy
     
 
     //Interval of integration in Zenith, Azimuth and E for Neutrino Events
@@ -75,9 +77,9 @@ int main(int argc, char **argv)
     //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
     double zenmin = 180-TMath::ASin( R_max/R_earth )*(180.0/TMath::Pi()) ; // min 90
 
-    double cz_min = cos(zenmax*TMath::Pi()/180.0);
+    double czmin = cos(zenmax*TMath::Pi()/180.0);
     
-    double cz_max = cos(zenmin*TMath::Pi()/180.0);
+    double czmax = cos(zenmin*TMath::Pi()/180.0);
 
     std::cout << zenmin << " " << zenmax <<  std::endl;
 
@@ -96,8 +98,8 @@ int main(int argc, char **argv)
     //double Etamax =30 ;
 
     //Azimuthal Interal-------------------------------------------------------------------------
-    double Phim = 0.0;
-    double PhiM = 80.0 ;
+    double phimin = -45.0;
+    double phimax =  45.0 ;
     //double PhiM = 360.0 ; 
 
     //Detector size-----------------------------------------------------------------------------
@@ -122,6 +124,7 @@ int main(int argc, char **argv)
       std::cout << "PREM tables located in /OscProb/PremTables"<< std::endl;
     */
     
+    /*
     
     std::string prem_llsvp, prem_default;
     
@@ -169,7 +172,7 @@ int main(int argc, char **argv)
     }
 
     PREM_DEFAULT.close();
-   
+   */
 
 
    //Event generation-----------------------------------------------------------------------------------------
@@ -184,125 +187,51 @@ int main(int argc, char **argv)
 
    AsimovSimulation StandardEarth;
 
-   StandardEarth.PremModel = "prem_44layers";
+   std::string PremName = "prem_44layers";
+
+   StandardEarth.PremModel = PremName;
    StandardEarth.MantleAnomaly = false;
-   StandardEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
-   StandardEarth.SetBinning(zbins,abins,ebins);
+   StandardEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
+   StandardEarth.SetBinning(czbins,abins,ebins);
    StandardEarth.SetExposure(NnT);
    StandardEarth.flvf=nuflv;
 
-   TH2D * TrueStd = StandardEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_default.txt");
+   //TH2D * TrueStd = StandardEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_default.txt");
+
+     TH3D * TrueStd = StandardEarth.GetTrueEvents3D();
 
     // Alternative Earth Model
 
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    std::cout << " + " <<  std::endl;
-
-    
-   std::cout <<  " *********------Alternative Earth------********* " <<  std::endl;
-
    AsimovSimulation AlternativeEarth;
 
-   AlternativeEarth.PremModel = "prem_44layers";
+   AlternativeEarth.PremModel = PremName;
    AlternativeEarth.MantleAnomaly = true;
    AlternativeEarth.AnomalyShape="pancake";
-   AlternativeEarth.AnomalousLayers = layers;
-   AlternativeEarth.SetIntervals(zenmin,zenmax,Phim,PhiM,EnuMin,EnuMax);
-   AlternativeEarth.SetBinning(zbins,abins,ebins);
+   //AlternativeEarth.AnomalousLayers = layers;
+   AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
+   AlternativeEarth.SetBinning(czbins,abins,ebins);
    AlternativeEarth.SetExposure(NnT);
    AlternativeEarth.flvf=nuflv;
 
-   TH2D * TrueAlt = AlternativeEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_llsvp.txt");
+   TH3D * TrueAlt = AlternativeEarth.GetTrueEvents3D();
 
-//   TH2D* TrueDiff = new TH2D("TrueDiff","Percentage difference in  neutrino events",zbins,cz_min,cz_max,ebins,EnuMin,EnuMax); 
+   //TH2D * TrueAlt = AlternativeEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_llsvp.txt");
 
-    TH2D* TrueDiff = new TH2D("TrueDiff","Percentage difference in  neutrino events",zbins,zenmin,zenmax,ebins,EnuMin,EnuMax); 
+   //TH2D* TrueDiff = new TH2D("TrueDiff","Percentage difference in  neutrino events",zbins,cz_min,cz_max,ebins,EnuMin,EnuMax); 
 
+   //TH2D* TrueDiff = new TH2D("TrueDiff","Percentage difference in  neutrino events",zbins,zenmin,zenmax,ebins,EnuMin,EnuMax); 
 
-
-
-   // Data visualization
-
-std::ofstream EventDiff("SimulationResults/TrueEventsResults/Testdata.csv"); 
-
-
-   //std::ofstream EventDiff("SimulationResults/TrueEventsResults/3DSimulation.csv"); 
-   double th, e, nexp, nobs, dn;
    
-   for(int i=1; i<= zbins  ; i++) 
-   {    
-     th = TrueDiff->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+  TH3D * TrueDiff3D = new TH3D("TrueHist","True Event Histrogram", czbins,czmin,czmax,abins,phimin,phimax,ebins,EnuMin,EnuMax); //binning in cth 
 
-                        
-     for (int k=1; k <= ebins ; k++)
-    { 
-
-        e = TrueDiff->GetYaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
-        
-        nexp = TrueStd->GetBinContent(i,k); // expected
-        nobs = TrueAlt->GetBinContent(i,k); // obserbed
-
-        dn = 100.0*abs(nobs-nexp)/nexp;
-
-        TrueDiff->SetBinContent(i,k, dn); //Create histogram for  kth Pseudo-Experiment
-
-        //EventDiff<<  zen << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
-
-        EventDiff<<  th << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
-
-
-        //std::cout<<  th << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << std::endl;
-
-
-                            
-    } // loop energy
-
-   } // Loop eta
-
-   EventDiff.close();
-
+  GetDiff3D( TrueStd , TrueAlt, TrueDiff3D );
 
    TApplication app("app", &argc, argv);
 
    TCanvas *c = new TCanvas();
    gStyle->SetPalette(kBird);
-   TrueDiff->Draw("COLZ");
-   TrueDiff->SetStats(0);
+   TrueDiff3D->Draw("ISO");
+   TrueDiff3D->SetStats(0);
    gPad->Update();
 
    c->Modified(); c->Update();
@@ -312,60 +241,44 @@ std::ofstream EventDiff("SimulationResults/TrueEventsResults/Testdata.csv");
     rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
     app.Run();
 
-    
+    return 0;
 
-    //Difference in events
+}
 
-   //TH3D* TrueDiff = new TH3D("TrueDiff","Percentage difference in  neutrino events",zbins,cz_min,cz_max,abins,Phim,PhiM,ebins,EnuMin,EnuMax); 
+void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff)
+{
 
-   
-   // Data visualization
-   /*
-   std::ofstream EventDiff("SimulationResults/TrueEventsResults/3DSimulation.csv"); 
-   double zen, azi, e, nexp, nobs, dn;
 
-    for (int j = 1; j <= abins; j++)
+   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/dN_true_3D.csv"); 
+
+   double cth, azi, e, Nexp, Nobs, dN;
+
+
+    for (int j = 1; j <= diff->GetYaxis()->GetNbins(); ++j)
     {
-        phi = TrueDiff->GetYaxis()->GetBinCenter(j);
+        azi=diff->GetYaxis()->GetBinCenter(j);
         
-        for(int i=1; i<= zbins  ; i++) 
-        {    
-            cth = TrueDiff->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+        for (int i = 1; i <= diff->GetXaxis()->GetNbins(); ++i)
+        {
+            cth=diff->GetXaxis()->GetBinCenter(i);
+         
+            for (int k = 1; k <= diff->GetZaxis()->GetNbins(); ++k)
+            {
 
-                        
-                        for (int k=1; k <= ebins ; k++)
-                        { 
-                            e = TrueDiff->GetZaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
-                            
-                            nexp = TrueStd->GetBinContent(i,j,k); // expected
-                            nobs = TrueAlt->GetBinContent(i,j,k); // obserbed
+                e=diff->GetZaxis()->GetBinCenter(k);
+                Nexp = histstd->GetBinContent(i,j,k);
+                Nobs = histalt->GetBinContent(i,j,k);
+                dN = 100*(Nobs-Nexp)/Nexp;
 
-                            dn = 100.0*(nobs-nexp)/nexp;
+                diff->SetBinContent(i,j,k,dN);
 
-                            diffhist->SetBinContent(i,j, dn); //Create histogram for  kth Pseudo-Experiment
+                TrueDiffFile << cth << " , " << azi << " , " << e << " , " << dN << std::endl;
 
-                            EventDiff<<  zen << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << "\n";
-
-                            std::cout<<  zen << ", " << e << ", "<< nexp << ", "<< nobs<< ", " << dn << std::endl;
-
-
-                            
-                        } // loop energy
-
-        } // Loop eta
-
+            }
+        }
+        
     }
 
-    EventDiff.close();
-
-
-    TCanvas *c = new TCanvas();
-    diffhist->Draw("COLZ");
-    c->Print("SimulationResults/Histograms/3DModel.png");
-    */
-
-    
-
-    return 0;
+    TrueDiffFile.close();
 
 }

@@ -480,7 +480,7 @@ double PDF_angle(double eta_o, double e, double eta, double a_eta)
 
 //double sigma_angle = a_eta/(sqrt(e));
 
-double sigma_angle = 0.04 + 0.18/(sqrt(e));
+double sigma_angle = 0.04 + 0.18/(sqrt(e)); //next gen - Maderer
 
 double pdf_angle = ROOT::Math::gaussian_pdf     ( eta_o, sigma_angle, eta) ;
  

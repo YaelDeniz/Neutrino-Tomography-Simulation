@@ -229,7 +229,6 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
                 //Neutrino Flux interpolation
 
-                 std::cout << " ////////////////////////////////////////////////////////////////////Points to interpolate " << logEi << " " << cth << std::endl; 
 
                  double logdPsiMu = muflux->Interpolate(logEi,cth);
                  double logdPsiMub = mubflux->Interpolate(logEi,cth);
@@ -679,7 +678,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
 
 
 //Set earth model -------------------------------------------------------------------------------------------------------------
-    /*
+    
      Earth3DModel MyEarthModel;
 
      MyEarthModel.SetModel(PremFile);
@@ -688,7 +687,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
 
      MyEarthModel.WhichLayersLLVPs = AnomalousLayers;
 
-     */
+     
 
      double l,d,z,ly;
 //Event Calculation
@@ -718,7 +717,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
             double dth = (TrueHist -> GetXaxis()->GetBinWidth(i))*(TMath::Pi()/180);
 
             if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
-            /*
+            
             //std::vector< std::vector<double> >  PathMatrix = NuPATHS3D (PREM_MODELTEST, eta , 0.0, LLVP);
 
             MyEarthModel.SetDirection(cth,phi); 
@@ -744,8 +743,9 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
                 PMNS_H.AddPath(l,d,z);
             
             }
-            */
+            
 
+            /*
              if (th > thtest ) 
              {
 
@@ -767,7 +767,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
                 PMNS_H.SetPath(prem_alt.GetNuPath()); // Set paths in OscProb  
               }
 
-
+            */
 
 
 

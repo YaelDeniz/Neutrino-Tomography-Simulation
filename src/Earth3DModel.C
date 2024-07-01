@@ -774,7 +774,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
       LAYER[LAYER.size()-1]-> SetVisibility(kTRUE); // Crust is vissible
 
   
-
+  /*
   //SECTION TO BE DELETED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   double R_cmb = 3480.0;
   double thtest = TMath::ASin( (R_cmb)/6368.0 ) ; // max 180
@@ -789,13 +789,13 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
   }
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
+    */
   
 
   std::cout << "***************************THE LLVP*************************** " << drho << std::endl; 
 //-+++++++++++++++++++++++++++++++++++++++++++++-----++-+-+-+-+--+
 
-  if (TestBoolLLVP /*After test, variable should be Anomaly*/)
+  if (Anomaly /*After test, variable should be Anomaly*/)
   {
 
       if (AnomalyShape == "cake")
