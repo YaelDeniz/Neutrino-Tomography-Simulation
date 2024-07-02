@@ -120,6 +120,43 @@ std::vector< std::vector<double> > Earth3DModel::GetPremData( std::string PREM_M
    return PremMatrix;
 }
 
+//Modify Specific Layers of the Earth
+
+void Earth3DModel::SetLayerProp(int PremTableNumber, double DensityContrats, double ChemicalContrats) 
+{ 
+
+  PremMatrixId= PremTableNumber-1;
+  drholayer   = DensityContrats;  
+  dzoalayer   = ChemicalContrats;
+
+}
+
+void Earth3DModel::ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix)
+{
+ 
+
+  //EarthMatrix[PremMatrixId][1] = (1.0 + drholayer/100.0) * EarthMatrix[PremMatrixId][1]; // Change layer density contrast
+ 
+  //EarthMatrix[PremMatrixId][2] = (1.0 + dzoalayer/100.0) * EarthMatrix[PremMatrixId][2]; // Change layer chemistry contrast
+
+  //std::cout << "Layer Id " << PremMatrixId << std::endl;
+
+  EarthMatrix[PremMatrixId][1] = (1.0 + drholayer/100.0) * EarthMatrix[PremMatrixId][1];
+
+  EarthMatrix[PremMatrixId][2] = (1.0 + drholayer/100.0) * EarthMatrix[PremMatrixId][2];
+
+  /*
+  for (int i = 0; i < EarthMatrix.size(); ++i)
+  {
+    std::cout<< i << " " << EarthMatrix[i][0] << " " << EarthMatrix[i][1] << " " <<EarthMatrix[i][2] << " " <<EarthMatrix[i][3] << std::endl;
+  }
+  */
+
+
+}
+
+
+
 //Label PREM Layers
 
 int Earth3DModel::LabelLayer (double radius)
@@ -687,6 +724,8 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
   std::cout << "Earth Model: " << MODEL << std::endl;
 
   std::vector< std::vector<double> > PremMatrix = GetPremData(MODEL); // Sort PREM model into a readable matrix
+
+  ChangeLayerProp(PremMatrix);
 
   std::vector< std::vector<double> > LLVPMatrix = GetPremData(MODEL); // A Copy of PREM model matrix to construct LLVPs
 

@@ -32,6 +32,10 @@ class Earth3DModel
   double azimuth;
   double Det[3]= {0.0,0.0,-6371.0}; //South Pole is the Default location
 
+  double PremMatrixId=1;
+  double drholayer=0;  
+  double dzoalayer=0;
+
   bool Anomaly = false; //By Default we dont need LLVPs
   std::string AnomalyShape;
   std::vector<int> WhichLayersLLVPs{1}; //Specify which layers contain an LLVPs segment
@@ -67,6 +71,12 @@ class Earth3DModel
   }
 
   */
+
+  void SetLayerProp(int PremTableNumber, double DensityContrats, double ChemicalContrats);
+
+  void ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix);
+
+  //void DisplayModel();
 
   std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_44layers.txt" );
 

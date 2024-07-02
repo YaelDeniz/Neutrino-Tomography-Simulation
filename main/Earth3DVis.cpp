@@ -49,7 +49,8 @@ int main(int argc, char **argv)
   //void SetLLVPAtt( LLVPSegments, aWidth, 3.0, 0);
   
   test.ActiveHeterogeneity( true, "pancake" );
-   
+
+  test.SetLayerProp(23,5.0,0.0);
   
   std::vector<std::vector<double>> EarthPath = test.Create3DPath( );
 
