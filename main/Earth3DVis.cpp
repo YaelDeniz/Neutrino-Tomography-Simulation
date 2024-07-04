@@ -83,6 +83,7 @@ int main(int argc, char **argv)
 
   }
 
+ std::cout << "Note a problem " << std::endl;
 
   TCanvas * c = test.EarthCanvas;
 
