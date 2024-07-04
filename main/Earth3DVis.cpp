@@ -85,6 +85,7 @@ int main(int argc, char **argv)
 
  std::cout << "Note a problem " << std::endl;
 
+  /*
   TCanvas * c = test.EarthCanvas;
 
   c->Print("./TEST.png");
@@ -95,7 +96,7 @@ int main(int argc, char **argv)
   TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
   rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
   app.Run();
-
+  */
 
 return 0;
 
