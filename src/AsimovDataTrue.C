@@ -358,7 +358,7 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 
      MyEarthModel.SetModel(PremFile);
 
-     MyEarthModel.ActiveHeterogeneity( MantleAnomaly, AnomalyShape );
+     MyEarthModel.PileShape( MantleAnomaly, AnomalyShape );
 
      MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrats);
 
@@ -638,7 +638,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
 
      MyEarthModel.SetModel(PremFile);
 
-     MyEarthModel.ActiveHeterogeneity( MantleAnomaly, AnomalyShape );
+     MyEarthModel.PileShape( MantleAnomaly, AnomalyShape );
 
      //MyEarthModel.WhichLayersLLVPs = AnomalousLayers;
 
