@@ -1,0 +1,15 @@
+
+%% MyData
+clear all;  close all;  clc;
+
+prem = '/home/dehy0499/OscProb/PremTables/'
+
+file = 'EarthChi2.csv';
+
+CHI2DATA = readmatrix(file)
+
+index = CHI2DATA(:,1);
+
+chi2 = CHI2DATA(:,2);
+
+plot(chi2,index);

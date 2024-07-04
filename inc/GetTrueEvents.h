@@ -21,10 +21,16 @@ class AsimovSimulation
     public:
 
     //Earth Settings
-    std::string PremModel="prem_14layers";
-    bool MantleAnomaly;
-    std::string AnomalyShape;
-    std::vector<int> AnomalousLayers;
+    std::string PremModel="prem_44layers";
+    bool MantleAnomaly = false;
+    std::string AnomalyShape ="pancake";
+    //std::vector<int> AnomalousLayers;
+
+    //Modify specific Layers
+
+    int PremTableNumber = 44 ;
+    double DensityContrast = 0 ;
+    double ChemicalContrats = 0 ;
 
     //Neutrino Settings
     int flvf;
@@ -43,6 +49,15 @@ class AsimovSimulation
     int nbinsE; //Bins in Energy
 
     double NnT; //Detector Exposure
+
+    void ModifyLayer (int n , double rhopct , double zoapct)
+    {
+
+        PremTableNumber = n; // Index of layer
+        DensityContrast = rhopct; // Density percentage difference
+        ChemicalContrats= zoapct; // zoa(compositional) perctengae differnce
+
+    }
 
     void SetIntervals(double zlow, double zup, double alow, double aup, double elow, double eup)
     {

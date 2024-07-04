@@ -29,13 +29,13 @@ double XSec(double E, int ptype)
     {
         //case "neutrino":
         case 1:
-                xsc = (0.75E-38*E)*c; // Results is in m2 
+                xsc = (0.75E-38*E); // Results is in cm2 
                 break;
 
         //case "antineutrino":
         case -1:
          //       std::cout << "NUBAR" << std::endl;
-                xsc = (0.35E-38*E)*c; // Results is in m2 
+                xsc = (0.35E-38*E); // Results is in cm2 
                 break;
     }
 
@@ -81,6 +81,8 @@ std::vector<std::vector<double>> NuFlux::reshape(const std::vector<double>& vec,
  
 std::vector< std::vector<double> > NuFlux::SetFluxData( std::string nuFluxFile ) //Converst Honda data into tabular form
 {
+
+    //Flux output units: (cm^2 sec sr GeV)^-1
 
 
     std::ifstream HONDA_FLUX;

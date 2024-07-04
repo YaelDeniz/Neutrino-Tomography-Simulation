@@ -73,7 +73,7 @@ void Earth3DModel::SetDirection(double cth , double phi ) //Input in radias -> t
     // double th = TMath::Pi()*( 1-(zen/180.0) ); //Polar angle in spherical coordinates in rads [pi/2, pi] 
 
     
-    azimuth = phi*TMath::Pi()/180.0;   /*Azimuthal direction in degrees*/
+    azimuth = phi;   
     
     std::cout <<"Direction: " <<  zenith*180.0/TMath::Pi() << " " << azimuth*180.0/TMath::Pi() << std::endl;
 
@@ -131,7 +131,7 @@ void Earth3DModel::SetLayerProp(int PremTableNumber, double DensityContrats, dou
 
 }
 
-void Earth3DModel::ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix)
+std::vector< std::vector<double> > Earth3DModel::ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix)
 {
  
 
@@ -145,13 +145,13 @@ void Earth3DModel::ChangeLayerProp(std::vector< std::vector<double> > EarthMatri
 
   EarthMatrix[PremMatrixId][2] = (1.0 + drholayer/100.0) * EarthMatrix[PremMatrixId][2];
 
-  /*
+  
   for (int i = 0; i < EarthMatrix.size(); ++i)
   {
     std::cout<< i << " " << EarthMatrix[i][0] << " " << EarthMatrix[i][1] << " " <<EarthMatrix[i][2] << " " <<EarthMatrix[i][3] << std::endl;
   }
-  */
-
+  
+return EarthMatrix;
 
 }
 
@@ -709,10 +709,6 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 }
 
 
-
-
-
-
 // CONSTRUCT THE 3D MODEL
 
 std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double phi, std::string MODEL )
@@ -725,7 +721,17 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
   std::vector< std::vector<double> > PremMatrix = GetPremData(MODEL); // Sort PREM model into a readable matrix
 
-  ChangeLayerProp(PremMatrix);
+  PremMatrix = ChangeLayerProp(PremMatrix);
+
+  std::cout << " " << std::endl;
+
+  for (int i = 0; i < PremMatrix.size(); ++i)
+  {
+
+    std::cout<< i << " " << PremMatrix[i][0] << " " << PremMatrix[i][1] << " " <<PremMatrix[i][2] << " " <<PremMatrix[i][3] << std::endl;
+
+  }
+
 
   std::vector< std::vector<double> > LLVPMatrix = GetPremData(MODEL); // A Copy of PREM model matrix to construct LLVPs
 

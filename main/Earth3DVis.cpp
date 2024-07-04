@@ -17,42 +17,73 @@
 #include "TF1.h"
 
 
+//OSCPROB
+
+#include "PremModel.h"
+
 
 
 int main(int argc, char **argv)
 {
 
+  double th = 180.0-0;
+
+  double cth = cos(th*TMath::Pi()/180.0);
+
+  double phi = 0;
+
+  // OSCPROB
+
+  std::string PremFile = "prem_44layers.txt";
+
+  std::string model = "/home/dehy0499/OscProb/PremTables/"+PremFile;
+
+  OscProb::PremModel prem(model);
+
+  prem.FillPath(cth); // Fill paths from PREM model
+
+  std::vector<OscProb::NuPath> paths = prem.GetNuPath();
+
+
+
+
+  //Mine
+
   TApplication app("app", &argc, argv);
 
   Earth3DModel test;
 
-  test.SetModel("prem_44layers.txt");
+  test.SetModel(PremFile);
 
-  double th = 180.0-34;
-
-  double cth = cos(th*TMath::Pi()/180.0);
-
-  double phi = -45;
 
   test.SetDirection(cth, phi);
-
-  //test.LLVPIdLayers()
-
-
-  std::vector<int> LLVPSegments {25,26,27,28,29,30,31};
-
-  test.WhichLayersLLVPs = LLVPSegments;
-
-  //test.aWidth = 45;
   
+  test.ActiveHeterogeneity( false, "pancake" );
 
-  //void SetLLVPAtt( LLVPSegments, aWidth, 3.0, 0);
-  
-  test.ActiveHeterogeneity( true, "pancake" );
-
-  test.SetLayerProp(23,5.0,0.0);
+  test.SetLayerProp(23,0.0,0.0);
   
   std::vector<std::vector<double>> EarthPath = test.Create3DPath( );
+
+
+  std::cout << "Paths" << std::endl;
+
+
+    for (int i = 0; i < paths.size() ; ++i)
+  {
+    
+    std::cout << i << " " <<paths[i].length-EarthPath[i][0]<< " " << paths[i].density-EarthPath[i][1] << " " << paths[i].zoa << std::endl;
+
+  }
+
+  std::cout << " mine  " << std::endl; 
+  
+    for (int i = 0; i < EarthPath.size() ; ++i)
+  {
+    
+    std::cout << i << " " << EarthPath[i][0]<< " " << EarthPath[i][1] << " " << EarthPath[i][2] << std::endl;
+
+  }
+
 
   TCanvas * c = test.EarthCanvas;
 
@@ -65,37 +96,6 @@ int main(int argc, char **argv)
   rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
   app.Run();
 
-  /*
-  double TestL = 0  ;
-
-  //double Ltot = -2.0*6371*cos(th);
-
-  for (int i = 0; i < EarthPath.size(); ++i)
-  {
-
-
-    std::cout << EarthPath[i][0] << " " << EarthPath[i][1] << " " << EarthPath[i][2] << " " << std::endl;
-    //TestL = TestL + EarthPath[i][0];
-    
-  }
-  */
-
-  /*
-
-  TApplication app("app", &argc, argv);
-
-  TCanvas* c = new TCanvas("c", "Something", 0, 0, 800, 600);
-   TF1 *f1 = new TF1("f1","sin(x)", -5, 5);
-   f1->SetLineColor(kBlue+1);
-   f1->SetTitle("My graph;x; sin(x)");
-   f1->Draw();
-   c->Modified(); c->Update();
-
-  
-  TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
-  rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
-  app.Run();
-*/
 
 return 0;
 

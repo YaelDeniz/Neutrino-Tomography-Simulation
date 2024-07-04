@@ -30,15 +30,16 @@ class Earth3DModel
   std::string filename; //Prem file
   double zenith;
   double azimuth;
-  double Det[3]= {0.0,0.0,-6371.0}; //South Pole is the Default location
+  //double Det[3]= {0.0,0.0,-6371.0}; //South Pole is the Default location
+  double Det[3]= {0.0,0.0,-6368.0}; //km3net is the Default location
 
-  double PremMatrixId=1;
+  int PremMatrixId=1;
   double drholayer=0;  
   double dzoalayer=0;
 
   bool Anomaly = false; //By Default we dont need LLVPs
   std::string AnomalyShape;
-  std::vector<int> WhichLayersLLVPs{1}; //Specify which layers contain an LLVPs segment
+  //std::vector<int> WhichLayersLLVPs{1}; //Specify which layers contain an LLVPs segment
   double aWidth = 45.0; //LLVP Angular With
   double drho = 2; // 3% more dense
   double dzoa = 0.0; // 0% Chemical difference
@@ -74,7 +75,7 @@ class Earth3DModel
 
   void SetLayerProp(int PremTableNumber, double DensityContrats, double ChemicalContrats);
 
-  void ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix);
+  std::vector< std::vector<double> >  ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix);
 
   //void DisplayModel();
 
