@@ -46,47 +46,42 @@ void Earth3DModel::SetModel(std::string model)
   
 //Set the Detector Location
 
-void Earth3DModel::SetDetector(double Position[3]) 
+void Earth3DModel::SetDetector(double Position[3]) //Detetctor in Cartesian coordinates
 {
-   Det[0] = Position[0];
-   Det[1] = Position[1];
-   Det[2] = Position[2];
+   Det[0] = Position[0]; // x coordinate
+   Det[1] = Position[1]; // y coordinate
+   Det[2] = Position[2]; // z coordinate
 }
 
-//Set Neutrino Direction
 
-void Earth3DModel::SetDirection(double cth , double phi ) //Input in radias -> trasnformed back to degrees
+
+void Earth3DModel::SetDirection(double cth , double phi ) //Set Neutrino Direction, [phi] = rads
 {
-    //zenith =  acos(cth); /*Polar direction*/
-
-      // Check if the total number of elements matches
-    if (cth < -1 || cth > 1) {
+    
+    if (cth < -1 || cth > 1) 
+    {
         throw std::invalid_argument("Invalid argument for neutrino direction, zenith direction must be in terms of cos(zen)");
     }
 
     else
     {
 
-    zenith = TMath::Pi() - acos(cth); /*Polar direction*/
+    zenith = TMath::Pi() - acos(cth); //Polar(zenith) angle in spherical coordinates
 
-
-    // double th = TMath::Pi()*( 1-(zen/180.0) ); //Polar angle in spherical coordinates in rads [pi/2, pi] 
-
+    azimuth = phi;   //azimut angle in spherical coordinates
     
-    azimuth = phi;   
-    
-    std::cout <<"Direction: " <<  zenith*180.0/TMath::Pi() << " " << azimuth*180.0/TMath::Pi() << std::endl;
+    std::cout <<" Neutrino direction: " <<  zenith*180.0/TMath::Pi() << " " << azimuth*180.0/TMath::Pi() << std::endl;
 
     }
 } 
 
 //Define if LLVP exist
 
-void Earth3DModel::ActiveHeterogeneity( bool value , std::string shape) 
+void Earth3DModel::SetPile( bool value , std::string shape) // Activate the Pile in the model (LLVPs)
 { 
-  Anomaly = value; 
-  AnomalyShape = shape;
-} // Activate the LLVPs
+  Pile = value; // Presence of Pile
+  PileShape = shape; //Pile shape: "pancake" or "cake"
+} 
 
 
 // Create a matrix from PremTables
@@ -94,10 +89,9 @@ std::vector< std::vector<double> > Earth3DModel::GetPremData( std::string PREM_M
 {
    std::string PREM_PATH = "/home/dehy0499/OscProb/PremTables/"+PREM_MODEL;
 
-   //--- open PREM model 
    std::vector< std::vector<double> > PremMatrix; // Matrix data  form of Prem tables
 
-   std::vector<double> PremRow(4);               // [radius density z/a, layer ID]
+   std::vector<double> PremRow(4);               // PremRow = [radius density z/a, layer ID]
 
    double radius, density, zoa, layer; // Variables for storing Prem table values
 
@@ -122,62 +116,29 @@ std::vector< std::vector<double> > Earth3DModel::GetPremData( std::string PREM_M
 
 //Modify Specific Layers of the Earth
 
-void Earth3DModel::SetLayerProp(int PremTableNumber, double DensityContrats, double ChemicalContrats) 
+void Earth3DModel::SetLayerProp(int LayerNumber, double DensityContrats, double ChemicalContrats) 
 { 
 
-  PremMatrixId= PremTableNumber-1;
-  drholayer   = DensityContrats;  
-  dzoalayer   = ChemicalContrats;
+  PremRow     = LayerNumber-1;
+  LayerDensityContrats   = DensityContrats;  
+  LayerZoAContrats   = ChemicalContrats;
 
 }
 
 std::vector< std::vector<double> > Earth3DModel::ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix)
 {
  
+  EarthMatrix[PremRow][1] = (1.0 + LayerDensityContrats/100.0) * EarthMatrix[PremRow][1];
 
-  //EarthMatrix[PremMatrixId][1] = (1.0 + drholayer/100.0) * EarthMatrix[PremMatrixId][1]; // Change layer density contrast
- 
-  //EarthMatrix[PremMatrixId][2] = (1.0 + dzoalayer/100.0) * EarthMatrix[PremMatrixId][2]; // Change layer chemistry contrast
+  EarthMatrix[PremRow][2] = (1.0 + LayerZoAContrats/100.0) * EarthMatrix[PremRow][2];
 
-  //std::cout << "Layer Id " << PremMatrixId << std::endl;
-
-  EarthMatrix[PremMatrixId][1] = (1.0 + drholayer/100.0) * EarthMatrix[PremMatrixId][1];
-
-  EarthMatrix[PremMatrixId][2] = (1.0 + drholayer/100.0) * EarthMatrix[PremMatrixId][2];
-
-  
-  for (int i = 0; i < EarthMatrix.size(); ++i)
-  {
-    std::cout<< i << " " << EarthMatrix[i][0] << " " << EarthMatrix[i][1] << " " <<EarthMatrix[i][2] << " " <<EarthMatrix[i][3] << std::endl;
-  }
-  
-return EarthMatrix;
+  return EarthMatrix;
 
 }
-
-
-
-//Label PREM Layers
-
-int Earth3DModel::LabelLayer (double radius)
-{
-  int id;
-
-  if( 0 <= radius && radius <= 1221.5) { id = 0;}
-  else if(1221.5 < radius && radius <= 3480.0) {id = 1;}
-  else if(3480.0 < radius && radius <= 5701.0) {id = 2;}
-  else if(5701.0 < radius && radius <= 6346.6) {id = 3;}
-  else if(6346.6 < radius && radius <= 6368.0) {id = 4;}
-  else if(6368.0 < radius && radius <= 6371.0) {id = 5;}
-  else if(6371.0 < radius && radius <= 6390.0) {id = 6;}
-  // else {id = 0;}
-  return id;
-}
-
 
 //CONSTRUCT LLVP
 
-void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix, std::vector< std::vector<double> > check )
+void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix )
 {
 
   //Baker----------------------------------------------------------------------------------------------------------------------
@@ -190,7 +151,7 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
   
   TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);// Some Geometrical trasformation that move LLVPs to the right place
 
-  double PileThickness = 1000;
+  //double PileThickness = 1000;
 
   double Bottom,Top;
 
@@ -248,19 +209,17 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
             double excess = PileThickness - slabLength;
             InnerR= lowerSegment;
             OuterR= RadiusInPile + excess;
-  
-          //std::cout << "top of lower segment: " << InnerR << " " << OuterR << std::endl;
- 
+   
 
             double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
             double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
-            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
-            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            //std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            //std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
             
             
-            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+            Localdensity = (1.0 + PileDensityContrats/100.0)*PremMatrix[i][1];
 
-            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+            Localchem = (1.0 + PileZoAContrats/100.0 )*PremMatrix[i][2];
     
             LLVPMat.push_back( new TGeoMaterial(llvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
   
@@ -288,16 +247,16 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
             
             double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
             double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
-            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
-            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            //std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            //std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
             
             
           
             //std::cout << "Radius of lower section's segements: "<< InnerR << " " << OuterR << std::endl;
 
-            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+            Localdensity = (1.0 + PileDensityContrats/100.0)*PremMatrix[i][1];
 
-            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+            Localchem = (1.0 + PileZoAContrats/100.0 )*PremMatrix[i][2];
     
             LLVPMat.push_back( new TGeoMaterial(llvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
   
@@ -318,7 +277,7 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
    }
 }
 
-void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix, std::vector<std::vector<double>> check )
+void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix )
 {
 
   //Baker----------------------------------------------------------------------------------------------------------------------
@@ -333,7 +292,7 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
    TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);// Some Geometrical trasformation that move LLVPs to the right place
 
-   double PileThickness = 1000;
+   //double PileThickness = 1000;
 
    double thicknessOfSection = PileThickness/3.0; // Salabas have same thickness
 
@@ -402,14 +361,14 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
  
             double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
             double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
-            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
-            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            //std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            //std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
             
             
             
-            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+            Localdensity = (1.0 + PileDensityContrats/100.0)*PremMatrix[i][1];
 
-            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+            Localchem = (1.0 + PileZoAContrats/100.0 )*PremMatrix[i][2];
     
             LLVPMat.push_back( new TGeoMaterial(lowllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
   
@@ -439,16 +398,16 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
             
             double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
             double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
-            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
-            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            //std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            //std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
             
             
           
             //std::cout << "Radius of lower section's segements: "<< InnerR << " " << OuterR << std::endl;
 
-            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+            Localdensity = (1.0 + PileDensityContrats/100.0)*PremMatrix[i][1];
 
-            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+            Localchem = (1.0 + PileZoAContrats/100.0 )*PremMatrix[i][2];
     
             LLVPMat.push_back( new TGeoMaterial(lowllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
   
@@ -519,15 +478,15 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
             double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
             double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
-            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
-            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            //std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            //std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
             
             
             
             
-            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+            Localdensity = (1.0 + PileDensityContrats/100.0)*PremMatrix[i][1];
 
-            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+            Localchem = (1.0 + PileZoAContrats/100.0 )*PremMatrix[i][2];
     
             LLVPMat.push_back( new TGeoMaterial(midllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
   
@@ -559,14 +518,14 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
           double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
           double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
-          std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
-          std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+          //std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+          //std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
             
             
           
-          Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+          Localdensity = (1.0 + PileDensityContrats/100.0)*PremMatrix[i][1];
 
-          Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+          Localchem = (1.0 + PileZoAContrats/100.0 )*PremMatrix[i][2];
   
           LLVPMat.push_back( new TGeoMaterial(midllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
 
@@ -639,15 +598,15 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
             double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
             double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
-            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
-            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            //std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            //std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
             
             
             
             
-            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+            Localdensity = (1.0 + PileDensityContrats/100.0)*PremMatrix[i][1];
 
-            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+            Localchem = (1.0 + PileZoAContrats/100.0 )*PremMatrix[i][2];
     
             LLVPMat.push_back( new TGeoMaterial(upllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
   
@@ -677,14 +636,14 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
             double rhotest = LAYER[i]->GetMedium()->GetMaterial()->GetDensity();
             double zoatest = LAYER[i]->GetMedium()->GetMaterial()->GetZ();
-            std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
-            std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
+            //std::cout <<"EARTH| rmin: " << check[i][0] << " rmax: " << check[i][1] <<" rho:" << rhotest << " zoa: " << zoatest << std::endl;
+            //std::cout<<"LLVP| rmin: " <<InnerR << " rmax: " << OuterR<< " rho:" << PremMatrix[i][1] << " zoa: " << PremMatrix[i][2]<<std::endl;
             
             
             
-            Localdensity = (1.0 + drho/100.0)*PremMatrix[i][1];
+            Localdensity = (1.0 + PileDensityContrats/100.0)*PremMatrix[i][1];
 
-            Localchem = (1.0 + dzoa/100.0 )*PremMatrix[i][2];
+            Localchem = (1.0 + PileZoAContrats/100.0 )*PremMatrix[i][2];
     
             LLVPMat.push_back( new TGeoMaterial(upllvpMatName, 1, Localchem, Localdensity) ); // Create LLVP material
   
@@ -739,7 +698,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
   std::vector< std::vector<double> > EarthPath;  // Store Paths inside the Earth for oscillation calculations
 
-  std::vector< int > EarthPathId;  // Store ID layer for each Paths inside the Earth for oscillation calculations
+  //std::vector< int > EarthPathId;  // Store ID layer for each Paths inside the Earth for oscillation calculations
 
   EarthCanvas = new TCanvas("3D Earth", "3D Earth",0,0,600,600);
  
@@ -824,33 +783,33 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
   double R_cmb = 3480.0;
   double thtest = TMath::ASin( (R_cmb)/6368.0 ) ; // max 180
 
-  bool TestBoolLLVP = Anomaly;
+  bool TestBoolLLVP = Pile;
 
-  std::cout << " Test of angles: " << th*180.0/TMath::Pi() << " " << thtest*180.0/TMath::Pi() << " " << Anomaly << " " << TestBoolLLVP <<std::endl;
+  std::cout << " Test of angles: " << th*180.0/TMath::Pi() << " " << thtest*180.0/TMath::Pi() << " " << Pile << " " << TestBoolLLVP <<std::endl;
   if (th  <  thtest )
   {
     TestBoolLLVP = false;
-    std::cout << "LLVP IS OFF " << th*180.0/TMath::Pi() << " " << thtest*180.0/TMath::Pi() << " " << Anomaly << " " << TestBoolLLVP <<std::endl;
+    std::cout << "LLVP IS OFF " << th*180.0/TMath::Pi() << " " << thtest*180.0/TMath::Pi() << " " << Pile << " " << TestBoolLLVP <<std::endl;
   }
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     */
   
 
-  std::cout << "***************************THE LLVP*************************** " << drho << std::endl; 
+  std::cout << "***************************THE LLVP*************************** " << PileDensityContrats << std::endl; 
 //-+++++++++++++++++++++++++++++++++++++++++++++-----++-+-+-+-+--+
 
-  if (Anomaly /*After test, variable should be Anomaly*/)
+  if (Pile /*After test, variable should be Pile*/)
   {
 
-      if (AnomalyShape == "cake")
+      if (PileShape == "cake")
       {
-         CreateCake(LAYER, LLVPMatrix,check );
+         CreateCake(LAYER, LLVPMatrix); // Adjust LLVP Matrix for PremMatrix if modified a particlar layer and it contains LLVpS
       }
 
-      else if (AnomalyShape == "pancake")
+      else if (PileShape == "pancake")
       {
-         CreatePanCake(LAYER, LLVPMatrix, check );
+         CreatePanCake(LAYER, LLVPMatrix);
       }
 
   }
@@ -898,8 +857,6 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
 
   double r = rPREM; // Max Radius
-
-  //double Det[3]= {0.0,0.0,-6371.0}; //Detector location in cartesian coordinates
   
   //Incoming neutrino direction Cosines (respect to detector location)
   double nx = sin(th)*cos(phi);
@@ -962,12 +919,9 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
   double v = 0;
   while (!gGeoManager->IsOutside ())
   {  
-       ++v;
-       std::cout << v << std::endl;
+         ++v;
 
-        // std::cout << "Starting loop" << std::endl;
-         
-         //gGeoManager->FindNextBoundaryAndStep(); // Calculate distance to the next boundary and Evolve system.
+         std::cout << v << std::endl;
       
          int nodeID= gGeoManager->GetCurrentNode()->GetIndex();
 
@@ -980,10 +934,9 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
          Dnorm = round(sqrt( Dx2 + Dy2 + Dz2 ));
 
 
-         if (Dnorm <= 0.0 )
+         if (Dnorm <= 0.0 )  //Passing detector
          {
 
-          //std::cout << " At detector" << std::endl;
           break;
          
          }
@@ -994,11 +947,6 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
          TGeoVolume *cvol = gGeoManager->GetCurrentVolume();
 
          TGeoMaterial *cmat = cvol->GetMedium()->GetMaterial(); //Material of the current Boundary
-
-
-            
-
-         //Double_t Li = gGeoManager->GetStep(); //Baseline Segement
 
          Double_t safety = gGeoManager->GetSafeDistance(); //Distance to the next boundary/Neutrino Baseline
 
@@ -1011,7 +959,6 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
         if (cvol->GetMedium()->GetId() == 99)
         {
 
-          //std::cout << " OUTSIDE ************************************ " << std::endl;
           continue;
 
         }
@@ -1019,50 +966,11 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
          EarthPath.push_back({Li, cmat->GetDensity(), cmat->GetZ(),R_i}); //Store Path information [Baseline segment, Density, Z/A, R_i]
         
-         EarthPathId.push_back(LabelLayer(rPREM - sumL)); // Store layer ID
-
          sumL = sumL + Li; //Track Total Segment (Max = -2*R_earth*cos(zen))
 
-        l2->SetPoint( i , cpoint[0],cpoint[1],cpoint[2]);
+         l2->SetPoint( i , cpoint[0],cpoint[1],cpoint[2]);
 
-
-
-
-        //Path Infromation 
-
-        
-
-         //std::cout << "Current path is: " << path << " Layer radius: "  << R_i << " id: " << LabelLayer(R_i) <<  std::endl;
-
-         //std::cout << "L_i " << Li  << " rho "  << cmat->GetDensity() << " zoa " << cmat->GetZ() << " medId " << cvol->GetMedium()->GetId() << std::endl;
-
-         //std::cout << std::endl; 
-
-         i += 1;
-
-        
-        //stop at detetor
-        /*
-
-         Dx2 = (cpoint[0]-o[0])*(cpoint[0]-o[0]);
-         Dy2 = (cpoint[1]-o[1])*(cpoint[1]-o[1]);
-         Dz2 = (cpoint[2]-o[2])*(cpoint[2]-o[2]);
-         
-         Dnorm = round(sqrt(Dx2 + Dy2 + Dz2));
-
-         std::cout << Dnorm << " ******|***** End loop" <<std::endl;
-
-
-
-
-        
-         if ( Dnorm < 0.1  )
-         {
-           break;
-         }
-         */
-
-         
+         i += 1;       
   }
 
    l1->SetMarkerColor(6);
@@ -1075,26 +983,6 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
    EarthCanvas->Modified();
    EarthCanvas->Update();
-
-
-   if(Anomaly)
-   {
-
-    //EarthCanvas->Print("SimulationResults/3DEarthLLVP.png");
-
-   } 
-
-
-  //DrawPrem
-
-  //TCanvas *c2 = new TCanvas("c2", "c2",0,0,600,600);
-
-     //Geometrical display
-   //std::cout<< " " << std::endl;
-   //std::cout << "Detector Geometrical settings  d1 " << d1 << " d2 " << d2 << std::endl;
-   //std::cout << " Detector: "  << Det[0] << " " << Det[1] << " " << Det[2] << std::endl;
-   //std::cout << " Neutrino: "  << xo << " " << yo << " " << zo << std::endl;
-   //std::cout << " Neutrino: "  << sqrt(xo*xo +yo*yo + zo*zo) << std::endl;
 
    std::cout << "***************************world created***************************" << std::endl; 
    return EarthPath;

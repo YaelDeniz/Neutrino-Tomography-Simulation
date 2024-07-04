@@ -27,26 +27,38 @@ class Earth3DModel
 
   public:
 
-  std::string filename; //Prem file
-  double zenith;
-  double azimuth;
-  //double Det[3]= {0.0,0.0,-6371.0}; //South Pole is the Default location
-  double Det[3]= {0.0,0.0,-6368.0}; //km3net is the Default location
+  std::string filename = "prem_default"; //Prem .txt file from OscProb/PremTables
+  double zenith = TMath::Pi(); //By default it considers a down going neutirno
+  double azimuth = 0.0;
+  //double Det[3]= {0.0,0.0,-6371.0}; //IceCube site is the Default location
+  double Det[3]= {0.0,0.0,-6368.0}; //km3net site is the Default location
 
-  int PremMatrixId=1;
-  double drholayer=0;  
-  double dzoalayer=0;
+  //Specific layers
+  int PremRow=1; // Row index in the .txt Prem File
+  double LayerDensityContrats=0; // Percentage (%) difference in density  
+  double LayerZoAContrats=0; // Percentage (%) difference in zoa (composition) 
 
-  bool Anomaly = false; //By Default we dont need LLVPs
-  std::string AnomalyShape;
-  //std::vector<int> WhichLayersLLVPs{1}; //Specify which layers contain an LLVPs segment
+  void SetLayerProp(int LayerNumber, double DensityContrats, double ChemicalContrats); //Modify properties of layers
+
+  std::vector< std::vector<double> >  ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix); //Change properties in layer
+
+  //LLVPs
+  bool Pile = false; //By Default, model does not include LLVPs
+  std::string PileShape = "pancake"; //LLVP shape: "pancake" or "cake"
+  double PileThickness = 1000;
   double aWidth = 45.0; //LLVP Angular With
-  double drho = 2; // 3% more dense
-  double dzoa = 0.0; // 0% Chemical difference
+  double PileDensityContrats = 2; // 2% more dense
+  double PileZoAContrats = 0.0; // 0% Chemical difference
 
+  void SetPile( bool value, std::string shape ); // Activate the LLVPs
+  void CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix);
+  void CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix );
+
+
+
+
+  //EARTH MODEL 
   TCanvas *EarthCanvas;
-  
-  // std::vector< std::vector < double > > TheNuPath;
 
   void SetModel(std::string model);
 
@@ -54,45 +66,13 @@ class Earth3DModel
 
   void SetDirection(double theta , double phi ); 
 
-  
-  //LLVPs
+  std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_44layers.txt" ); // Convert prem .txt file into readable  matrix
 
-  void ActiveHeterogeneity( bool value, std::string shape ); // Activate the LLVPs
+  std::vector<std::vector<double>> Earth3DPath ( double zen , double azi, std::string MODEL); //Create the 3D Model and calculate Neutrino Path
 
-  /*
+  std::vector<std::vector<double>> Create3DPath (); // From 3D model, provides the corresponding Neutrino Path inside the Earth
 
-  void SetLLVPAtt( std::vector<int> layers = {10}, double AngularWidth = 45.0, double RhoDiff = 3.0 , double ChemDiff = 0.0) 
-  { 
-
-    LLVPIdLayers = layers; //Layers to be modified
-    aWidth = AngularWidth;
-    drho = 1 + (RhoDiff)/100;
-    dzoa = 1 + (ChemDiff)/100;
-
-  }
-
-  */
-
-  void SetLayerProp(int PremTableNumber, double DensityContrats, double ChemicalContrats);
-
-  std::vector< std::vector<double> >  ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix);
-
-  //void DisplayModel();
-
-  std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_44layers.txt" );
-
-  int LabelLayer (double radius);
-
-  std::vector<std::vector<double>> Earth3DPath ( double zen , double azi, std::string MODEL);
-
-  void CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > LLVPMatrix , std::vector< std::vector<double> > check);
-
-  void CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix, std::vector<std::vector<double>> check );
-
-
-  std::vector<std::vector<double>> Create3DPath ();
-
-  std::vector<std::vector<double>> CreateFlickerPath();//To be eliminated
+  //std::vector<std::vector<double>> CreateFlickerPath();//To be eliminated
 
 
 };

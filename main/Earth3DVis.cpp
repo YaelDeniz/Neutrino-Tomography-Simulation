@@ -55,10 +55,9 @@ int main(int argc, char **argv)
 
   test.SetModel(PremFile);
 
-
   test.SetDirection(cth, phi);
   
-  test.ActiveHeterogeneity( false, "pancake" );
+  test.SetPile( false, "pancake" );
 
   test.SetLayerProp(23,0.0,0.0);
   
