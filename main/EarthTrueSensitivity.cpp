@@ -62,33 +62,11 @@ int main(int argc, char **argv)
 
     //Zenith Angle Interval-----------------------------------------------
 
-    //double Etamin = 33.0;
-    //double Etamax = 38.0;
-
-    // Alternative Earth Model:
-
-    double h_llsvp = 800; //km
-    double R_cmb = 3480.0;
-    double R_llsvp = R_cmb + h_llsvp; //km
-
-    double R_min = R_cmb-500.0;
-    //double R_min = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
-    //double R_llsvp = R_cmb + h_llsvp; //Km
-    double R_max = R_llsvp+500.0; // Distance from the center of the Earth
-
-    
-    //double zenmax = 180-TMath::ASin( (100.0)/Ratm )*(180.0/TMath::Pi()) ; // max 180
-    //double Etamax_LLSVP = TMath::ASin( (R_cmb + h_llsvp)/R_earth )*(180.0/TMath::Pi()) ;
-    //double zenmin = 180-TMath::ASin( Rearth/Ratm )*(180.0/TMath::Pi()) ; // min 90
-
-    double zenmin = 90.0;
+    double zenmin = 91.0; // Not Able to use 90 degrees
     double zenmax = 180.0;
-
     double czmin = cos(zenmax*TMath::Pi()/180.0);
-    
     double czmax = cos(zenmin*TMath::Pi()/180.0);
 
-    std::cout << zenmin << " " << zenmax <<  std::endl;
 
     //Azimuthal Interal-------------------------------------------------------------------------
     double phimin = 0.0;
@@ -99,17 +77,15 @@ int main(int argc, char **argv)
 
     double DetMass = 10.0*MTon; //Mass in megaton units
     double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    //double Nn = DetMass;
     double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
 
     double NnT = Nn*T; // Exposure Mton*years
 
-
-    //Statistical Analysis
-    //std::vector<vector<double>> chi2data;
     std::vector<double> chi2data;
 
-    ofstream EarthChi2("SimulationResults/EarthChi2_5pct.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    std::string chi2directory = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/chi2results/chi2true/";
+
+    ofstream EarthChi2(chi2directory+"chi2Earth", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
     double chi2 = 0;
 
@@ -170,23 +146,23 @@ int main(int argc, char **argv)
 
    TH2D * TrueDiff2D = new TH2D("TrueHist","True Event Histrogram", czbins,czmin,czmax,ebins,EnuMin,EnuMax); //binning in cth 
 
-    GetDiff2D( TrueStd , TrueAlt, TrueDiff2D );
-  
-   TApplication app("app", &argc, argv);
+   GetDiff2D( TrueStd , TrueAlt, TrueDiff2D );
 
-   TCanvas *c = new TCanvas();
-   gStyle->SetPalette(kBird);
-   TrueDiff2D->Draw("COLZ");
-   TrueDiff2D->SetStats(0);
-   gPad->Update();
+  /*
+    TApplication app("app", &argc, argv);
 
-   c->Modified(); c->Update();
+    TCanvas *c = new TCanvas();
+    gStyle->SetPalette(kBird);
+    TrueDiff2D->Draw("COLZ");
+    TrueDiff2D->SetStats(0);
+    gPad->Update();
 
-  
+    c->Modified(); c->Update();
+
     TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
     rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
     app.Run();
-
+*/
 
 
 
@@ -236,7 +212,7 @@ void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)
 {
 
 
-   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/dN_true_2D.csv"); 
+   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/EarthSensitivity2D.csv"); 
 
    double cth, e, Nexp, Nobs, dN;
 
