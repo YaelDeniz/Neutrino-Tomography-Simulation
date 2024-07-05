@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 
     std::string chi2directory = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/chi2results/chi2true/";
 
-    ofstream EarthChi2(chi2directory+"chi2Earth_yael.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    ofstream EarthChi2(chi2directory+"chi2Earth_oscprob.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
     double chi2 = 0;
 
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 
        AsimovSimulation AlternativeEarth;
 
-       AlternativeEarth.PremModel = PremName;
+       AlternativeEarth.PremModel = PremAltName;
        //AlternativeEarth.MantleAnomaly = false;
        //AlternativeEarth.AnomalyShape="pancake";
        AlternativeEarth.ModifyLayer(i,5.0,0.0);
@@ -212,7 +212,7 @@ void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)
 {
 
 
-   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/EarthSensitivity2D.csv"); 
+   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/EarthSensitivity2D_oscprob.csv"); 
 
    double cth, e, Nexp, Nobs, dN;
 

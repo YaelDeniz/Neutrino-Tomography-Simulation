@@ -2,28 +2,25 @@
 %% MyData
 clear all;  close all;  clc;
 
-file = 'Testdata.csv';
+file = 'EarthSensitivity2D.csv';
 
 event_diff = readmatrix(file)
 
 data(:,1:2) = event_diff(:,1:2);
 
-data(:,3)  = event_diff(:,5); %%Difference in events
+data(:,3)  = event_diff(:,3); %%Difference in events
 
 %create surface plot
-zen = unique(data(:,1)); %Xaxis
-
-cz = cosd(zen)
+cth = unique(data(:,1)); %Xaxis
 
 e   = unique(data(:,2)); %Yaxis
 
 dn_ij= data(:,3);
 
-[Zen,E] = meshgrid(zen,e);
+[Cth,E] = meshgrid(cth,e);
 
-%[E,CZ] = meshgrid(e,cz);
 
-dN = reshape(dn_ij,length(zen),length(e));
+dN = reshape(dn_ij,length(cth),length(e));
 
 
 %Plot events
@@ -31,7 +28,7 @@ dN = reshape(dn_ij,length(zen),length(e));
 %%imagesc(n_ij)
 figure('Renderer', 'painters', 'Position', [10 10 1000 800])
 %datatrue=pcolor(Et,Etat, dNt');
-datatrue=pcolor(cosd(Zen),E, dN);
+datatrue=pcolor(Cth,E, dN);
 set(gca,'FontSize',20, 'FontName', 'Courier')
 set(datatrue,'edgecolor','none')
 title( 'Perfect resolution' ,'FontSize',30);
