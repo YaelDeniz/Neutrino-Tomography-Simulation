@@ -62,23 +62,13 @@ using namespace std;
 TH3D* AsimovSimulation::GetTrueEvents3D()
 {  
 
-//Saving information-----------------------------------------------------------------------------------------------------------
+   //Information-----------------------------------------------------------------------------------------------------------
     
-    std::cout << "Simulation of True events assuming Asimov data set" << std::endl;
+    std::cout << " 3D Simulation of True events assuming Asimov data set" << std::endl;
 
     std::string PremFile = PremModel+".txt";
 
     std::cout << PremModel <<std::endl;
-
-    std::string location = "SimulationResults/AsimovData/" ;
-       
-    std::string nudetails = "nu"+std::to_string(flvf)+"E"+std::to_string(EnuMin)+std::to_string(EnuMax);
-   
-    std::string simdetails = "asmvtrue3D"+std::to_string(nbinsZen)+std::to_string(nbinsAzi)+std::to_string(nbinsE);
-   
-    std::string filename = location+PremModel+nudetails+simdetails+".csv";
-    
-    ofstream TrueEvents(filename, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
     //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
 
@@ -124,26 +114,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
 //Neutrino Oscillation Probabilities calculation--------------------------------------------------------------------
     OscProb::PMNS_Fast PMNS_H; // Create PMNS objects
-    
 
-    /*
-    // Get parameters to PDG
-    double dm21 = 7.42e-5;
-    double dm31 = 2.533e-3;
-    double th12 = 33.7712*TMath::Pi()/180;
-    double th13 = 8.588*TMath::Pi()/180;
-    double th23 = 48.504*TMath::Pi()/180;
-    double dcp  = 214.2*TMath::Pi()/180;
-
-    // Set PMNS parameters
-    PMNS_H.SetDm(2, dm21);
-    PMNS_H.SetDm(3, dm31);
-    PMNS_H.SetAngle(1,2, th12);
-    PMNS_H.SetAngle(1,3, th13);
-    PMNS_H.SetAngle(2,3, th23);
-    PMNS_H.SetDelta(1,3, dcp);
-    */
-    
     PMNS_H.SetStdPars(); // Set PDG 3-flavor parameters
 
 //Honda flux distribution-----------------------------------------------------------------------------------------------------
@@ -224,7 +195,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
                 double logEi = log10(e);
                 
 
-                //Neutrino Flux interpolation
+                //Neutrino Flux bilinear interpolation
 
 
                  double logdPsiMu = muflux->Interpolate(logEi,cth);
@@ -232,13 +203,10 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
                  double logdPsiE = eflux->Interpolate(logEi,cth);
                  double logdPsiEb = ebflux->Interpolate(logEi,cth);
 
-         
-
                  double dPsiMudEdct = pow(10,logdPsiMu);     //Muon neutrino flux
                  double dPsiMubardEdct = pow(10,logdPsiMub); //Muon anti-neutrino flux
                  double dPsiEdEdct = pow(10,logdPsiE);        //Electron neutrino flux
                  double dPsiEbardEdct = pow(10,logdPsiEb);    //Electron anti-neutrino flux
-
 
 
                 //Neutrino Contribution;
@@ -268,9 +236,6 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
                 double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi;
                 //double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dth*dphi;
 
-
-                TrueEvents << cth << "," << phi <<" , " << e << ", "<< N_ijk  << "\n";
-
                 TrueHist->SetBinContent(i,j,k, N_ijk); //Create histogram for  kth Pseudo-Experimens
 
             } // loop energy
@@ -279,8 +244,12 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
     } //Loop in Azimuth
 
-    TrueEvents.close();
-           
+    std::cout << "  3D true simulation summary: " << std::endl;
+    std::cout << "  Energy range [" << EnuMin << " - " << EnuMax << "] Binning " << kbins  << std::endl;
+    std::cout << "  Zenith range [" << cthmin << "(" << ZenMax <<") - "<< cthmax << "(" << ZenMin <<")]" << " Binning " << ibins  << std::endl;
+    std::cout << "  Azimuth range [" << AziMin << " - " << AziMax << "] Binning " << jbins  << std::endl;
+
+          
     return TrueHist;
 }
 

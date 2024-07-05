@@ -49,16 +49,16 @@ int main(int argc, char **argv)
 
     // Number of bins
     
-    int czbins=50 ; // # Bins in zenith/cos(zenith)
+    int czbins=100 ; // # Bins in zenith/cos(zenith)
     int abins=50 ; // # Bins in azimuth
-    int ebins=50 ; // bins in energy
+    int ebins=100 ; // bins in energy
     
 
     //Interval of integration in Zenith, Azimuth and E for Neutrino Events
 
     //Energy interval (in GeV)--------------------------------------------
     double EnuMin=1.0 ; 
-    double EnuMax=10.0 ;
+    double EnuMax=40.0 ;
 
     //Zenith Angle Interval-----------------------------------------------
 
@@ -77,15 +77,19 @@ int main(int argc, char **argv)
 
     double DetMass = 10.0*MTon; //Mass in megaton units
     double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
+    double T       = 20.0*years2sec; //Detector Exposure time in sec: One Year
 
     double NnT = Nn*T; // Exposure Mton*years
+
+    double pct = 5;
+
+
 
     std::vector<double> chi2data;
 
     std::string chi2directory = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/chi2results/chi2true/";
 
-    ofstream EarthChi2(chi2directory+"chi2Earth.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    ofstream EarthChi2(chi2directory+"chi2Earth"+std::to_string(int(pct))+"pct"+std::to_string(czbins)+std::to_string(ebins)+".csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
     double chi2 = 0;
 
@@ -119,28 +123,31 @@ int main(int argc, char **argv)
         //std::string PremAltName = PremName + "_" + std::to_string(i);
        //std::cout << PremAltName << std::endl;
 
-    for (int i = 1; i <= TotalLayers; i++)
-    {
 
-       AlternativeEarth.PremModel = PremName;
-       //AlternativeEarth.MantleAnomaly = false;
-       //AlternativeEarth.AnomalyShape="pancake";
-       AlternativeEarth.ModifyLayer(i,10.0,0.0);
-       AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
-       AlternativeEarth.SetBinning(czbins,abins,ebins);
-       AlternativeEarth.SetExposure(NnT);
-       AlternativeEarth.flvf=nuflv;
+        for (int i = 1; i <= TotalLayers; i++)
+        {
 
-       TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
-       //TH2D * TrueAlt = AlternativeEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_llsvp.txt");
+           AlternativeEarth.PremModel = PremName;
+           //AlternativeEarth.MantleAnomaly = false;
+           //AlternativeEarth.AnomalyShape="pancake";
+           AlternativeEarth.ModifyLayer(i,pct,0.0);
+           AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
+           AlternativeEarth.SetBinning(czbins,abins,ebins);
+           AlternativeEarth.SetExposure(NnT);
+           AlternativeEarth.flvf=nuflv;
 
-       chi2 = Get2DChi2( TrueStd, TrueAlt);
+           TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
+           //TH2D * TrueAlt = AlternativeEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_llsvp.txt");
 
-       chi2data.push_back(chi2);
+           chi2 = Get2DChi2( TrueStd, TrueAlt);
 
-       EarthChi2 << i << " , " << chi2 <<  std::endl;
+           chi2data.push_back(chi2);
 
-    }
+           EarthChi2 << i << " , " << chi2 <<  std::endl;
+
+        }
+    
+
    EarthChi2.close();
 
   // EVENT VISUALIZATION
