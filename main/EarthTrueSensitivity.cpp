@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 
     std::string chi2directory = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/chi2results/chi2true/";
 
-    ofstream EarthChi2(chi2directory+"chi2Earth", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    ofstream EarthChi2(chi2directory+"chi2Earth_yael.csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
     double chi2 = 0;
 
