@@ -353,7 +353,7 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
     TH2D* ebflux =  SPflux.GetFluxHist(4,FluxData); //EBarFlux
 
 //Set earth model -------------------------------------------------------------------------------------------------------------
-    /*
+    
      Earth3DModel MyEarthModel;
 
      MyEarthModel.SetModel(PremFile);
@@ -361,11 +361,11 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
      MyEarthModel.SetPile( MantleAnomaly, AnomalyShape );
 
      MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrats);
-    */
+    
      
-     std::string model = "/home/dehy0499/OscProb/PremTables/"+PremFile;
+     //std::string model = "/home/dehy0499/OscProb/PremTables/"+PremFile;
 
-     OscProb::PremModel prem(model);
+     //OscProb::PremModel prem(model);
     
 //Event Calculation
     
@@ -383,7 +383,6 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 
             if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
             
-            /*
             MyEarthModel.SetDirection(cth,phi); 
 
             std::vector<std::vector<double>> EarthPath = MyEarthModel.Create3DPath();
@@ -407,11 +406,11 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
                 PMNS_H.AddPath(l,d,z);
             
             } 
-            */
+            
 
-            prem.FillPath(cth); // Fill paths from PREM model
+            //prem.FillPath(cth); // Fill paths from PREM model
 
-            PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
+            //PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
             
             for (int k = 1; k <=kbins; ++k)
             { 

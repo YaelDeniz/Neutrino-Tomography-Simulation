@@ -8,11 +8,11 @@ fileapc = 'EarthSensitivity2D_oscprob.csv';
 
 event_yael = readmatrix(fileyael)
 
-event_apc = readmatrix(fileapc)
+event_apc = readmatrix(fileyael)
 
-data(:,1:2) = event_yael(:,1:2);
+data(:,1:2) = event_diff(:,1:2);
 
-data(:,3)  = event_yael(:,3)-event_apc(:,3); %%Difference in events
+data(:,3)  = event_diff(:,3); %%Difference in events
 
 %create surface plot
 cth = unique(data(:,1)); %Xaxis
@@ -37,7 +37,7 @@ set(gca,'FontSize',20, 'FontName', 'Courier')
 set(datatrue,'edgecolor','none')
 title( 'Perfect resolution' ,'FontSize',30);
 
-xlabel('cos(\theta_z)','FontSize',30)
+xlabel('theta_z','FontSize',30)
 set(gca, 'XDir','reverse')
 
 ylabel('E_{\nu}[GeV]','FontSize',30)

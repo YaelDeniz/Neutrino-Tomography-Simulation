@@ -114,14 +114,15 @@ int main(int argc, char **argv)
 
     int TotalLayers = 44;
    
-     int i = 23;
+    AsimovSimulation AlternativeEarth;
 
-       std::string PremAltName = PremName + "_" + std::to_string(i);
-       std::cout << PremAltName << std::endl;
+        //std::string PremAltName = PremName + "_" + std::to_string(i);
+       //std::cout << PremAltName << std::endl;
 
-       AsimovSimulation AlternativeEarth;
+    for (int i = 1; i <= TotalLayers; i++)
+    {
 
-       AlternativeEarth.PremModel = PremAltName;
+       AlternativeEarth.PremModel = PremName;
        //AlternativeEarth.MantleAnomaly = false;
        //AlternativeEarth.AnomalyShape="pancake";
        AlternativeEarth.ModifyLayer(i,5.0,0.0);
@@ -139,14 +140,15 @@ int main(int argc, char **argv)
 
        EarthChi2 << i << " , " << chi2 <<  std::endl;
 
+    }
    EarthChi2.close();
 
   // EVENT VISUALIZATION
 
 
-   TH2D * TrueDiff2D = new TH2D("TrueHist","True Event Histrogram", czbins,czmin,czmax,ebins,EnuMin,EnuMax); //binning in cth 
+   //TH2D * TrueDiff2D = new TH2D("TrueHist","True Event Histrogram", czbins,czmin,czmax,ebins,EnuMin,EnuMax); //binning in cth 
 
-   GetDiff2D( TrueStd , TrueAlt, TrueDiff2D );
+   //GetDiff2D( TrueStd , TrueAlt, TrueDiff2D );
 
   /*
     TApplication app("app", &argc, argv);
@@ -212,7 +214,7 @@ void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)
 {
 
 
-   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/EarthSensitivity2D_oscprob.csv"); 
+   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/EarthSensitivity2D.csv"); 
 
    double cth, e, Nexp, Nobs, dN;
 
