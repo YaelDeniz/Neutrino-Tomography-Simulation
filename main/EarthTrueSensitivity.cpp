@@ -125,7 +125,7 @@ int main(int argc, char **argv)
        AlternativeEarth.PremModel = PremName;
        //AlternativeEarth.MantleAnomaly = false;
        //AlternativeEarth.AnomalyShape="pancake";
-       AlternativeEarth.ModifyLayer(i,5.0,0.0);
+       AlternativeEarth.ModifyLayer(i,10.0,0.0);
        AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
        AlternativeEarth.SetBinning(czbins,abins,ebins);
        AlternativeEarth.SetExposure(NnT);

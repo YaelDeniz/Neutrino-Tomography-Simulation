@@ -8,7 +8,7 @@ clear all;    clc;
 
 % depth = PREMDATA(:,1)
 
-file = 'chi2true/chi2Earth_yael.csv';
+file = 'chi2true/chi2Earth.csv';
 
 CHI2DATA = readmatrix(file)
 
