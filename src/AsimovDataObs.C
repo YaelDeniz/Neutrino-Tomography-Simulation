@@ -37,6 +37,8 @@ bool isCINT = true;
 // My Math Tools
 #include "MathTools.h"
 #include "PhyTools.h"
+#include "Earth3DModel.h"
+
 
 using namespace std;
 
@@ -48,20 +50,341 @@ using namespace std;
 
 # define R_earth 6368.0 //km
 
-//Resolution functions
+//RESOLUTION FUNCITONS----------------------------------------------------------
 
-double PDF_energy(double e_o , double e , double a_e);
+//Energy Resolution Parameters
+void AsimovObsSimulation::SetEnergyResolution(double A, double B){
+    Ae = A;
+    Be = B;}
 
-double PDF_angle(double eta_o, double e, double eta, double a_eta);
-
-//double w_E(double e_o , double e, double dE_o, double a_E, double E[] ); 
-
-//double w_eta(double eta_o, double e, double eta, double deta_o,double a_eta ,double Eta[]);
-
-// Make oscillogram for given final flavour and MH
+//Energy Resolution function
+double AsimovObsSimulation::PDFE(double Ereco , double Etrue ) {
+    double SigmaE = Ae*Etrue +Be*sqrt(Etrue); //Detector Energy Resolution
+    double pdfe = ROOT::Math::gaussian_pdf( Ereco, SigmaE, Etrue) ;
+    return pdfe; }
 
 
-TH2D*  AsimovObservedEvents(std::string modelname, int flvf, double Region[], int Bins[],double Det_par[], double NnT)
+//Angular (Zenith only) Resolution Parameters
+void AsimovObsSimulation::SetAngularResolution(double A, double B){
+    Ath = A;
+    Bth = B;}
+
+//Angular(Zenith only) Resolution function
+double AsimovObsSimulation::PDFth(double thReco, double Etrue, double thTrue){
+    double Sigmath = Ath + Bth/(sqrt(Etrue)); //Detector Angular Resolution
+    double pdfth = ROOT::Math::gaussian_pdf( thReco, Sigmath, thTrue) ;
+    return pdfth; }
+
+
+
+
+TH2D*  GetObsEvents2D(){   
+    std::cout << "Asimov Approach Simulation for Observed Events" << std::endl;
+    std::string PremFile = PremModel+".txt";    
+
+    //Observed Variables:-----------------------------------------------------------------------------------------------
+    
+    //Observed bins
+    int mbins = recobinsZen; //Number of angular bins of Observed event distribution
+    int nbins = recobinsE; //Number of Energy bins of Observed event distribution
+    
+    //Energy[GeV]
+    double ErecoMin      = EnuMin;
+    double ErecoMax      = EnuMax;
+    
+    //double dE_o = (EOmax - EOmin)/(nbins); //< Bin width
+    
+    //double E_itv[] = {EOmin, EOmax};
+    
+    //Observed Angle
+    double threcoMin   = ZenMin*TMath::Pi()/180.0;
+    double threcoMax   = ZenMax*TMath::Pi()/180.0;
+
+    double CthrecoMin = cos(threcoMax); //min cth = -1 
+    double CthrecoMax = cos(threcoMin); // max cth = 0
+    
+    //double deta_o = (etaOmax - etaOmin)/(mbins); //< Bin width
+
+    //double Eta_itv[] = {etaOmin, etaOmax};
+    
+    //Azimuthal 
+    double dAz = (AziMax-AziMin)*TMath::Pi()/180.0;
+
+    //Observed distribution:
+    TH2D* RecoHist = new TH2D("hObs","Observed Events",mbins,CthrecoMin,CthrecoMax,nbins,ErecoMin,ErecoMax); // xbins correspond to energy values and ybins to zenith angle cost
+    
+
+    //True Variables:---------------------------------------------------------------------------------------------------
+
+    //True bins
+    int ibins = truebinsZen; // Number of  angular bins of True event distribution
+    int jbins = truebinsE; // Number of  energy bins of True event distribution
+
+    
+    //True Energy[GeV]
+    //double Emin=(1/(1+4*a_E))*(EOmin);
+
+    //double Emax=(1/(1-4*a_E))*(EOmax);
+    TF1 *fmin = new TF1("fmin","-1*x + [0]-4*( [1]*x+[2]*sqrt(x) )", 0, 100);
+    fmin->SetParameter(0,ErecoMin);
+    fmin->SetParameter(1,Ae);
+    fmin->SetParameter(2,Be);
+
+    ROOT::Math::RootFinder finder_min;
+    finder_min.Solve(*fmin,0,100);
+
+    double EtrueMin = finder_min.Root();
+
+    TF1 *fmax = new TF1("fmax","-1*x + [0] + 4*( [1]*x+[2]*sqrt(x) )", 0, 100);
+    fmax->SetParameter(0,ErecoMax);
+    fmax->SetParameter(1,Ae);
+    fmax->SetParameter(2,Be);
+
+    ROOT::Math::RootFinder finder_max;
+    finder_max.Solve(*fmax,0,100);
+
+    double EtrueMax = finder_max.Root();
+
+    
+    //NextGen Energy
+
+   // double Emin=0.6;
+
+   // double Emax=14.5;
+    
+    //double dE = (Emax - Emin)/(jbins); //< Bin width
+
+    //True Angle
+    /*
+    double etamin_a= (etaOmin)-4*(a_eta/sqrt(Emin));
+    double etamin_b= 0;
+
+    double etamax_a= (etaOmax)+4*(a_eta/sqrt(Emin));
+    double etamax_b= TMath::Pi();
+    */
+
+
+    double etamin_a= (etaOmin)-4*(0.04 + 0.18/sqrt(Emin));
+    double etamin_b= 0;
+
+    double etamax_a= (etaOmax)+4*(0.04 + 0.18/sqrt(Emin));
+    double etamax_b= TMath::Pi();
+
+
+    double etamin = max(etamin_b,etamin_a);
+
+    double etamax = min(etamax_b,etamax_a);
+
+    double deta = (etamax - etamin)/(ibins); //< Bin width
+    
+    
+    //True distribution        
+    TH2D* hTrue = new TH2D("hTrue","True Events",jbins,etamin,etamax,ibins,Emin,Emax); // xbins correspond to energy values and ybins to zenith angle cost
+
+
+    std::cout << "Observed variable region ["<< EOmin << "-"<<EOmax<< "]*["<<etaOmin<< "-"<<etaOmax <<"]" << std::endl;
+
+    //std::cout << "Extended variable region ["<< Emin << "-"<<Emax<< "]*["<<etamin_a<< "-"<<etamax_a <<"]" << std::endl;
+
+    std::cout << "True variable region ["<< Emin << "-"<<Emax<< "]*["<<etamin<< "-"<<etamax <<"]" << std::endl;
+
+    
+    //NEUTRINO OSCILLATION PROB-----------------------------------------------------------------------------------------
+
+    // Neutrino flavour
+    int nue        = 0;  // electron neutrino  
+    int numu       = 1; // muon neutrino
+    // Particle type
+    int nu         = 1; //neutrino
+    int nubar      = -1; //antineutrino
+
+    // Model Set up: 
+    OscProb::PMNS_Fast PMNS_Ho; // Create PMNS objects
+    
+    
+    // Set specific Oscillation Parameters
+    
+    /*
+    double dm21 = 7.42e-5;
+    double dm31 = 2.533e-3;
+    double th12 = 33.7712*TMath::Pi()/180;
+    double th13 = 8.588*TMath::Pi()/180;
+    double th23 = 48.504*TMath::Pi()/180;
+    double dcp  = 214.2*TMath::Pi()/180;
+
+    // Set PMNS parameters
+    
+    PMNS_Ho.SetDm(2, dm21);
+    PMNS_Ho.SetDm(3, dm31);
+    PMNS_Ho.SetAngle(1,2, th12);
+    PMNS_Ho.SetAngle(1,3, th13);
+    PMNS_Ho.SetAngle(2,3, th23);
+    PMNS_Ho.SetDelta(1,3, dcp);
+    */
+
+    PMNS_Ho.SetStdPars(); // Set PDG 3-flavor parameters
+
+    //Earth model for neutrino propagation 
+    OscProb::PremModel prem_model(model);
+    OscProb::PremModel prem(model_default); //Default PREM table
+
+    //Limit region to turn off model
+    double R_lim = 3500.0; // Distance from the center of the Earth , 3500 Km CMB
+    double EtaLim = TMath::Pi() - TMath::ASin( (R_lim)/R_earth ) ;
+
+
+    // Atmospheric Neutrino Flux data-----------------------------------------------------------------------------------
+    
+    TFile *HF = new TFile("./NuFlux/Honda2014_spl-solmin-allavg.root","read"); //South Pole (IC telescope) Averaged all directions
+    
+    //TFile *HF = new TFile("./NuFlux/TestFlux.root","read"); // Specific flux V. Agrawal, et al. (1996)
+    
+    
+    TDirectory *Zen = (TDirectory*) HF->Get("CosZ_all"); // Avg Flux for -0.9 <~ CosT < 0
+
+    TTree *flux= (TTree*) Zen->Get("FluxData"); //Opens data file      
+    
+    double Enu,NuMu,NuMubar,NuE,NuEbar;
+    flux->SetBranchAddress("Enu",&  Enu  );
+    flux->SetBranchAddress("NuMu",&  NuMu );
+    flux->SetBranchAddress("NuMubar",& NuMubar );
+    flux->SetBranchAddress("NuE",& NuE );
+    flux->SetBranchAddress("NuEbar",& NuEbar );
+
+    //Interpolation of Neutrino flux data
+    int n = flux->GetEntries();
+    std::vector <double> EPsi,PsiNuMu,PsiNuMubar,PsiNuE,PsiNuEbar;
+    for (int i = 0; i < n-1 ; ++i)
+    {
+        flux->GetEntry(i);
+        EPsi.push_back(Enu);
+        PsiNuMu.push_back(NuMu);
+        PsiNuMubar.push_back(NuMubar);
+        PsiNuE.push_back(NuE);
+        PsiNuEbar.push_back(NuEbar);;
+    }
+
+    //Interpolate Muon-neutrino flux
+    ROOT::Math::Interpolator dPsiMudE(EPsi,PsiNuMu, ROOT::Math::Interpolation::kCSPLINE);       // Muon Neutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiMubardE(EPsi,PsiNuMubar, ROOT::Math::Interpolation::kCSPLINE); // Muon Antineutrino Flux Interpolation
+
+    //Interplate Electron-neutrinos flux
+    ROOT::Math::Interpolator dPsiEdE(EPsi,PsiNuE, ROOT::Math::Interpolation::kCSPLINE);         // Electron Neutrino Flux Interpolation
+    ROOT::Math::Interpolator dPsiEbardE(EPsi,PsiNuEbar, ROOT::Math::Interpolation::kCSPLINE);   // Electron Antineutrino Flux Interpolation
+
+
+
+   //Calculation of observed events------------------------------------------------------------------------------------- 
+    for (int m = 1; m <= mbins; ++m) //Observed Angular bins
+    {
+
+        double eta_o = hObs->GetXaxis()->GetBinCenter(m); // Select angular bin from the "Observed" histogram
+       
+        for (int n = 1; n <=nbins ; ++n) //Observed Energy bins
+        {
+     
+            double e_o = hObs->GetYaxis()->GetBinCenter(n); // Select Energy bin from the "Observed" histogram
+       
+            double Ntot = 0;   // Reset total number of events.
+            
+            for(int i=1; i<= ibins ; i++) //Loop in cosT
+            {    
+
+                // Get cos(theta_z) from bin center, It fix a value of L
+
+                double eta = hTrue->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+                
+                double cosEta =cos(eta);
+
+                if(cosEta < -1 || cosEta > 1) break; // Skip if cosT is unphysical 
+                
+                
+
+                
+                if (eta <= EtaLim ) 
+                {
+
+                    //std::cout << eta << " " << EtaLim << " --- " << std::endl;
+                    double cosEta =cos(eta);
+                     
+                    prem_model.FillPath(cosEta); // Fill paths from PREM model
+
+                    PMNS_Ho.SetPath(prem_model.GetNuPath()); // Set paths in OscProb  
+
+                }
+                else
+
+                {
+
+                    //std::cout << eta << " " << EtaLim << " *** " << std::endl;
+
+                    prem.FillPath(cosEta); // Fill paths from PREM model
+                
+                    PMNS_Ho.SetPath(prem.GetNuPath()); // Set paths in OscProb  
+                }
+/*
+                std::cout << " Things is off " << std::endl;
+
+                prem_model.FillPath(cosEta); // Fill paths from PREM model
+                
+                // Set paths in OscProb  
+                PMNS_Ho.SetPath(prem_model.GetNuPath()); //STANDARD EARTH (DESCRIBED BY PREM MODEL)
+*/
+
+                for (int j = 1; j <= jbins; ++j)
+                { 
+                    //NUMERICAL INTEGRATION
+
+                    double e = hTrue->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
+
+                    //Neutrino
+                    PMNS_Ho.SetIsNuBar(false); 
+                    double Ri_nu = XSec(e,nu)*( PMNS_Ho.Prob(numu, flvf, e)*dPsiMudE.Eval(e) + PMNS_Ho.Prob(nue,flvf,e)*dPsiEdE.Eval(e) );
+                
+                    //Antineutrino contribution
+                    PMNS_Ho.SetIsNuBar(true); 
+                    double Ri_nubar = XSec(e,nubar)*( PMNS_Ho.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_Ho.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
+
+
+                    double N_ij = NnT*PDF_angle(eta_o,e,eta,a_eta)*PDF_energy(e_o,e,a_E)*(Ri_nu+Ri_nubar)*(dE*deta)*(dE_o*deta_o)*dAz;
+
+                    //std::cout << Ri_nu << " " << Ri_nubar << " " << N_ij << std::endl;
+
+                    Ntot += N_ij;
+                    
+                } // loop e
+
+            } // Loop ct
+            
+            double No_mn = Ntot;
+
+            //std::cout << eta_o << " " << e_o << " ****************************** " << No_mn << std::endl;
+                    
+
+            ObservedData << eta_o << ", " << e_o << ", "<< No_mn << "\n"; //Write im file.
+            
+            hObs->SetBinContent(m,n,No_mn); // Set events in Observed histogram. 
+
+         
+        } // loop in eo
+
+    } // loop in eta_o
+
+
+   ObservedData.close();
+       
+   hObs->SetTitle("Observed events for #nu_{#mu} and #bar{#nu}_#mu ");
+    
+   hObs->SetStats(0);
+
+   //Delete 
+   delete hTrue;
+   delete HF;
+   
+
+   return hObs;}
+
+TH2D*  OriginalApproach(std::string modelname, int flvf, double Region[], int Bins[],double Det_par[], double NnT)
 {   
     std::cout << "Generating Asimov data set: Reimann Integration + Extended region" << std::endl;
     //Data Storage -----------------------------------------------------------------------------------------------------

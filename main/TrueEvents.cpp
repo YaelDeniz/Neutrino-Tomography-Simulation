@@ -13,6 +13,7 @@
 #include "TRootCanvas.h"
 #include "TCanvas.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TGraph.h"
 #include "TMath.h"
 #include "TFile.h"
@@ -22,6 +23,8 @@
 //My Libraries
 #include "MathTools.h"
 #include "PhyTools.h"
+#include "PlotTool.h"
+#include "StatsAna.h"
 #include "GetTrueEvents.h"
 
 
@@ -142,6 +145,7 @@ int main(int argc, char **argv)
     return 0;
 
 }
+
 
 
 void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff)
