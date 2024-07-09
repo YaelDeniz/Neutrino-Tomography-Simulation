@@ -13,6 +13,8 @@
 
 
 using namespace std;
+# define Rocean 6368.0 // Earth radius in (km)
+# define Rearth 6371.0 // Earth radius in (km)
 
 //TH2D*  AsimovTrueEvents(std::string modelname,bool LLVP,  std::vector<int> layers, int flvf, double Region[], int Bins[], double NnT);
 
@@ -20,6 +22,10 @@ class AsimovSimulation
 {
     public:
 
+    double NnT; //Detector Exposure
+    std::string Detector = "Ocean";
+    double Rdet[3] = {0.0, 0.0, Rearth};
+    std::string flux = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d";
     //Earth Settings
     std::string PremModel="prem_44layers";
     bool MantleAnomaly = false;
@@ -50,7 +56,23 @@ class AsimovSimulation
     int nbinsAzi; //Bins in Azimuth
     int nbinsE; //Bins in Energy
 
-    double NnT; //Detector Exposure
+    void SetDetector( std::string detector = "SouthPole" )
+    {
+
+        if (detector == "SouthPole" )
+        {
+            Rdet[2] = Rearth; //IceCube
+            flux = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d";
+
+        }
+
+        else if (detector == "Ocean")
+        {
+            Rdet[2] = Rocean; //Km3Net
+            flux = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/GRN_AziAveraged_solmin/grn-nu-20-01-000.d";
+        }
+    }
+
 
     void ModifyLayer (int n , double rhopct , double zoapct)
     {

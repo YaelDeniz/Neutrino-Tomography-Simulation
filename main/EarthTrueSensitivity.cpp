@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 
     double NnT = Nn*T; // Exposure Mton*years
 
-    double pct = 10;
+    //double pct = 10;
 
 
 
@@ -89,14 +89,18 @@ int main(int argc, char **argv)
 
     std::string chi2directory = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/chi2results/chi2true/";
 
-    ofstream EarthChi2(chi2directory+"chi2Earth425_"+std::to_string(int(pct))+"pct"+std::to_string(int(EnuMax))+std::to_string(int(EnuMax))+".csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
     double chi2 = 0;
+
+
 
     //Event generation-----------------------------------------------------------------------------------------
     int nuflv = 1; // neutrino  final state options nue (0), numu (1) or nutau (2)
     
     std::string PremName = "prem_425layers";
+
+    ofstream EarthChi2(chi2directory+"chi2_"+PremName+std::to_string(int(EnuMax))+std::to_string(int(EnuMax))+".csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+
     
     // Standard Earth model
 
@@ -116,21 +120,24 @@ int main(int argc, char **argv)
     // Alternative Earth Model
 
 
-    int TotalLayers = 44;
+    int TotalLayers = 425;
+
+    double pct[3] = {3.0, 5.0, 10.0};
    
     AsimovSimulation AlternativeEarth;
 
         //std::string PremAltName = PremName + "_" + std::to_string(i);
        //std::cout << PremAltName << std::endl;
 
-
+    for (int j = 0; j < 3; ++j)
+    {
         for (int i = 1; i <= TotalLayers; i++)
         {
 
            AlternativeEarth.PremModel = PremName;
            //AlternativeEarth.MantleAnomaly = false;
            //AlternativeEarth.AnomalyShape="pancake";
-           AlternativeEarth.ModifyLayer(i,pct,0.0);
+           AlternativeEarth.ModifyLayer(i,pct[j],0.0);
            AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
            AlternativeEarth.SetBinning(czbins,abins,ebins);
            AlternativeEarth.SetExposure(NnT);
@@ -143,10 +150,10 @@ int main(int argc, char **argv)
 
            chi2data.push_back(chi2);
 
-           EarthChi2 << i << " , " << chi2 <<  std::endl;
+           EarthChi2 << i << " , " << chi2 << " , " << int(pct[j]) << std::endl;
 
         }
-    
+    }
 
    EarthChi2.close();
 

@@ -52,6 +52,10 @@ int main(int argc, char **argv)
 
     std::cout << " Neutrino Oscillation tomography. " << std::endl;
 
+    //Detector
+
+    std::string detector = "Ocean";
+
     //EARTH MODEL---------------------------------------------------------------
 
     std::string PremName = "prem_44layers"; //Earth Model
@@ -66,9 +70,9 @@ int main(int argc, char **argv)
     //SIMULATION SET UP---------------------------------------------------------
 
     // Binning------------------------------------------------------------------
-    int czbins=200 ; // # Bins in zenith/cos(zenith)
+    int czbins=100 ; // # Bins in zenith/cos(zenith)
     int abins =1; // # Bins in azimuth
-    int ebins =200; // bins in energy
+    int ebins =100; // bins in energy
 
     //Energy interval (in GeV)--------------------------------------------------
     double EnuMin=1.0 ; 
@@ -98,6 +102,7 @@ int main(int argc, char **argv)
    AsimovSimulation StandardEarth;
 
    StandardEarth.PremModel = PremName;
+   StandardEarth.SetDetector(detector);
    StandardEarth.MantleAnomaly = false;
    StandardEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
    StandardEarth.SetBinning(czbins,abins,ebins);
@@ -111,6 +116,7 @@ int main(int argc, char **argv)
    AsimovSimulation AlternativeEarth;
 
    AlternativeEarth.PremModel = PremName;
+   AlternativeEarth.SetDetector(detector);
    AlternativeEarth.MantleAnomaly = true;
    AlternativeEarth.AnomalyShape="cake";
    AlternativeEarth.PileDensityContrast = PileDensityPct;
@@ -181,7 +187,7 @@ void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff)
 
                 diff->SetBinContent(i,j,k,dN);
 
-                //std::cout<< diff->GetYaxis()->GetNbins() << " " << azi << " , " <<  cth  << " , " << e << " , " << dN << std::endl;
+                std::cout<< diff->GetXaxis()->GetNbins() << " " << azi << " , " <<  cth  << " , " << e << " , " << dN << std::endl;
 
                 TrueDiffFile << cth << " , " <<  azi  << " , " << e << " , " << dN << std::endl;
 

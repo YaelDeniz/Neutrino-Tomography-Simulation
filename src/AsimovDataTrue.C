@@ -121,6 +121,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
    NuFlux HondaFlux;
     HondaFlux.MediterraneanSeaFlux(); // Gran Sasso
+
     //HondaFlux.SouthPoleFlux(); 
     std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaFlux.FluxFileName);
 
@@ -134,6 +135,8 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 //Set earth model -------------------------------------------------------------------------------------------------------------
     
      Earth3DModel MyEarthModel;
+
+     //MyEarthModel.SetDetector(Rdet);
 
      MyEarthModel.SetModel(PremFile);
 

@@ -20,8 +20,8 @@ chi2_10 = CHI2DATA(89:132,2);
 
 semilogx(chi2_3,depth);
 hold on
-semilogx(chi2_5,depth);
-semilogx(chi2_10,depth);
+semilogx(chi2_,depth);
+semilogx(chi2_3,depth);
 
 
 xlabel("\Delta \chi^2")
