@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 
     double NnT = Nn*T; // Exposure Mton*years
 
-    double pct = 5;
+    double pct = 10;
 
 
 
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 
     std::string chi2directory = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/chi2results/chi2true/";
 
-    ofstream EarthChi2(chi2directory+"chi2Earth"+std::to_string(int(pct))+"pct"+std::to_string(czbins)+std::to_string(ebins)+".csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    ofstream EarthChi2(chi2directory+"chi2Earth"+std::to_string(int(pct))+"pct"+std::to_string(int(EnuMax))+std::to_string(int(EnuMax))+".csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
     double chi2 = 0;
 
