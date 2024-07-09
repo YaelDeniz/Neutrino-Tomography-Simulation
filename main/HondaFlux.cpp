@@ -35,18 +35,17 @@ using namespace std;
 int main()
 {
  
-NuFlux SPflux;
+    NuFlux HondaFlux;
+    HondaFlux.MediterraneanSeaFlux(); // Gran Sasso
+    //HondaFlux.SouthPoleFlux(); 
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaFlux.FluxFileName);
 
-std::vector< std::vector<double> > FluxData = SPflux.SetFluxData();
+    //Matrix for Histogram & Histogram Draw
 
-
-//Matrix for Histogram & Histogram Draw
-
-//-------------------------------------------------------------------------------------------------------------------------------
-TH2D* muflux =  SPflux.GetFluxHist(1,FluxData); //MuFlux
-TH2D* mubflux =  SPflux.GetFluxHist(2,FluxData); //MuBarFlux
-TH2D* eflux =  SPflux.GetFluxHist(3,FluxData); //EFlux
-TH2D* ebflux =  SPflux.GetFluxHist(4,FluxData); //EBarFlux
+    TH2D* muflux =  HondaFlux.GetFluxHist(1,FluxData); //MuFlux
+    TH2D* mubflux =  HondaFlux.GetFluxHist(2,FluxData); //MuBarFlux
+    TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData); //EFlux
+    TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); //EBarFlux
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 muflux->SetStats(0);

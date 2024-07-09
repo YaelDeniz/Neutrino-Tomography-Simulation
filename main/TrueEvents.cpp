@@ -32,6 +32,7 @@
 // Some Constants i need
 
 # define Rcmb 3480.0 // Core-Mantle-Boundary Radius (km)
+# define Rocean 6368.0 // Earth radius in (km)
 # define Rearth 6371.0 // Earth radius in (km)
 # define Ratm 6368.0 // Radius of the Atmosphere (km)
 # define mN   1.67492749804E-27  // Nucleons mass (~ Neutron mass) in kg
@@ -58,31 +59,31 @@ int main(int argc, char **argv)
     //Pile Set Up---------------------------------------------------------------
     double PileHeight = 1000; // Height of LLVP in km
     double PileRadius = Rcmb + PileHeight; //km
-    double DepthMin = Rcmb-1000.0;
-    double DepthMax = PileRadius+1000.0; // Distance from the center of the Earth
+    double DepthMin = Rcmb-1000;
+    double DepthMax = PileRadius+1000; // Distance from the center of the Earth
     double PileDensityPct = 3.0; // 2% density contrats for LLVP
 
     //SIMULATION SET UP---------------------------------------------------------
 
     // Binning------------------------------------------------------------------
-    int czbins=100 ; // # Bins in zenith/cos(zenith)
-    int abins=1 ; // # Bins in azimuth
-    int ebins=100 ; // bins in energy
+    int czbins=200 ; // # Bins in zenith/cos(zenith)
+    int abins =1; // # Bins in azimuth
+    int ebins =200; // bins in energy
 
     //Energy interval (in GeV)--------------------------------------------------
     double EnuMin=1.0 ; 
-    double EnuMax=10.0 ;
+    double EnuMax=25.0 ;
 
     //Zenith Angle Interval-----------------------------------------------------
-    double zenmin = 180-TMath::ASin( DepthMax/Rearth )*(180.0/TMath::Pi()) ; // min 90
-    double zenmax = 180-TMath::ASin( (DepthMin)/Rearth )*(180.0/TMath::Pi()) ; // max 180
+    double zenmin = 180-TMath::ASin( DepthMax/Rocean )*(180.0/TMath::Pi()) ; // min 90
+    double zenmax = 180-TMath::ASin( (DepthMin)/Rocean )*(180.0/TMath::Pi()) ; // max 180
 
     double Czmin = cos(zenmax*TMath::Pi()/180.0);// Cos(zenmin) - Minimum possible is -1    
     double Czmax = cos(zenmin*TMath::Pi()/180.0);// Cos(zenmax) - Maximum possible is 0
 
     //Azimuthal Interal---------------------------------------------------------
-    double phimin = -45.0;
-    double phimax =  45.0 ;
+    double phimin = -55.0;
+    double phimax =  55.0 ;
 
     //Detector size-------------------------------------------------------------
     double DetMass = 10.0*MTon; //Mass in megaton units
@@ -112,6 +113,8 @@ int main(int argc, char **argv)
    AlternativeEarth.PremModel = PremName;
    AlternativeEarth.MantleAnomaly = true;
    AlternativeEarth.AnomalyShape="cake";
+   AlternativeEarth.PileDensityContrast = PileDensityPct;
+   AlternativeEarth.PileChemContrast = 0.0;
    //AlternativeEarth.ModifyLayer(23,5.0,0.0);
    //AlternativeEarth.AnomalousLayers = layers;
    AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
@@ -155,14 +158,15 @@ void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff)
    double cth, azi, e, Nexp, Nobs, dN;
 
 
+    std::string filename = "dNTrueAziFixLayered.csv";
+    std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/3DEarth/"+filename); 
+        
+
     for (int j = 1; j <= diff->GetYaxis()->GetNbins(); ++j)
     {
+        
         azi=diff->GetYaxis()->GetBinCenter(j);
-        std::cout << " Bin check "  <<diff->GetYaxis()->GetBinWidth(j) << std::endl;
-        
-        std::string filename = "dNTrue"+std::to_string(int(azi))+".csv";
-        std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/3DEarth/"+filename); 
-        
+
         for (int i = 1; i <= diff->GetXaxis()->GetNbins(); ++i)
         {
             cth=diff->GetXaxis()->GetBinCenter(i);
@@ -177,14 +181,16 @@ void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff)
 
                 diff->SetBinContent(i,j,k,dN);
 
-                TrueDiffFile << azi << " , " <<  cth  << " , " << e << " , " << dN << std::endl;
+                //std::cout<< diff->GetYaxis()->GetNbins() << " " << azi << " , " <<  cth  << " , " << e << " , " << dN << std::endl;
+
+                TrueDiffFile << cth << " , " <<  azi  << " , " << e << " , " << dN << std::endl;
 
             }
         }
         
-    TrueDiffFile.close();
     }
 
+    TrueDiffFile.close();
 }
 
 void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)

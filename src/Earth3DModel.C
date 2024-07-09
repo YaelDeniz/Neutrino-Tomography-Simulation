@@ -77,10 +77,13 @@ void Earth3DModel::SetDirection(double cth , double phi ) //Set Neutrino Directi
 
 //Define if LLVP exist
 
-void Earth3DModel::SetPile( bool value , std::string shape) // Activate the Pile in the model (LLVPs)
+void Earth3DModel::SetPile( bool value , std::string shape, double density, double zoa) // Activate the Pile in the model (LLVPs)
 { 
   Pile = value; // Presence of Pile
   PileShape = shape; //Pile shape: "pancake" or "cake"
+  PileDensityContrats = density;
+  PileZoAContrats = zoa;
+
 } 
 
 
@@ -901,7 +904,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
 
   std::cout << o[0] << " " << o[1] << " " << o[2] << std::endl;
-  std::cout << xo << " " << yo << " " << zo << "R: " << sqrt(xo*xo + yo*yo + zo*zo) <<std::endl;
+  std::cout << xo << " " << yo << " " << zo << " Neutrino comming from Atm(6386): " << sqrt(xo*xo + yo*yo + zo*zo) << " Detector location: " << sqrt( o[0]*o[0] + o[1]*o[1] + o[2]*o[2] ) <<std::endl;
 
   TPolyLine3D *l2 = new TPolyLine3D(); // Lines that represent neutrino Paths.
   

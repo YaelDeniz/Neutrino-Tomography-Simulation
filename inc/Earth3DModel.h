@@ -50,7 +50,7 @@ class Earth3DModel
   double PileDensityContrats = 2; // 2% more dense
   double PileZoAContrats = 0.0; // 0% Chemical difference
 
-  void SetPile( bool value, std::string shape ); // Activate the LLVPs
+  void SetPile( bool value, std::string shape, double density, double zoa ); // Activate the LLVPs
   void CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix);
   void CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix );
 

@@ -119,16 +119,17 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
 //Honda flux distribution-----------------------------------------------------------------------------------------------------
 
-    NuFlux SPflux;
-
-    std::vector< std::vector<double> > FluxData = SPflux.SetFluxData();
+   NuFlux HondaFlux;
+    HondaFlux.MediterraneanSeaFlux(); // Gran Sasso
+    //HondaFlux.SouthPoleFlux(); 
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaFlux.FluxFileName);
 
     //Matrix for Histogram & Histogram Draw
 
-    TH2D* muflux =  SPflux.GetFluxHist(1,FluxData); //MuFlux
-    TH2D* mubflux =  SPflux.GetFluxHist(2,FluxData); //MuBarFlux
-    TH2D* eflux =  SPflux.GetFluxHist(3,FluxData); //EFlux
-    TH2D* ebflux =  SPflux.GetFluxHist(4,FluxData); //EBarFlux
+    TH2D* muflux =  HondaFlux.GetFluxHist(1,FluxData); //MuFlux
+    TH2D* mubflux =  HondaFlux.GetFluxHist(2,FluxData); //MuBarFlux
+    TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData); //EFlux
+    TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); //EBarFlux
 
 //Set earth model -------------------------------------------------------------------------------------------------------------
     
@@ -136,9 +137,9 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
      MyEarthModel.SetModel(PremFile);
 
-     MyEarthModel.SetPile( MantleAnomaly, AnomalyShape );
+     MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
 
-     MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrats);
+     MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
 
 //Event Calculation
     
@@ -233,8 +234,9 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
                 //double Ri_nubar = XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
 
                 //Events at bin
-                double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi;
-                //double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dth*dphi;
+                //double N_ijk = (Ri_nu + Ri_nubar); //Rates
+                double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi; //Binning in cth
+                //double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dth*dphi; //Binning in th
 
                 TrueHist->SetBinContent(i,j,k, N_ijk); //Create histogram for  kth Pseudo-Experimens
 
@@ -310,16 +312,17 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 
 //Honda flux distribution-----------------------------------------------------------------------------------------------------
 
-    NuFlux SPflux;
-
-    std::vector< std::vector<double> > FluxData = SPflux.SetFluxData();
+    NuFlux HondaFlux;
+    HondaFlux.MediterraneanSeaFlux(); // Gran Sasso
+    //HondaFlux.SouthPoleFlux(); 
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaFlux.FluxFileName);
 
     //Matrix for Histogram & Histogram Draw
 
-    TH2D* muflux =  SPflux.GetFluxHist(1,FluxData); //MuFlux
-    TH2D* mubflux =  SPflux.GetFluxHist(2,FluxData); //MuBarFlux
-    TH2D* eflux =  SPflux.GetFluxHist(3,FluxData); //EFlux
-    TH2D* ebflux =  SPflux.GetFluxHist(4,FluxData); //EBarFlux
+    TH2D* muflux =  HondaFlux.GetFluxHist(1,FluxData); //MuFlux
+    TH2D* mubflux =  HondaFlux.GetFluxHist(2,FluxData); //MuBarFlux
+    TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData); //EFlux
+    TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); //EBarFlux
 
 //Set earth model -------------------------------------------------------------------------------------------------------------
     
@@ -327,9 +330,9 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 
      MyEarthModel.SetModel(PremFile);
 
-     MyEarthModel.SetPile( MantleAnomaly, AnomalyShape );
+    MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
 
-     MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrats);
+     MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
     
      
      //std::string model = "/home/dehy0499/OscProb/PremTables/"+PremFile;
@@ -544,16 +547,18 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
 
 //Honda flux distribution-----------------------------------------------------------------------------------------------------
 
-    NuFlux SPflux;
-
-    std::vector< std::vector<double> > FluxData = SPflux.SetFluxData();
+    NuFlux HondaFlux;
+    HondaFlux.MediterraneanSeaFlux(); // Gran Sasso
+    //HondaFlux.SouthPoleFlux(); 
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaFlux.FluxFileName);
 
     //Matrix for Histogram & Histogram Draw
 
-    TH2D* muflux =  SPflux.GetFluxHist(1,FluxData); //MuFlux
-    TH2D* mubflux =  SPflux.GetFluxHist(2,FluxData); //MuBarFlux
-    TH2D* eflux =  SPflux.GetFluxHist(3,FluxData); //EFlux
-    TH2D* ebflux =  SPflux.GetFluxHist(4,FluxData); //EBarFlux
+    TH2D* muflux =  HondaFlux.GetFluxHist(1,FluxData); //MuFlux
+    TH2D* mubflux =  HondaFlux.GetFluxHist(2,FluxData); //MuBarFlux
+    TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData); //EFlux
+    TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); //EBarFlux
+
 
 
     // Atmospheric Neutrino Flux data:
@@ -607,7 +612,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
 
      MyEarthModel.SetModel(PremFile);
 
-     MyEarthModel.SetPile( MantleAnomaly, AnomalyShape );
+     MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
 
      //MyEarthModel.WhichLayersLLVPs = AnomalousLayers;
 
@@ -754,7 +759,6 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
                 //double N_ik = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi; //Binning in cos(th)
                 //double N_ik = NnT*(Ri_nu + Ri_nubar)*dE*(-sin(th)*dth)*dphi;  //Binning in th
                 double N_ik = NnT*(Ri_nu + Ri_nubar)*dE*(dth)*dphi;  //Binning in th
-
 
                 //double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dth*dphi;
 

@@ -24,13 +24,15 @@ class AsimovSimulation
     std::string PremModel="prem_44layers";
     bool MantleAnomaly = false;
     std::string AnomalyShape ="pancake";
+    double PileDensityContrast = 2.0;
+    double PileChemContrast = 0.0;
     //std::vector<int> AnomalousLayers;
 
     //Modify specific Layers
 
     int PremTableNumber = 44 ;
     double DensityContrast = 0 ;
-    double ChemicalContrats = 0 ;
+    double ChemicalContrast = 0 ;
 
     //Neutrino Settings
     int flvf;
@@ -55,7 +57,7 @@ class AsimovSimulation
 
         PremTableNumber = n; // Index of layer
         DensityContrast = rhopct; // Density percentage difference
-        ChemicalContrats= zoapct; // zoa(compositional) perctengae differnce
+        ChemicalContrast = zoapct; // zoa(compositional) perctengae differnce
 
     }
 

@@ -40,7 +40,7 @@ class NuFlux
     double Enu_max= 100.0;
 
     //Detector Locations
-    std::string  DetLoc= "South Pole";
+     std::string  FluxFileName="/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d"; //Default is in the SouthPole
 
     bool DataHeader (const std::string &aline); // Get data into tabular form but ignore Headers from file
 
@@ -49,8 +49,20 @@ class NuFlux
     // By default we use South Pole Flux with Sol Min
 
     //std::string FileName = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d";
-    
-    std::vector< std::vector<double> > SetFluxData( std::string nuFluxFile = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d" );
+
+
+    std::vector< std::vector<double> > SetFluxData( std::string nuFluxFile  );
+
+
+    void SouthPoleFlux()
+    {
+        FluxFileName = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d";
+    }
+
+    void MediterraneanSeaFlux()
+    {
+        FluxFileName = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/GRN_AziAveraged_solmin/grn-nu-20-01-000.d";
+    }
     
     TH2D*GetFluxHist(int flavor, std::vector<std::vector<double>> FluxData); // Create 2D Histogram
 

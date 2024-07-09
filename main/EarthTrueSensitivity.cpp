@@ -89,14 +89,14 @@ int main(int argc, char **argv)
 
     std::string chi2directory = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/chi2results/chi2true/";
 
-    ofstream EarthChi2(chi2directory+"chi2Earth"+std::to_string(int(pct))+"pct"+std::to_string(int(EnuMax))+std::to_string(int(EnuMax))+".csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    ofstream EarthChi2(chi2directory+"chi2Earth425_"+std::to_string(int(pct))+"pct"+std::to_string(int(EnuMax))+std::to_string(int(EnuMax))+".csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
     double chi2 = 0;
 
     //Event generation-----------------------------------------------------------------------------------------
     int nuflv = 1; // neutrino  final state options nue (0), numu (1) or nutau (2)
     
-    std::string PremName = "prem_44layers";
+    std::string PremName = "prem_425layers";
     
     // Standard Earth model
 
