@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     //Event generation-----------------------------------------------------------------------------------------
     int nuflv = 1; // neutrino  final state options nue (0), numu (1) or nutau (2)
     
-    std::string PremName = "prem_425layers";
+    std::string PremName = "prem_44layers";
 
     ofstream EarthChi2(chi2directory+"chi2_"+PremName+std::to_string(int(EnuMax))+std::to_string(int(EnuMax))+".csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
@@ -120,9 +120,9 @@ int main(int argc, char **argv)
     // Alternative Earth Model
 
 
-    int TotalLayers = 425;
+    int TotalLayers = 44;
 
-    double pct[3] = {3.0, 5.0, 10.0};
+    double pct[3] = {3.0,5.0,10.0};
    
     AsimovSimulation AlternativeEarth;
 
@@ -133,8 +133,9 @@ int main(int argc, char **argv)
     {
         for (int i = 1; i <= TotalLayers; i++)
         {
+            std::string PremAltName = PremName + "_" + std::to_string(i);
 
-           AlternativeEarth.PremModel = PremName;
+           AlternativeEarth.PremModel = PremAltName;
            //AlternativeEarth.MantleAnomaly = false;
            //AlternativeEarth.AnomalyShape="pancake";
            AlternativeEarth.ModifyLayer(i,pct[j],0.0);
@@ -144,6 +145,7 @@ int main(int argc, char **argv)
            AlternativeEarth.flvf=nuflv;
 
            TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
+           //TH2D * TrueAlt= AlternativeEarth.SensitivityTrueEvents2D( i, pct[j] );
            //TH2D * TrueAlt = AlternativeEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_llsvp.txt");
 
            chi2 = Get2DChi2( TrueStd, TrueAlt);

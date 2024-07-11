@@ -41,7 +41,7 @@ int main(int argc, char **argv)
   double zenmin = 180-TMath::ASin( DepthMax/Rocean )*(180.0/TMath::Pi()) ; // min 90
   double zenmax = 180-TMath::ASin( (DepthMin)/Rocean )*(180.0/TMath::Pi()) ; // max 180
 
-  double th = (zenmax+zenmin)/2.0;
+  double th = 0.0;
 
   double cth = cos(th*TMath::Pi()/180.0);
 
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 
   test.SetDirection(cth, phi);
   
-  test.SetPile( true, "pancake", 2.0, 0.0);
+  test.SetPile( true, "cake", 2.0, 0.0);
 
   test.SetLayerProp(23,0.0,0.0);
   

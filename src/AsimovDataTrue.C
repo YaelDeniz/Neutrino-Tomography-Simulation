@@ -448,6 +448,228 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
     return TrueHist;
 }
 
+std::vector< std::vector<double> > AsimovSimulation::GetPremMatrix( std::string PREM_MODEL  )
+{
+   std::string PREM_PATH = "/home/dehy0499/OscProb/PremTables/"+PREM_MODEL;
+
+   std::vector< std::vector<double> > PremMatrix; // Matrix data  form of Prem tables
+
+   std::vector<double> PremRow(4);               // PremRow = [radius density z/a, layer ID]
+
+   double radius, density, zoa, layer; // Variables for storing Prem table values
+
+   std::ifstream PREM_DATA;
+
+   PREM_DATA.open(PREM_PATH);
+
+      // Loop over table rows
+   while(PREM_DATA >> radius >> density >> zoa >> layer)
+   {
+
+      PremRow[0] = radius;
+      PremRow[1] = density;
+      PremRow[2] = zoa;
+      PremRow[3] = layer;
+
+      PremMatrix.push_back(PremRow);
+    }
+
+   return PremMatrix;
+}
+
+
+TH2D* AsimovSimulation::SensitivityTrueEvents2D( int n, double pct ) //To be Deleted
+{  
+    std::cout << "********************************************************************************************************************************************OscProb "<< PremModel << std::endl;
+    int layer = n - 1;
+    std::cout << "2D Simulation of True events assuming Asimov data set" << std::endl;
+
+    std::string PremFile = PremModel+".txt";
+
+
+    //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
+
+    //Energy Intervals
+    double Emin      = EnuMin;//Lower limit for Energy
+    double Emax      = EnuMax;//Upper limit for Energy
+
+    //Angular Intervals
+
+    //Zenith (given  in degrees -> transformed to radians)
+    double thmin = ZenMin*TMath::Pi()/180; //[min pi/2]
+    double thmax = ZenMax*TMath::Pi()/180;  //[max pi]
+
+    double cthmin = cos(thmax); //min cth = -1 
+    double cthmax = cos(thmin); // max cth = 0
+
+    //Azimuth (given  in degrees -> transformed to radians)
+    double phimin = AziMin*TMath::Pi()/180; //[min 0]
+    double phimax = AziMax*TMath::Pi()/180;  //[max 2pi]
+    double dphi = phimax - phimin;
+
+    //Bins
+    int ibins = nbinsZen; //Bins in Zenith
+    int jbins = nbinsAzi; //Bins in Azimuth
+    int kbins = nbinsE;   //Bins in Energy
+
+    double N_ik = 0   ;   //Poisson mean for bin ik.
+
+//Histrogram--------------------------------------------------------------------------------------------------------------------
+
+     TH2D * TrueHist = new TH2D("TrueHist","True Event Histrogram", ibins,cthmin,cthmax,kbins,Emin,Emax); //binning in cth 
+    
+//Neutrino event generation-----------------------------------------------------------------------------------------
+
+    // Neutrino final flavour
+    int nue        = 0;  // electron neutrino  
+    int numu       = 1; // muon neutrino
+
+    // Particle type
+    int nu         = 1; //neutrino
+    int nubar      = -1; //antineutrino
+
+//Neutrino Oscillation Probabilities calculation--------------------------------------------------------------------
+    OscProb::PMNS_Fast PMNS_H; // Create PMNS objects
+
+    PMNS_H.SetStdPars(); // Set PDG 3-flavor parameters
+
+//Honda flux distribution-----------------------------------------------------------------------------------------------------
+
+    NuFlux HondaFlux;
+    HondaFlux.MediterraneanSeaFlux(); // Gran Sasso
+    //HondaFlux.SouthPoleFlux(); 
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaFlux.FluxFileName);
+
+    //Matrix for Histogram & Histogram Draw
+
+    TH2D* muflux =  HondaFlux.GetFluxHist(1,FluxData); //MuFlux
+    TH2D* mubflux =  HondaFlux.GetFluxHist(2,FluxData); //MuBarFlux
+    TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData); //EFlux
+    TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); //EBarFlux
+
+//Set earth model -------------------------------------------------------------------------------------------------------------
+    
+ //    Earth3DModel MyEarthModel;
+
+ //    MyEarthModel.SetModel(PremFile);
+
+ //  MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
+
+ //    MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
+    
+     //std::vector< std::vector<double> > PremData = GetPremMatrix( PremFile );
+
+     std::string model = "/home/dehy0499/OscProb/PremTables/"+PremFile;
+
+     OscProb::PremModel prem(model);
+    
+//Event Calculation
+    
+    double l,d,z,ly;
+
+        double phi = 0.0; //< This will defined a constant L for different values of ct provided Dct is Small
+    
+        for(int i=1; i<= ibins ; i++) //Loop in Zenith
+        {    
+
+            // Get cos(eta) from bin center, This is used to calculate the baseline.
+
+            double cth  = TrueHist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+            double dcth = TrueHist -> GetXaxis()->GetBinWidth(i);
+
+            if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
+          
+          /*  
+            MyEarthModel.SetDirection(cth,phi); 
+
+            std::vector<std::vector<double>> EarthPath = MyEarthModel.Create3DPath();
+
+            l = EarthPath[0][0];
+            d = EarthPath[0][1];
+            z = EarthPath[0][2];
+            //ly =  PathMatrix[0][3]; 
+            
+            PMNS_H.SetPath(l,d,z);
+            
+           
+            for (int i = 1; i < EarthPath.size(); i++) 
+            { 
+        
+                l = EarthPath[i][0];
+                d = EarthPath[i][1];
+                z = EarthPath[i][2];
+               // ly =  PathMatrix[i][3]; 
+                
+                PMNS_H.AddPath(l,d,z);
+            
+            } 
+            
+        */
+            prem.FillPath(cth); // Fill paths from PREM model
+
+            PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
+            
+            for (int k = 1; k <=kbins; ++k)
+            { 
+                double e = TrueHist->GetYaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
+                double dE = TrueHist->GetYaxis()->GetBinWidth(k);
+                double logEi = log10(e);
+                
+                //Neutrino Flux interpolation
+
+                 double logdPsiMu = muflux->Interpolate(logEi,cth);
+                 double logdPsiMub = mubflux->Interpolate(logEi,cth);
+                 double logdPsiE = eflux->Interpolate(logEi,cth);
+                 double logdPsiEb = ebflux->Interpolate(logEi,cth);
+
+                //Evaluate differential Flux
+                 double dPsiMudEdct = pow(10,logdPsiMu);     //Muon neutrino flux
+                 double dPsiMubardEdct = pow(10,logdPsiMub); //Muon anti-neutrino flux
+                 double dPsiEdEdct = pow(10,logdPsiE);        //Electron neutrino flux
+                 double dPsiEbardEdct = pow(10,logdPsiEb);    //Electron anti-neutrino flux
+
+
+                //Neutrino Contribution;
+
+                PMNS_H.SetIsNuBar(false); 
+
+
+                double Ri_e = XSec(e,nu)*( PMNS_H.Prob(nue,flvf,e)*dPsiEdEdct); //Electron neutrino contribution
+
+                double  Ri_mu = XSec(e,nu)*(PMNS_H.Prob(numu, flvf, e)*dPsiMudEdct); //Muon neutrino contribution  
+                
+                double Ri_nu = Ri_e + Ri_mu;
+
+                //double Ri_nu = XSec(e,nu)*( PMNS_H.Prob(numu, flvf, e)*dPsiMudE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEdE.Eval(e) );
+                
+                //Antineutrino contribution
+                PMNS_H.SetIsNuBar(true); 
+
+                double Ri_eb=XSec(e,nubar)*(PMNS_H.Prob(nue,flvf,e)*dPsiEbardEdct ); //Electron anti-neutrino contribution
+
+                double Ri_mub=XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardEdct ); //Muon anti-neutrino contribution
+
+                double Ri_nubar = Ri_eb + Ri_mub;
+
+                
+
+                //double Ri_nubar = XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
+
+                //Events at bin
+                //double N_ik = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi; //Binning in cos(th)
+                //double N_ik = NnT*(Ri_nu + Ri_nubar)*dE*(-sin(th)*dth)*dphi;  //Binning in th
+                
+                N_ik = NnT*(Ri_nu + Ri_nubar)*dE*(dcth)*dphi;  //Binning in th
+            
+                TrueHist->SetBinContent(i,k, N_ik); //Create histogram for  kth Pseudo-Experimens
+
+            } // loop energy
+
+        } // Loop zenith
+   
+    return TrueHist;
+}
+
 
 
 TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string model_alt)

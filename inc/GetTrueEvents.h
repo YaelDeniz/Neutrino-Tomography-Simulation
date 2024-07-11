@@ -114,7 +114,11 @@ class AsimovSimulation
 
     TH2D * GetTrueEvents2D(); //Azimuth independet
 
+    TH2D * SensitivityTrueEvents2D( int n, double pct ); //To be Del
+
     TH2D * TestTrueEvents2D(std::string model_std , std::string model_alt);
+
+    std::vector< std::vector<double> > GetPremMatrix( std::string PREM_MODEL  );
 
 
 
