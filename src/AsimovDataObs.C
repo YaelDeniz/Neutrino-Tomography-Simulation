@@ -114,7 +114,7 @@ double AsimovObsSimulation::PDFcth(double cthreco, double Etrue, double cthtrue)
 
     return norm * expo * bess * sin_z;} //Von Mises Fisher
 
-TH2D*  GetObsEvents2D(){  
+TH2D*  GetObsEvents2Dcth(){  
 
     std::cout << "Asimov Approach Simulation for Observed Events" << std::endl;
     std::string PremFile = PremModel+".txt";    
@@ -145,7 +145,7 @@ TH2D*  GetObsEvents2D(){
     int kbins = truebinsE; // Number of  energy bins of True event distribution
     
     //True Energy[GeV]
-    TF1 *fmin = new TF1("fmin","-1*x + [0]-4*( [1]*x+[2]*sqrt(x) )", 0, 100);
+    TF1 *fmin = new TF1("fmin","-1*x + [0] -4*( [1]*x+[2]*sqrt(x) )", 0, 100);
     fmin->SetParameter(0,ErecoMin);
     fmin->SetParameter(1,Ae);
     fmin->SetParameter(2,Be);
@@ -164,7 +164,7 @@ TH2D*  GetObsEvents2D(){
 
     //True Angle-
     double thtrueMin_a= (threcoMin)-4*(Ath + Bth/sqrt(EtrueMin));
-    double thtrueMin_b= 0;
+    double thtrueMin_b= 90.001*TMath::Pi()/180.0;
 
     double thtrueMax_a= (threcoMax)+4*(Ath + Bth/sqrt(EtrueMin));
     double thtrueMax_b= TMath::Pi();
@@ -254,7 +254,7 @@ TH2D*  GetObsEvents2D(){
    return RecoHist;}
 
 
-TH2D*  GetObsEvents2D(){  
+TH2D*  GetObsEvents2Dth(){  
 
     std::cout << "Asimov Approach Simulation for Observed Events" << std::endl;
     std::string PremFile = PremModel+".txt";    
@@ -465,8 +465,7 @@ TH2D*  GetObsEvents2D(){
 
    return RecoHist;}
 
-TH2D*  OriginalApproach(std::string modelname, int flvf, double Region[], int Bins[],double Det_par[], double NnT)
-{   
+TH2D*  OriginalApproach(std::string modelname, int flvf, double Region[], int Bins[],double Det_par[], double NnT){   
     std::cout << "Generating Asimov data set: Reimann Integration + Extended region" << std::endl;
     //Data Storage -----------------------------------------------------------------------------------------------------
     std::string model = "/home/dehy0499/OscProb/PremTables/"+modelname+".txt";
@@ -856,8 +855,7 @@ TH2D*  OriginalApproach(std::string modelname, int flvf, double Region[], int Bi
    delete HF;
    
 
-   return hObs;
-}
+   return hObs;}
 
 
 //double w_E(double a_E, double E , std::vector<double> eo, double E_GeV[] ) 
