@@ -61,8 +61,7 @@ void AsimovObsSimulation::SetEnergyResolution(double A, double B){
 double AsimovObsSimulation::PDFE(double Ereco , double Etrue ) {
     double SigmaE = Ae*Etrue +Be*sqrt(Etrue); //Detector Energy Resolution
     double pdfe = ROOT::Math::gaussian_pdf( Ereco, SigmaE, Etrue) ;
-    return pdfe; }
-
+    return pdfe; } //Gaussian Distribution
 
 //Angular (Zenith only) Resolution Parameters
 void AsimovObsSimulation::SetAngularResolution(double A, double B){
@@ -73,7 +72,47 @@ void AsimovObsSimulation::SetAngularResolution(double A, double B){
 double AsimovObsSimulation::PDFth(double thReco, double Etrue, double thTrue){
     double Sigmath = Ath + Bth/(sqrt(Etrue)); //Detector Angular Resolution
     double pdfth = ROOT::Math::gaussian_pdf( thReco, Sigmath, thTrue) ;
-    return pdfth; }
+    return pdfth; } //Gaussian Distribution
+
+double AsimovObsSimulation::PDFcth(double cthreco, double Etrue, double cthtrue){
+
+    /// @param sigma - std. dev. in radians. Angular resolution
+    /// kappa = 1/sigma^2 - VMF concentrarion parameter. 
+
+    double sigmath = Ath + Bth/(sqrt(Etrue)); // Angular resolution in radians
+
+    double cos_z = cthreco;
+    double cos_z0 = cthtrue;
+
+    double sin_z = sqrt(1 - pow(cos_z, 2));
+    double sin_z0 = sqrt(1 - pow(cos_z0, 2));
+
+    double kappa = 1/(sigmath*sigmath);
+
+    double exp_arg = kappa * cos_z * cos_z0;
+
+    double norm = kappa;
+    
+    if (kappa < 50)
+        norm /= 2 * sinh(kappa);
+    else
+        exp_arg -= kappa;
+
+    double arg = kappa * sin_z * sin_z0;
+    double bess = 1;
+    if (arg < 50)
+        bess = TMath::BesselI0(arg);
+    else 
+    {
+        exp_arg += arg;
+        bess *=
+            (1 + 1. / (8 * arg) + 4.5 / pow(8 * arg, 2) + 37.5 / pow(8 * arg, 3));
+        bess /= sqrt(2 * M_PI * arg);
+    }
+
+    double expo = exp(exp_arg);
+
+    return norm * expo * bess * sin_z;} //Von Mises Fisher
 
 TH2D*  GetObsEvents2D(){  
 
@@ -194,8 +233,8 @@ TH2D*  GetObsEvents2D(){
 
                     double NikTrue = TrueHist->GetBinContente(i,k);
 
-                    double dEdcthReco =dEreco*(dcthreco/(-sin(threco)));
-                    double Nsmear += PDFth(threco,Etrue,thtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdcthReco);
+                    double dEdcthReco = dEreco*dcthreco;
+                    double Nsmear += PDFcth(cthreco,Etrue,cthtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdcthReco);
     
                 } // loop e
 
@@ -822,7 +861,7 @@ TH2D*  OriginalApproach(std::string modelname, int flvf, double Region[], int Bi
 
 
 //double w_E(double a_E, double E , std::vector<double> eo, double E_GeV[] ) 
-
+/*
 double PDF_energy(double e_o , double e, double a_e ) 
 {
 
@@ -853,3 +892,4 @@ return pdf_angle;
 
 
 }
+*/

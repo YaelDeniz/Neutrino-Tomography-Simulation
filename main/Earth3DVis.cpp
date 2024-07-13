@@ -41,7 +41,7 @@ int main(int argc, char **argv)
   double zenmin = 180-TMath::ASin( DepthMax/Rocean )*(180.0/TMath::Pi()) ; // min 90
   double zenmax = 180-TMath::ASin( (DepthMin)/Rocean )*(180.0/TMath::Pi()) ; // max 180
 
-  double th = 0.0;
+  double th = 180-90.01;
 
   double cth = cos(th*TMath::Pi()/180.0);
 
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < paths.size() ; ++i)
   {
     
-    std::cout << i << " " <<paths[i].length-EarthPath[i][0]<< " " << paths[i].density-EarthPath[i][1] << " " << paths[i].zoa << std::endl;
+    std::cout << i << " " <<paths[i].length<< " " << paths[i].density<< " " << paths[i].zoa << std::endl;
 
   }
 

@@ -77,19 +77,14 @@ void Earth3DModel::SetDirection(double cth , double phi ) //Set Neutrino Directi
 
 //Define if LLVP exist
 
-void Earth3DModel::SetPile( bool value , std::string shape, double density, double zoa) // Activate the Pile in the model (LLVPs)
-{ 
-  Pile = value; // Presence of Pile
+void Earth3DModel::SetPile( bool value , std::string shape, double density, double zoa){ Pile = value; // Presence of Pile
   PileShape = shape; //Pile shape: "pancake" or "cake"
   PileDensityContrats = density;
-  PileZoAContrats = zoa;
-
-} 
+  PileZoAContrats = zoa;} 
 
 
 // Create a matrix from PremTables
-std::vector< std::vector<double> > Earth3DModel::GetPremData( std::string PREM_MODEL  )
-{
+std::vector< std::vector<double> > Earth3DModel::GetPremData( std::string PREM_MODEL  ){
    std::string PREM_PATH = "/home/dehy0499/OscProb/PremTables/"+PREM_MODEL;
 
    std::vector< std::vector<double> > PremMatrix; // Matrix data  form of Prem tables
@@ -114,35 +109,27 @@ std::vector< std::vector<double> > Earth3DModel::GetPremData( std::string PREM_M
       PremMatrix.push_back(PremRow);
     }
 
-   return PremMatrix;
-}
+   return PremMatrix;}
 
 //Modify Specific Layers of the Earth
 
-void Earth3DModel::SetLayerProp(int LayerNumber, double DensityContrats, double ChemicalContrats) 
-{ 
+void Earth3DModel::SetLayerProp(int LayerNumber, double DensityContrats, double ChemicalContrats) { 
 
   PremRow     = LayerNumber-1;
   LayerDensityContrats   = DensityContrats;  
-  LayerZoAContrats   = ChemicalContrats;
+  LayerZoAContrats   = ChemicalContrats;}
 
-}
-
-std::vector< std::vector<double> > Earth3DModel::ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix)
-{
+std::vector< std::vector<double> > Earth3DModel::ChangeLayerProp(std::vector< std::vector<double> > EarthMatrix){
  
   EarthMatrix[PremRow][1] = (1.0 + LayerDensityContrats/100.0) * EarthMatrix[PremRow][1];
 
   EarthMatrix[PremRow][2] = (1.0 + LayerZoAContrats/100.0) * EarthMatrix[PremRow][2];
 
-  return EarthMatrix;
-
-}
+  return EarthMatrix;}
 
 //CONSTRUCT LLVP
 
-void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix )
-{
+void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix ){
 
   //Baker----------------------------------------------------------------------------------------------------------------------
   
@@ -277,11 +264,9 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
 
          lowerSegment = RadiusInPile;
       }
-   }
-}
+   }}
 
-void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix )
-{
+void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix ){
 
   //Baker----------------------------------------------------------------------------------------------------------------------
   
@@ -666,15 +651,11 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
          upperSegment = RadiusInTop;
       }
 
-   }
-   
-}
-
+   }}
 
 // CONSTRUCT THE 3D MODEL
 
-std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double phi, std::string MODEL )
-{
+std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double phi, std::string MODEL ){
   //Read Prem Data
 
   gSystem->Load("libGeom");
@@ -939,10 +920,12 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
          if (Dnorm <= 0.0 )  //Passing detector
          {
-
+            std::cout<< "At detector point" << Dnorm << std::endl; 
           break;
          
          }
+
+         else {             std::cout<< "Not at tactical detector point" << Dnorm << std::endl;  }
          
 
          const char *path = gGeoManager->GetPath();
@@ -988,10 +971,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
    EarthCanvas->Update();
 
    std::cout << "***************************world created***************************" << std::endl; 
-   return EarthPath;
-
-
-}
+   return EarthPath;}
 
 // Create LLVP
 

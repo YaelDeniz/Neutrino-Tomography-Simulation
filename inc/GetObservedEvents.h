@@ -58,11 +58,16 @@ class AsimovObsSimulation
 
     void SetEnergyResolution(double A, double B);
 
-	double PDFE(double Ereco , double Etrue );
+	double PDFE(double Ereco , double Etrue );//Gaussian
 
     void SetAngularResolution(double A, double B);
 
-    double PDFth(double thReco, double Etrue, double thTrue);
+    double PDFth(double thReco, double Etrue, double thTrue); //Gaussian
+
+    double PDFcth(double cthreco, double Etrue, double cthtrue); //Von Mises Fisher
+
+
+
 
 
 
