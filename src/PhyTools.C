@@ -79,10 +79,14 @@ std::vector<std::vector<double>> NuFlux::reshape(const std::vector<double>& vec,
 }
 
  
-std::vector< std::vector<double> > NuFlux::SetFluxData( std::string nuFluxFile ) //Converst Honda data into tabular form
+std::vector< std::vector<double> > NuFlux::SetFluxData( std::string FluxTable ) //Converst Honda data into tabular form
 {
 
     //Flux output units: (cm^2 sec sr GeV)^-1
+
+    std::cout << "Interpolating data table from: " << std::endl;
+
+    std::cout << FluxTable << std::endl;
 
 
     std::ifstream HONDA_FLUX;
@@ -92,7 +96,7 @@ std::vector< std::vector<double> > NuFlux::SetFluxData( std::string nuFluxFile )
     //HONDA_FLUX.open("./AziAveraged-solmin/grn-nu-20-01-000.d"); //km3net
 
     
-    HONDA_FLUX.open(nuFluxFile); //ICE CUBE
+    HONDA_FLUX.open(FluxTable); //ICE CUBE
 
     
 

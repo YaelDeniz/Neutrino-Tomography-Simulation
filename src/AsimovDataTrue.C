@@ -34,6 +34,7 @@ All angular variables are in radias
 #include "TTree.h"
 #include "TObjArray.h"
 #include <Math/Interpolator.h>
+#include "TGraph.h"
 //#include "TGraphEventsD.h"
 
 //OSCPROB
@@ -57,18 +58,12 @@ using namespace std;
 //# define MTon  1E9  //Metric MegaTon
 //# define years2sec 3.154E7 // Years in Seconds
 
+#define MyPremTables "/home/dehy0499/OscProb/PremTables/"
+
 // Make oscillogram for given final flavour and MH
 
 TH3D* AsimovSimulation::GetTrueEvents3D()
 {  
-
-   //Information-----------------------------------------------------------------------------------------------------------
-    
-    std::cout << " 3D Simulation of True events assuming Asimov data set" << std::endl;
-
-    std::string PremFile = PremModel+".txt";
-
-    std::cout << PremModel <<std::endl;
 
     //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
 
@@ -119,11 +114,9 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
 //Honda flux distribution-----------------------------------------------------------------------------------------------------
 
-   NuFlux HondaFlux;
-    HondaFlux.MediterraneanSeaFlux(); // Gran Sasso
+    NuFlux HondaFlux;
 
-    //HondaFlux.SouthPoleFlux(); 
-    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaFlux.FluxFileName);
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaTable);
 
     //Matrix for Histogram & Histogram Draw
 
@@ -136,9 +129,9 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
     
      Earth3DModel MyEarthModel;
 
-     //MyEarthModel.SetDetector(Rdet);
+     MyEarthModel.SetModel(PremTable);
 
-     MyEarthModel.SetModel(PremFile);
+     MyEarthModel.SetDetector(Rdet);
 
      MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
 
@@ -262,11 +255,6 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 {  
     
-    std::cout << "2D Simulation of True events assuming Asimov data set" << std::endl;
-
-    std::string PremFile = PremModel+".txt";
-
-
     //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
 
     //Energy Intervals
@@ -316,9 +304,7 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 //Honda flux distribution-----------------------------------------------------------------------------------------------------
 
     NuFlux HondaFlux;
-    HondaFlux.MediterraneanSeaFlux(); // Gran Sasso
-    //HondaFlux.SouthPoleFlux(); 
-    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaFlux.FluxFileName);
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaTable);
 
     //Matrix for Histogram & Histogram Draw
 
@@ -331,9 +317,11 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
     
      Earth3DModel MyEarthModel;
 
-     MyEarthModel.SetModel(PremFile);
+     MyEarthModel.SetModel(PremTable);
 
-    MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
+     MyEarthModel.SetDetector(Rdet);
+
+     MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
 
      MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
     
@@ -342,7 +330,7 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 
      //OscProb::PremModel prem(model);
     
-//Event Calculation
+     //Event Calculation
     
     double l,d,z,ly;
 
@@ -448,9 +436,219 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
     return TrueHist;
 }
 
-std::vector< std::vector<double> > AsimovSimulation::GetPremMatrix( std::string PREM_MODEL  )
+TH2D* AsimovSimulation::GetOscProb2D( int flvi, int flvf, bool nunubar ) //To be Deleted
+{  
+    
+    //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
+
+    //Energy Intervals
+    double Emin      = EnuMin;//Lower limit for Energy
+    double Emax      = EnuMax;//Upper limit for Energy
+
+    //Angular Intervals
+
+    //Zenith (given  in degrees -> transformed to radians)
+    double thmin = ZenMin*TMath::Pi()/180; //[min pi/2]
+    double thmax = ZenMax*TMath::Pi()/180;  //[max pi]
+
+    double cthmin = cos(thmax); //min cth = -1 
+    double cthmax = cos(thmin); // max cth = 0
+
+    //Azimuth (given  in degrees -> transformed to radians)
+    double phimin = AziMin*TMath::Pi()/180; //[min 0]
+    double phimax = AziMax*TMath::Pi()/180;  //[max 2pi]
+    
+
+    //Bins
+    int ibins = nbinsZen; //Bins in Zenith
+    int jbins = nbinsAzi; //Bins in Azimuth
+    int kbins = nbinsE;   //Bins in Energy
+
+//Histrogram--------------------------------------------------------------------------------------------------------------------
+
+     TH2D * ProbHist = new TH2D("ProbHist","Probabilities of Neutrinos Oscillation inside the Earth", ibins,cthmin,cthmax,kbins,Emin,Emax); //binning in cth 
+    
+//Neutrino Oscillation Probabilities calculation--------------------------------------------------------------------
+    OscProb::PMNS_Fast PMNS_H; // Create PMNS objects
+
+    PMNS_H.SetStdPars(); // Set PDG 3-flavor parameters
+
+//Set earth model -------------------------------------------------------------------------------------------------------------
+    
+    Earth3DModel MyEarthModel;
+
+    MyEarthModel.SetModel(PremTable);
+
+    MyEarthModel.SetDetector(Rdet);
+
+    MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
+
+    MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
+    
+    OscProb::PremModel prem(PremTable);
+    
+//Event Calculation
+    
+    double l,d,z,ly;
+
+    double phi = 0.0; //< This will defined a constant L for different values of ct provided Dct is Small
+    
+    for(int i=1; i<= ibins ; i++) //Loop in Zenith
+    {    
+
+        // Get cos(eta) from bin center, This is used to calculate the baseline.
+
+        double cth  = ProbHist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+        double dcth = ProbHist -> GetXaxis()->GetBinWidth(i);
+
+        if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
+
+            
+        MyEarthModel.SetDirection(cth,phi); 
+
+        std::vector<std::vector<double>> EarthPath = MyEarthModel.Create3DPath();
+
+        l = EarthPath[0][0];
+        d = EarthPath[0][1];
+        z = EarthPath[0][2];
+        //ly =  PathMatrix[0][3]; 
+            
+        PMNS_H.SetPath(l,d,z);
+            
+           
+        for (int i = 1; i < EarthPath.size(); i++) 
+        { 
+        
+            l = EarthPath[i][0];
+            d = EarthPath[i][1];
+            z = EarthPath[i][2];
+           // ly =  PathMatrix[i][3]; 
+            
+            PMNS_H.AddPath(l,d,z);
+            
+        } 
+            
+
+
+        prem.FillPath(cth); // Fill paths from PREM model
+
+        std::vector<OscProb::NuPath> paths = prem.GetNuPath();
+
+   //     PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
+            
+            for (int k = 1; k <=kbins; ++k)
+            { 
+                double e = ProbHist->GetYaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
+
+                PMNS_H.SetIsNuBar(nunubar); 
+
+                double  Pab = PMNS_H.Prob(flvi, flvf, e); //Muon neutrino contribution  
+                
+                ProbHist->SetBinContent(i,k, Pab); //Create histogram for  kth Pseudo-Experimens
+
+            } // loop energy
+
+            std::vector<OscProb::NuPath> CheckPath = PMNS_H.GetPath();
+
+            std::cout << "Check if Paths are being filled correctly" << CheckPath.size() - paths.size() <<  std::endl;
+
+            PMNS_H.ClearPath();
+
+        } // Loop zenith
+   
+    return ProbHist;
+}
+
+TGraph * AsimovSimulation::GetOscProb( int flvi, int flvf, bool nunubar, double cth ) //To be Deleted
+{  
+    
+    //Energy Intervals
+    double Emin      = EnuMin;//Lower limit for Energy
+    double Emax      = EnuMax;//Upper limit for Energy
+    int n = 1000;   //Bins in Energy
+    
+//Neutrino Oscillation Probabilities calculation--------------------------------------------------------------------
+    OscProb::PMNS_Fast PMNS_H; // Create PMNS objects
+
+    PMNS_H.SetStdPars(); // Set PDG 3-flavor parameters
+
+
+///----------------
+
+    NuFlux HondaFlux;
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaTable);
+
+//Set earth model -------------------------------------------------------------------------------------------------------------
+    
+        
+
+     std::cout << "3D" << std::endl;
+     Earth3DModel MyEarthModel;
+     MyEarthModel.SetModel(PremTable);
+     MyEarthModel.SetDetector(Rdet);
+     MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
+     MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
+    
+    double l,d,z,ly;
+    double phi = 0.0; //< This will defined a constant L for different values of ct provided Dct is Small    
+    MyEarthModel.SetDirection(cth,phi); 
+    std::vector<std::vector<double>> EarthPath = MyEarthModel.Create3DPath();
+
+    l = EarthPath[0][0];
+    d = EarthPath[0][1];
+    z = EarthPath[0][2];
+    //ly =  PathMatrix[0][3]; 
+        
+    PMNS_H.SetPath(l,d,z);
+    for (int i = 1; i < EarthPath.size(); i++) 
+    { 
+    
+        l = EarthPath[i][0];
+        d = EarthPath[i][1];
+        z = EarthPath[i][2];
+        PMNS_H.AddPath(l,d,z);
+        
+    } 
+    
+    
+    /*
+    std::cout << "OscProb" << std::endl;
+    OscProb::PremModel prem(PremTable);
+    prem.FillPath(cth); // Fill paths from PREM model
+    prem.FillPath(cth); // Fill paths from PREM model
+    PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
+    */
+    PMNS_H.SetIsNuBar(nunubar);
+    
+    //Oscillation Probabilities
+
+    double dE = (Emax-Emin)/1000.0;
+
+    //TH1D * EHist = new TH1D("EHist", "Energy Value", 1000 , Emin, Emax);
+
+    std::cout <<  Emin << " " << Emax <<  std::endl; 
+
+    TGraph * g = new TGraph(1001);
+
+    for (int i = 0; i < 1001; ++i)
+        {
+            //double e=EHist->GetXaxis()->GetBinCenter(i);
+            double E = Emin + i*dE;
+            double pab = PMNS_H.Prob(flvi,flvf,E);
+            g->SetPoint(i,E,pab);
+
+          //  std::cout << E << " " << pab << std::endl;
+            
+        }    
+
+   
+    return g;
+}
+
+
+std::vector< std::vector<double> > AsimovSimulation::GetPremMatrix( std::string path2table )
 {
-   std::string PREM_PATH = "/home/dehy0499/OscProb/PremTables/"+PREM_MODEL;
+   
 
    std::vector< std::vector<double> > PremMatrix; // Matrix data  form of Prem tables
 
@@ -460,7 +658,7 @@ std::vector< std::vector<double> > AsimovSimulation::GetPremMatrix( std::string 
 
    std::ifstream PREM_DATA;
 
-   PREM_DATA.open(PREM_PATH);
+   PREM_DATA.open(path2table);
 
       // Loop over table rows
    while(PREM_DATA >> radius >> density >> zoa >> layer)
@@ -480,12 +678,8 @@ std::vector< std::vector<double> > AsimovSimulation::GetPremMatrix( std::string 
 
 TH2D* AsimovSimulation::SensitivityTrueEvents2D( int n, double pct ) //To be Deleted
 {  
-    std::cout << "********************************************************************************************************************************************OscProb "<< PremModel << std::endl;
     int layer = n - 1;
-    std::cout << "2D Simulation of True events assuming Asimov data set" << std::endl;
-
-    std::string PremFile = PremModel+".txt";
-
+   
 
     //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
 
@@ -536,9 +730,7 @@ TH2D* AsimovSimulation::SensitivityTrueEvents2D( int n, double pct ) //To be Del
 //Honda flux distribution-----------------------------------------------------------------------------------------------------
 
     NuFlux HondaFlux;
-    HondaFlux.MediterraneanSeaFlux(); // Gran Sasso
-    //HondaFlux.SouthPoleFlux(); 
-    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaFlux.FluxFileName);
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaTable);
 
     //Matrix for Histogram & Histogram Draw
 
@@ -551,17 +743,17 @@ TH2D* AsimovSimulation::SensitivityTrueEvents2D( int n, double pct ) //To be Del
     
  //    Earth3DModel MyEarthModel;
 
- //    MyEarthModel.SetModel(PremFile);
+ //    MyEarthModel.SetModel(PremTable);
 
- //  MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
+ //    MyEarthModel.SetDetector(Rdet);
+
+ //    MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
 
  //    MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
     
      //std::vector< std::vector<double> > PremData = GetPremMatrix( PremFile );
 
-     std::string model = "/home/dehy0499/OscProb/PremTables/"+PremFile;
-
-     OscProb::PremModel prem(model);
+     OscProb::PremModel prem(PremTable);
     
 //Event Calculation
     
@@ -671,7 +863,7 @@ TH2D* AsimovSimulation::SensitivityTrueEvents2D( int n, double pct ) //To be Del
 }
 
 
-
+/*
 TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string model_alt)
 {  
 
@@ -750,23 +942,23 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
     OscProb::PMNS_Fast PMNS_H; // Create PMNS objects
     
 
-    /*
+    
     // Get parameters to PDG
-    double dm21 = 7.42e-5;
-    double dm31 = 2.533e-3;
-    double th12 = 33.7712*TMath::Pi()/180;
-    double th13 = 8.588*TMath::Pi()/180;
-    double th23 = 48.504*TMath::Pi()/180;
-    double dcp  = 214.2*TMath::Pi()/180;
+    //double dm21 = 7.42e-5;
+    //double dm31 = 2.533e-3;
+    //double th12 = 33.7712*TMath::Pi()/180;
+    //double th13 = 8.588*TMath::Pi()/180;
+    //double th23 = 48.504*TMath::Pi()/180;
+    //double dcp  = 214.2*TMath::Pi()/180;
 
     // Set PMNS parameters
-    PMNS_H.SetDm(2, dm21);
-    PMNS_H.SetDm(3, dm31);
-    PMNS_H.SetAngle(1,2, th12);
-    PMNS_H.SetAngle(1,3, th13);
-    PMNS_H.SetAngle(2,3, th23);
-    PMNS_H.SetDelta(1,3, dcp);
-    */
+    //PMNS_H.SetDm(2, dm21);
+    //PMNS_H.SetDm(3, dm31);
+    //PMNS_H.SetAngle(1,2, th12);
+    //PMNS_H.SetAngle(1,3, th13);
+    //PMNS_H.SetAngle(2,3, th23);
+    //PMNS_H.SetDelta(1,3, dcp);
+    
     
     PMNS_H.SetStdPars(); // Set PDG 3-flavor parameters
 
@@ -861,10 +1053,9 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
 
             // Get cos(eta) from bin center, This is used to calculate the baseline.
 
-            /*
-            double cth = TrueHist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-            double dcth = TrueHist -> GetXaxis()->GetBinWidth(i);
-            */
+            //double cth = TrueHist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+            //double dcth = TrueHist -> GetXaxis()->GetBinWidth(i);
+            
 
             double th  = TrueHist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
             double cth = cos(th);
@@ -898,8 +1089,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
             
             }
             
-
-            /*
+            
              if (th > thtest ) 
              {
 
@@ -921,10 +1111,7 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
                 PMNS_H.SetPath(prem_alt.GetNuPath()); // Set paths in OscProb  
               }
 
-            */
-
-
-
+           
             
             for (int k = 1; k <=kbins; ++k)
             { 
@@ -941,13 +1128,13 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
                  double logdPsiE = eflux->Interpolate(logEi,cth);
                  double logdPsiEb = ebflux->Interpolate(logEi,cth);
 
-                /*
+                
                  std::cout << "Interpolation of the 2d honda flux "<< std::endl;
                  double dPsiMudEdct = pow(10,logdPsiMu);     //Muon neutrino flux
                  double dPsiMubardEdct = pow(10,logdPsiMub); //Muon anti-neutrino flux
                  double dPsiEdEdct = pow(10,logdPsiE);        //Electron neutrino flux
                  double dPsiEbardEdct = pow(10,logdPsiEb);    //Electron anti-neutrino flux
-                 */
+                 
                  
                  
                  std::cout << "Interpolation of the 1d honda flux "<< std::endl;
@@ -1004,4 +1191,4 @@ TH2D* AsimovSimulation::TestTrueEvents2D(std::string model_std , std::string mod
            
     return TrueHist;
 }
-//
+*/

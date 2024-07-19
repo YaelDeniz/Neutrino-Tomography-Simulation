@@ -10,6 +10,8 @@
 #include "TH2.h"
 #include "TH3.h"
 #include "TObjArray.h"
+#include "TGraph.h"
+
 
 
 using namespace std;
@@ -23,19 +25,28 @@ class AsimovSimulation
     public:
 
     double NnT; //Detector Exposure
-    std::string Detector = "Ocean";
-    double Rdet[3] = {0.0, 0.0, Rearth};
-    std::string flux = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d";
+  
+    
+    double Rdet[3] = {0.0, 0.0, -1.0*Rearth};
+    std::string FluxFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
+    std::string FluxFile = "SP_AziAveraged_solmin/spl-nu-20-01-000.d";
+    std::string HondaTable = FluxFolder + FluxFile; //Class Assumes Sout Pole flux as default
+
     //Earth Settings
-    std::string PremModel="prem_44layers";
+
+    //The Earth model
+    std::string PremFolder = "/home/dehy0499/OscProb/PremTables/";
+    std::string PremName = "prem_44layers.txt";
+    std::string PremTable = PremFolder+PremName;
+ 
+    //The LLVP
     bool MantleAnomaly = false;
     std::string AnomalyShape ="pancake";
     double PileDensityContrast = 2.0;
     double PileChemContrast = 0.0;
-    //std::vector<int> AnomalousLayers;
+    
 
     //Modify specific Layers
-
     int PremTableNumber = 44 ;
     double DensityContrast = 0 ;
     double ChemicalContrast = 0 ;
@@ -56,21 +67,13 @@ class AsimovSimulation
     int nbinsAzi; //Bins in Azimuth
     int nbinsE; //Bins in Energy
 
-    void SetDetector( std::string detector = "SouthPole" )
+    void SetDetectorPosition( double x[3])
     {
 
-        if (detector == "SouthPole" )
-        {
-            Rdet[2] = Rearth; //IceCube
-            flux = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d";
+        Rdet[0] = x[0];
+        Rdet[1] = x[1];
+        Rdet[2] = x[2];
 
-        }
-
-        else if (detector == "Ocean")
-        {
-            Rdet[2] = Rocean; //Km3Net
-            flux = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/GRN_AziAveraged_solmin/grn-nu-20-01-000.d";
-        }
     }
 
 
@@ -114,11 +117,15 @@ class AsimovSimulation
 
     TH2D * GetTrueEvents2D(); //Azimuth independet
 
+    TH2D * GetOscProb2D(int flvi, int flvf, bool nunubar  ); //Azimuth independet
+    
+    TGraph * GetOscProb( int flvi, int flvf, bool nunubar, double cth ); //To be Deleted
+    
     TH2D * SensitivityTrueEvents2D( int n, double pct ); //To be Del
 
-    TH2D * TestTrueEvents2D(std::string model_std , std::string model_alt);
+    //TH2D * TestTrueEvents2D(std::string model_std , std::string model_alt);
 
-    std::vector< std::vector<double> > GetPremMatrix( std::string PREM_MODEL  );
+    std::vector< std::vector<double> > GetPremMatrix( std::string path2table  );
 
 
 

@@ -27,7 +27,7 @@ class Earth3DModel
 
   public:
 
-  std::string filename = "prem_default"; //Prem .txt file from OscProb/PremTables
+  std::string premtable; //Prem .txt file from OscProb/PremTables
   double zenith = TMath::Pi(); //By default it considers a down going neutirno
   double azimuth = 0.0;
   //double Det[3]= {0.0,0.0,-6371.0}; //IceCube site is the Default location
@@ -60,15 +60,15 @@ class Earth3DModel
   //EARTH MODEL 
   TCanvas *EarthCanvas;
 
-  void SetModel(std::string model);
+  void SetModel(std::string path2table);
 
   void SetDetector(double Position[3]);
 
   void SetDirection(double theta , double phi ); 
 
-  std::vector< std::vector<double> > GetPremData( std::string PREM_MODEL = "prem_44layers.txt" ); // Convert prem .txt file into readable  matrix
+  std::vector< std::vector<double> > GetPremData( std::string path2table); // Convert prem .txt file into readable  matrix
 
-  std::vector<std::vector<double>> Earth3DPath ( double zen , double azi, std::string MODEL); //Create the 3D Model and calculate Neutrino Path
+  std::vector<std::vector<double>> Earth3DPath ( double zen , double azi, std::string path2table); //Create the 3D Model and calculate Neutrino Path
 
   std::vector<std::vector<double>> Create3DPath (); // From 3D model, provides the corresponding Neutrino Path inside the Earth
 

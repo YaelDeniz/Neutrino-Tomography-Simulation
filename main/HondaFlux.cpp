@@ -36,9 +36,18 @@ int main()
 {
  
     NuFlux HondaFlux;
-    HondaFlux.MediterraneanSeaFlux(); // Gran Sasso
-    //HondaFlux.SouthPoleFlux(); 
-    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaFlux.FluxFileName);
+    //SouthPole
+    std::string SPFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
+    std::string SPFile = "SP_AziAveraged_solmin/spl-nu-20-01-000.d";
+    std::string SPTable = SPFolder + SPFile; //Class Assumes Sout Pole flux as default
+
+    //Gran Sasso
+    std::string GRNFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
+    std::string GRNFile = "GRN_AziAveraged_solmin/grn-nu-20-01-000.d";
+    std::string GRNTable = GRNFolder + GRNFile; //Class Assumes Sout Pole flux as default
+
+
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(GRNTable);
 
     //Matrix for Histogram & Histogram Draw
 

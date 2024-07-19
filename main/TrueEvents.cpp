@@ -52,13 +52,26 @@ int main(int argc, char **argv)
 
     std::cout << " Neutrino Oscillation tomography. " << std::endl;
 
-    //Detector
+    //Set detector location
+    double rdet[3] = {0.0,0.0, -1*Rocean };
 
-    std::string detector = "Ocean";
+    //Detector size-------------------------------------------------------------
+    double DetMass = 10.0*MTon; //Mass in megaton units
+    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
+    double NnT = Nn*T; // Exposure [Mton*years]
 
-    //EARTH MODEL---------------------------------------------------------------
+    //Set Neutrino Flux
+    std::string FluxFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
+    std::string FluxFile = "GRN_AziAveraged_solmin/grn-nu-20-01-000.d";
+    std::string FluxTable = FluxFolder + FluxFile; //Class Assumes Sout Pole flux as default
 
-    std::string PremName = "prem_44layers"; //Earth Model
+
+    // Earth Models
+    std::string PremFolder ="/home/dehy0499/OscProb/PremTables/";
+    std::string PremName = "prem_44layers.txt";
+    std::string path2prem = PremFolder+PremName;
+
 
     //Pile Set Up---------------------------------------------------------------
     double PileHeight = 1000; // Height of LLVP in km
@@ -89,11 +102,7 @@ int main(int argc, char **argv)
     double phimin = -55.0;
     double phimax =  55.0 ;
 
-    //Detector size-------------------------------------------------------------
-    double DetMass = 10.0*MTon; //Mass in megaton units
-    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
-    double NnT = Nn*T; // Exposure [Mton*years]
+
 
    //SIMULATION-----------------------------------------------------------------
    int nuflv = 1; // neutrino  final state: nue (0), numu (1) or nutau (2)
@@ -101,8 +110,9 @@ int main(int argc, char **argv)
    //Standart Earth-------------------------------------------------------------
    AsimovSimulation StandardEarth;
 
-   StandardEarth.PremModel = PremName;
-   StandardEarth.SetDetector(detector);
+   StandardEarth.PremTable = path2prem;
+   StandardEarth.HondaTable = FluxTable;
+   StandardEarth.SetDetectorPosition(rdet);
    StandardEarth.MantleAnomaly = false;
    StandardEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
    StandardEarth.SetBinning(czbins,abins,ebins);
@@ -115,8 +125,9 @@ int main(int argc, char **argv)
 
    AsimovSimulation AlternativeEarth;
 
-   AlternativeEarth.PremModel = PremName;
-   AlternativeEarth.SetDetector(detector);
+   AlternativeEarth.PremTable = path2prem;
+   AlternativeEarth.HondaTable = FluxTable;
+   AlternativeEarth.SetDetectorPosition(rdet);
    AlternativeEarth.MantleAnomaly = true;
    AlternativeEarth.AnomalyShape="cake";
    AlternativeEarth.PileDensityContrast = PileDensityPct;

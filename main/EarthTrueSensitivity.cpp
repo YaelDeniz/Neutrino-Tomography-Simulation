@@ -14,6 +14,7 @@
 #include "TCanvas.h"
 #include "TH2.h"
 #include "TGraph.h"
+#include "TMultiGraph.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -26,11 +27,16 @@
 
 
 # define myPi 3.14159265358979323846  /* pi */
-// Some Constants i need
-# define Rearth 6371.0 //km
-# define Ratm 6368.0 //km
-# define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
-# define MTon  1E9  //Metric MegaTon
+
+//Some import Earth Radius
+# define Rcmb 3480.0 // Core-Mantle-Boundary Radius (km)
+# define Rocean 6368.0 // Earth radius in (km)
+# define Rearth 6371.0 // Earth radius in (km)
+# define Ratm 6386.0 // Radius of the Atmosphere (km)
+
+//Some units
+# define mN   1.67492749804E-27  // Nucleons mass (~ Neutron mass) in kg
+# define MTon  1E9  //Metric MegaTon in kg
 # define years2sec 3.154E7 // Years in Seconds
 
 using namespace std;
@@ -44,144 +50,193 @@ double Get3DChi2( TH3D * histstd, TH3D * histalt);
 int main(int argc, char **argv)
 {
     // Plot and Histogram2D settings
-
     std::cout << " Neutrino Oscillation tomography. " << std::endl;
 
-    // Number of bins
-    
-    int czbins=100 ; // # Bins in zenith/cos(zenith)
-    int abins=50 ; // # Bins in azimuth
-    int ebins=100 ; // bins in energy
+
+    //Set detector location
+    double rdet[3] = {0.0,0.0, -1*Rocean };
+
+    //Detector size-------------------------------------------------------------
+    double DetMass = 10.0*MTon; //Mass in megaton units
+    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
+    double NnT = Nn*T; // Exposure [Mton*years]
+
+
+    //Set Neutrino Flux
+    std::string FluxFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
+    std::string FluxFile = "GRN_AziAveraged_solmin/grn-nu-20-01-000.d";
+    std::string FluxTable = FluxFolder + FluxFile; //Class Assumes Sout Pole flux as default
+
+
+    // Earth Models
+
+    //std
+    std::string PremFolder ="/home/dehy0499/OscProb/PremTables/";
+    std::string PremName = "prem_44layers.txt";
+    std::string path2prem = PremFolder+PremName;
+
+    //Modified
+    std::string PremFolderAlt ="/home/dehy0499/OscProb/PremTables/Prem44pct10/";
     
 
     //Interval of integration in Zenith, Azimuth and E for Neutrino Events
 
     //Energy interval (in GeV)--------------------------------------------
     double EnuMin=1.0 ; 
-    double EnuMax=40.0 ;
+    double EnuMax=20.0 ;
 
-    //Zenith Angle Interval-----------------------------------------------
-
-    double zenmin = 91.0; // Not Able to use 90 degrees
+    //Zenith Angle Interval-----------------------------------------------------------------------------------
+    double zenmin = 90.01; // Not Able to use 90 degrees
     double zenmax = 180.0;
+
     double czmin = cos(zenmax*TMath::Pi()/180.0);
     double czmax = cos(zenmin*TMath::Pi()/180.0);
-
 
     //Azimuthal Interal-------------------------------------------------------------------------
     double phimin = 0.0;
     double phimax = 360.0 ;
-   
-
-    //Detector size-----------------------------------------------------------------------------
-
-    double DetMass = 10.0*MTon; //Mass in megaton units
-    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    double T       = 20.0*years2sec; //Detector Exposure time in sec: One Year
-
-    double NnT = Nn*T; // Exposure Mton*years
+    
+    // Number of bins
+    int czbins=100; // # Bins in zenith/cos(zenith)
+    int abins=50 ; // # Bins in azimuth
+    int ebins=100 ; // bins in energy
 
     //double pct = 10;
 
 
-
+    /*
     std::vector<double> chi2data;
-
-    std::string chi2directory = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/chi2results/chi2true/";
-
-
+    std::string ChiFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/chi2results/chi2true/";
+    std::ChiName = "C2T"+to_string(int(EnuMin))+std::to_string(int(EnuMax))_to_string(int(zenmin))+std::to_string(int(zenmax))_to_string(int(czbins))+std::to_string(int(ebins))+".csv";
+    std::string chi2file = ChiFolder + ChiName;
     double chi2 = 0;
-
+  */
 
 
     //Event generation-----------------------------------------------------------------------------------------
     int nuflv = 1; // neutrino  final state options nue (0), numu (1) or nutau (2)
-    
-    std::string PremName = "prem_44layers";
 
-    ofstream EarthChi2(chi2directory+"chi2_"+PremName+std::to_string(int(EnuMax))+std::to_string(int(EnuMax))+".csv", std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
+    //ofstream EarthChi2(chi2file, std::ofstream::trunc); //Opens a file and rewrite content, if files does not exist it Creates new file
 
-    
+
+    TMultiGraph *Pnu = new TMultiGraph(); // Oscillations to muon neutrinos
+    TMultiGraph *Pnubar = new TMultiGraph(); // Oscillation to electron neutrinos
+
     // Standard Earth model
 
     AsimovSimulation StandardEarth;
-    StandardEarth.PremModel = PremName;
+    StandardEarth.SetDetectorPosition(rdet);
+    StandardEarth.PremTable = path2prem;
+    StandardEarth.HondaTable = FluxTable;
     //StandardEarth.MantleAnomaly = false;
     StandardEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
     StandardEarth.SetBinning(czbins,abins,ebins);
     StandardEarth.SetExposure(NnT);
     StandardEarth.flvf=nuflv;
 
-    TH2D * TrueStd = StandardEarth.GetTrueEvents2D();
+    //TH2D * TrueStd = StandardEarth.GetTrueEvents2D();
+
+    // Neutrino final flavour
+    int nue        = 0;  // electron neutrino  
+    int numu       = 1; // muon neutrino
+  
+    bool  nunubar      = false; //antineutrino
+    double cth  = -0.827;
+    int layer = 25;
+
+    TH2D * OscProb_mumu = StandardEarth.GetOscProb2D(numu,numu, nunubar); 
+    TH2D * OscProb_emu = StandardEarth.GetOscProb2D(nue,numu, nunubar); 
+
+    TGraph * OscPlot_mumu =  StandardEarth.GetOscProb( numu, numu, nunubar, cth); //To be Deleted
+    OscPlot_mumu->SetLineColor(kBlue);
+    OscPlot_mumu->SetLineWidth(5);
+    Pnu->Add(OscPlot_mumu);
+
+    TGraph * OscPlot_emu =  StandardEarth.GetOscProb( nue, numu, nunubar, cth ); //To be Deleted
+    OscPlot_emu->SetLineColor(kRed);
+    OscPlot_emu->SetLineWidth(5);
+    Pnu->Add(OscPlot_emu);
     //TH2D * TrueStd = StandardEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_default.txt");
 
    
 
     // Alternative Earth Model
 
+    //std::string PremNameAlt = "prem_44layers_18_10pct.txt";
+    //std::string path2premAlt = PremFolderAlt+PremNameAlt;
 
-    int TotalLayers = 44;
-
-    double pct[3] = {3.0,5.0,10.0};
-   
+    std::string path2premAlt = PremFolder+PremName; // std prem
     AsimovSimulation AlternativeEarth;
-
-        //std::string PremAltName = PremName + "_" + std::to_string(i);
-       //std::cout << PremAltName << std::endl;
-
-    for (int j = 0; j < 3; ++j)
-    {
-        for (int i = 1; i <= TotalLayers; i++)
-        {
-            std::string PremAltName = PremName + "_" + std::to_string(i);
-
-           AlternativeEarth.PremModel = PremAltName;
-           //AlternativeEarth.MantleAnomaly = false;
-           //AlternativeEarth.AnomalyShape="pancake";
-           AlternativeEarth.ModifyLayer(i,pct[j],0.0);
-           AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
-           AlternativeEarth.SetBinning(czbins,abins,ebins);
-           AlternativeEarth.SetExposure(NnT);
-           AlternativeEarth.flvf=nuflv;
-
-           TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
-           //TH2D * TrueAlt= AlternativeEarth.SensitivityTrueEvents2D( i, pct[j] );
-           //TH2D * TrueAlt = AlternativeEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_llsvp.txt");
-
-           chi2 = Get2DChi2( TrueStd, TrueAlt);
-
-           chi2data.push_back(chi2);
-
-           EarthChi2 << i << " , " << chi2 << " , " << int(pct[j]) << std::endl;
-
-        }
-    }
-
-   EarthChi2.close();
-
-  // EVENT VISUALIZATION
+    AlternativeEarth.SetDetectorPosition(rdet);
+    AlternativeEarth.PremTable = path2premAlt;
+    AlternativeEarth.HondaTable = FluxTable;
+    //AlternativeEarth.MantleAnomaly = false;
+    //AlternativeEarth.AnomalyShape="pancake";
+    AlternativeEarth.ModifyLayer(layer,10,0.0);
+    AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
+    AlternativeEarth.SetBinning(czbins,abins,ebins);
+    AlternativeEarth.SetExposure(NnT);
+    AlternativeEarth.flvf=nuflv;
 
 
-   //TH2D * TrueDiff2D = new TH2D("TrueHist","True Event Histrogram", czbins,czmin,czmax,ebins,EnuMin,EnuMax); //binning in cth 
 
-   //GetDiff2D( TrueStd , TrueAlt, TrueDiff2D );
+    //TH2D * OscProbAlt = AlternativeEarth.GetOscProb2D(nue,numu, nubar); 
 
-  /*
+    TGraph * OscPlotAlt_mumu =  AlternativeEarth.GetOscProb( numu, numu, nunubar , cth ); //To be Deleted
+    OscPlotAlt_mumu->SetLineColor(kBlue);
+    OscPlotAlt_mumu->SetLineWidth(5);
+    OscPlotAlt_mumu->SetLineStyle(9);
+    Pnu->Add(OscPlotAlt_mumu);
+    TGraph * OscPlotAlt_emu =  AlternativeEarth.GetOscProb( nue, numu, nunubar , cth ); //To be Deleted
+    OscPlotAlt_emu->SetLineColor(kRed);
+    OscPlotAlt_emu->SetLineWidth(5);
+    OscPlotAlt_emu->SetLineStyle(9);
+    Pnu->Add(OscPlotAlt_emu);
+
+    //TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
+    //TH2D * TrueAlt= AlternativeEarth.SensitivityTrueEvents2D( i, pct[j] );
+    //TH2D * TrueAlt = AlternativeEarth.TestTrueEvents2D("/home/dehy0499/OscProb/PremTables/prem_default.txt","/home/dehy0499/OscProb/PremTables/prem_llsvp.txt")
+
+  // Oscillation Probability
+  
     TApplication app("app", &argc, argv);
 
-    TCanvas *c = new TCanvas();
-    gStyle->SetPalette(kBird);
-    TrueDiff2D->Draw("COLZ");
-    TrueDiff2D->SetStats(0);
+    TCanvas *c1 = new TCanvas();
+    c1->cd();
+    Pnu->Draw("apl");
+    //Pnu->GetXaxis()->SetNdivisions(5,kFALSE);
     gPad->Update();
+    c1->Modified(); 
+    c1->Update();
+    TRootCanvas *rc1 = (TRootCanvas *)c1->GetCanvasImp();
+    rc1->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
 
-    c->Modified(); c->Update();
 
-    TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
-    rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+    TCanvas *c2 = new TCanvas();
+//    c2->Divide(1,2,0.5,0);
+//    c2->cd(1);
+//   gStyle->SetPalette(kBlueGreenYellow);
+//    OscProb_mumu->Draw("COLZ");
+//    OscProb_mumu->SetStats(0);
+ 
+//    c2->cd(2);
+    gStyle->SetPalette(kBlueGreenYellow);
+    OscProb_emu->Draw("COLZ");
+    OscProb_emu->SetStats(0);
+
+    gPad->Update();
+    c2->Modified(); 
+    c2->Update();
+    TRootCanvas *rc2 = (TRootCanvas *)c2->GetCanvasImp();
+    rc2->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+    
+    
+
+
     app.Run();
-*/
 
+    std::cout << PremName << std::endl;
 
 
 
