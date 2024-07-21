@@ -23,6 +23,7 @@ using namespace std;
 class AsimovSimulation
 {
     public:
+    
 
     double NnT; //Detector Exposure
   
@@ -41,7 +42,9 @@ class AsimovSimulation
  
     //The LLVP
     bool MantleAnomaly = false;
-    std::string AnomalyShape ="pancake";
+    double PileHeight = 1000;
+    double aperture = 45.0;
+    std::string AnomalyShape ="cake";
     double PileDensityContrast = 2.0;
     double PileChemContrast = 0.0;
     

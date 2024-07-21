@@ -159,7 +159,9 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
 
   std::vector<TGeoVolume*> LLVPLAYER; //Vector to define Volume for each LLVP segment
   
-  TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);// Some Geometrical trasformation that move LLVPs to the right place
+  TGeoRotation   *rot1 = new TGeoRotation("rot1", 90.0, 90.0, 0.0);// Some Geometrical trasformation that move LLVPs to the right place 
+
+
 
   //double PileThickness = 1000;
 
@@ -190,6 +192,8 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
    {
 
       double RadiusInPile = PremMatrix[i][0]; //Lower boundary of current layer
+
+      std::cout << PremMatrix.size() << " Current Layer Properties " << PremMatrix[i][0] << " " << PremMatrix[i][1] << " " << PremMatrix[i][2] << " " << PremMatrix[i][3] << " " << Top <<std::endl;
 
       if (RadiusInPile > Bottom )
       {
@@ -235,11 +239,14 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
   
             LLVPMed.push_back( new TGeoMedium(llvpMedName,1,LLVPMat[PileId]) ); // Create LLVP medium
 
+            std::cout<< " Last " << InnerR << " " << OuterR << " " << Localdensity << " " << PremMatrix[i][1] << std::endl; 
+
+
             LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
             LLVPLAYER[PileId]->SetLineColor(kBlue);
 
-            LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
+            LAYER[i]->AddNodeOverlap(LLVPLAYER[PileId],1,rot1);  
 
             LLVPMat.clear();
             
@@ -272,11 +279,13 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
   
             LLVPMed.push_back( new TGeoMedium(llvpMedName,1,LLVPMat[PileId]) ); // Create LLVP medium
 
+            std::cout << "Still a layer" << InnerR << " " << OuterR << " " << Localdensity << " " << PremMatrix[i][1] << std::endl; 
+
             LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
             LLVPLAYER[PileId]->SetLineColor(kBlue);
 
-            LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
+            LAYER[i]->AddNodeOverlap(LLVPLAYER[PileId],1,rot1);  
 
             ++PileId;
 
@@ -697,6 +706,8 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
  
   new TGeoManager("EarthModel3D", "Spherical Earth ");
 
+  //gGeoManager->SetVerboseLevel(0);
+
   //Defining Vacuum Medium
   TGeoMaterial *VAC = new TGeoMaterial("Vacuum", 0.0, 0.0, 0.0);
   TGeoMedium *vac = new TGeoMedium("VACUUM",99,VAC);
@@ -930,7 +941,6 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
         }
 
-
          EarthPath.push_back({Li, cmat->GetDensity(), cmat->GetZ(),R_i}); //Store Path information [Baseline segment, Density, Z/A, R_i]
         
          sumL = sumL + Li; //Track Total Segment (Max = -2*R_earth*cos(zen))
@@ -951,7 +961,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
    EarthCanvas->Modified();
    EarthCanvas->Update();
 
-   
+   std::cout << " PileThickness " << PileThickness << " " << aWidth << std::endl;
    std::cout << " Direction of incoming Neutrino: " << xo << " " << yo << " " << zo << std::endl;
    std::cout << " Direction of coordinattes: " << o[0] << " " << o[1] << " " << o[2] << std::endl;
    std::cout << " Neutrino Source location "<< sqrt(xo*xo + yo*yo + zo*zo) << " Detector location: " << sqrt( o[0]*o[0] + o[1]*o[1] + o[2]*o[2] ) <<std::endl;

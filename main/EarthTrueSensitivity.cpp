@@ -98,9 +98,9 @@ int main(int argc, char **argv)
     double phimax = 360.0 ;
     
     // Number of bins
-    int czbins=100; // # Bins in zenith/cos(zenith)
+    int czbins=50; // # Bins in zenith/cos(zenith)
     int abins=50 ; // # Bins in azimuth
-    int ebins=100 ; // bins in energy
+    int ebins=50; // bins in energy
 
     //double pct = 10;
 
@@ -135,16 +135,17 @@ int main(int argc, char **argv)
     StandardEarth.SetExposure(NnT);
     StandardEarth.flvf=nuflv;
 
-    //TH2D * TrueStd = StandardEarth.GetTrueEvents2D();
+    TH2D * TrueStd = StandardEarth.GetTrueEvents2D();
 
     // Neutrino final flavour
     int nue        = 0;  // electron neutrino  
     int numu       = 1; // muon neutrino
   
     bool  nunubar      = false; //antineutrino
-    double cth  = -0.827;
-    int layer = 25;
+    //double cth  = -0.827;//correspond to layer 25
+    double cth  = -0.885;//correspond to layer 18
 
+    //THStack * OscHist = new THStack("OscHist","Oscillograms ");
     TH2D * OscProb_mumu = StandardEarth.GetOscProb2D(numu,numu, nunubar); 
     TH2D * OscProb_emu = StandardEarth.GetOscProb2D(nue,numu, nunubar); 
 
@@ -168,6 +169,14 @@ int main(int argc, char **argv)
 
     std::string path2premAlt = PremFolder+PremName; // std prem
     AsimovSimulation AlternativeEarth;
+
+    TGraph * chi2plot = new TGraph(44);
+
+    for (int i = 0; i < 44; ++i)
+    {
+        
+    int layer = i+1;
+
     AlternativeEarth.SetDetectorPosition(rdet);
     AlternativeEarth.PremTable = path2premAlt;
     AlternativeEarth.HondaTable = FluxTable;
@@ -179,7 +188,18 @@ int main(int argc, char **argv)
     AlternativeEarth.SetExposure(NnT);
     AlternativeEarth.flvf=nuflv;
 
+    TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
 
+    double chi2 = Get2DChi2(TrueStd,TrueAlt);
+
+    chi2plot->SetPoint(i-1,chi2,i);
+
+
+    }
+
+
+    AlternativeEarth.PremTable = path2premAlt;
+    AlternativeEarth.ModifyLayer(18,10,0.0);
 
     //TH2D * OscProbAlt = AlternativeEarth.GetOscProb2D(nue,numu, nubar); 
 
@@ -204,6 +224,7 @@ int main(int argc, char **argv)
 
     TCanvas *c1 = new TCanvas();
     c1->cd();
+
     Pnu->Draw("apl");
     //Pnu->GetXaxis()->SetNdivisions(5,kFALSE);
     gPad->Update();
@@ -213,14 +234,18 @@ int main(int argc, char **argv)
     rc1->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
 
 
+    //Oscillation inside standard Earth
+
     TCanvas *c2 = new TCanvas();
-//    c2->Divide(1,2,0.5,0);
-//    c2->cd(1);
-//   gStyle->SetPalette(kBlueGreenYellow);
-//    OscProb_mumu->Draw("COLZ");
-//    OscProb_mumu->SetStats(0);
+    c2->Divide(1,2,0.01,0.01);
+    c2->cd(1);
+  
+    gStyle->SetPalette(kBlueGreenYellow);
+    OscProb_mumu->Draw("COLZ");
+    OscProb_mumu->SetStats(0);
  
-//    c2->cd(2);
+    c2->cd(2);
+    
     gStyle->SetPalette(kBlueGreenYellow);
     OscProb_emu->Draw("COLZ");
     OscProb_emu->SetStats(0);
@@ -230,6 +255,20 @@ int main(int argc, char **argv)
     c2->Update();
     TRootCanvas *rc2 = (TRootCanvas *)c2->GetCanvasImp();
     rc2->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+
+
+
+    TCanvas *c3 = new TCanvas();
+    c3->cd();
+    
+    chi2plot->Draw();
+    gPad->SetLogx();
+
+    gPad->Update();
+    c3->Modified(); 
+    c3->Update();
+    TRootCanvas *rc3 = (TRootCanvas *)c3->GetCanvasImp();
+    rc3->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
     
     
 
@@ -350,7 +389,7 @@ double Get2DChi2( TH2D * histstd, TH2D * histalt)
 
     double chi2 = 0;
 
-    for (int j = 1; j <= histstd->GetYaxis()->GetNbins(); ++j) //loop in azimuth
+    for (int j = 1; j <= histstd->GetYaxis()->GetNbins(); ++j) //loop in energy
     {
         
         for (int i = 1; i <= histstd->GetXaxis()->GetNbins(); ++i) //loop in zenith

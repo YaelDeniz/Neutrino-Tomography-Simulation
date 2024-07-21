@@ -14,6 +14,7 @@
 #include "TCanvas.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TLine.h"
 #include "TGraph.h"
 #include "TMath.h"
 #include "TFile.h"
@@ -34,7 +35,7 @@
 # define Rcmb 3480.0 // Core-Mantle-Boundary Radius (km)
 # define Rocean 6368.0 // Earth radius in (km)
 # define Rearth 6371.0 // Earth radius in (km)
-# define Ratm 6368.0 // Radius of the Atmosphere (km)
+# define Ratm 6386.0 // Radius of the Atmosphere (km)
 # define mN   1.67492749804E-27  // Nucleons mass (~ Neutron mass) in kg
 # define MTon  1E9  //Metric MegaTon in kg
 # define years2sec 3.154E7 // Years in Seconds
@@ -76,9 +77,9 @@ int main(int argc, char **argv)
     //Pile Set Up---------------------------------------------------------------
     double PileHeight = 1000; // Height of LLVP in km
     double PileRadius = Rcmb + PileHeight; //km
-    double DepthMin = Rcmb-1000;
-    double DepthMax = PileRadius+1000; // Distance from the center of the Earth
-    double PileDensityPct = 3.0; // 2% density contrats for LLVP
+    double DepthMin = Rcmb-2500;
+    double DepthMax = PileRadius+500; // Distance from the center of the Earth
+    double PileDensityPct = 2.0; // 2% density contrats for LLVP
 
     //SIMULATION SET UP---------------------------------------------------------
 
@@ -119,7 +120,7 @@ int main(int argc, char **argv)
    StandardEarth.SetExposure(NnT);
    StandardEarth.flvf=nuflv;
 
-   TH3D * TrueStd = StandardEarth.GetTrueEvents3D();
+   TH2D * TrueStd = StandardEarth.GetTrueEvents2D();
 
     //Alternative Earth--------------------------------------------------------- 
 
@@ -128,9 +129,11 @@ int main(int argc, char **argv)
    AlternativeEarth.PremTable = path2prem;
    AlternativeEarth.HondaTable = FluxTable;
    AlternativeEarth.SetDetectorPosition(rdet);
+   AlternativeEarth.PileHeight = 1000;
+   AlternativeEarth.aperture=45;
    AlternativeEarth.MantleAnomaly = true;
    AlternativeEarth.AnomalyShape="cake";
-   AlternativeEarth.PileDensityContrast = PileDensityPct;
+   AlternativeEarth.PileDensityContrast = 2;
    AlternativeEarth.PileChemContrast = 0.0;
    //AlternativeEarth.ModifyLayer(23,5.0,0.0);
    //AlternativeEarth.AnomalousLayers = layers;
@@ -139,20 +142,47 @@ int main(int argc, char **argv)
    AlternativeEarth.SetExposure(NnT);
    AlternativeEarth.flvf=nuflv;
 
-   TH3D * TrueAlt = AlternativeEarth.GetTrueEvents3D();
+   TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
 
   //Data Analysis---------------------------------------------------------------
    
-  TH3D * TrueDiff3D = new TH3D("TrueHist","True Event Histrogram", czbins,Czmin,Czmax,abins,phimin,phimax,ebins,EnuMin,EnuMax); //binning in cth 
+    //TH3D * TrueDiff3D = new TH3D("TrueHist","True Event Histrogram", czbins,Czmin,Czmax,abins,phimin,phimax,ebins,EnuMin,EnuMax); //binning in cth 
 
-  GetDiff3D( TrueStd , TrueAlt, TrueDiff3D );
+    TH2D * TrueDiff2D = new TH2D("TrueHist","True Event Histrogram", czbins,Czmin,Czmax,ebins,EnuMin,EnuMax); //binning in cth 
+
+
+   GetDiff2D( TrueStd , TrueAlt, TrueDiff2D );
 
    TApplication app("app", &argc, argv);
 
    TCanvas *c = new TCanvas();
-   gStyle->SetPalette(kBird);
-   TrueDiff3D->Draw("ISO");
-   TrueDiff3D->SetStats(0);
+   gStyle->SetPalette(kBlueGreenYellow);
+
+   //double cthbottom = -0.8376; 
+   double cthbottom = TMath::Cos(TMath::Pi()-TMath::ASin( 3480.0/Rocean ));
+   double cthmid_bottom = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+300)/Rocean ));;
+   double cthmid_top = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+600)/Rocean ));;
+   double cthtop = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Rocean ));;
+
+   std::cout << cthtop << std::endl;
+
+   TLine * lbottom = new TLine(cthbottom,1.0,cthbottom,25);
+   TLine * lmid_bottom = new TLine(cthmid_bottom,1.0,cthmid_bottom,25);
+   TLine * lmid_top = new TLine(cthmid_top,1.0,cthmid_top,25);
+   TLine * ltop = new TLine(cthtop,1.0,cthtop,25);
+
+
+
+   TrueDiff2D->Draw("COLZ");
+   TrueDiff2D->SetStats(0);
+
+   lbottom->Draw("same");
+   lmid_bottom->Draw("same");
+   lmid_top->Draw("same");
+   ltop->Draw("same");
+
+
+
    gPad->Update();
 
    c->Modified(); c->Update();

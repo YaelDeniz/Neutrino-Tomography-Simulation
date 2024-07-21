@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <math.h>  
 
+#include "TGraph.h"
+#include "TMultiGraph.h"
+
 #include "TApplication.h"
 #include "TRootCanvas.h"
 #include "TCanvas.h"
@@ -46,7 +49,13 @@ int main(int argc, char **argv)
 
   double th = 170;
 
-  double cth = cos(th*TMath::Pi()/180.0);
+  //double cth = cos(th*TMath::Pi()/180.0);
+
+  //double cth = -0.8194; //Mid point lower center
+
+  //double cth = -0.957;
+
+  double cth =  -0.7;
 
   double phi = 0*TMath::Pi()/180.0;
 
@@ -71,27 +80,72 @@ int main(int argc, char **argv)
 
   Earth3DModel test;
 
+  test.PileThickness = 1000;
+
+  test.aWidth = 45;
   test.SetModel(path2prem);
 
   test.SetDirection(cth, phi);
   
-  test.SetPile( true, "cake", 2.0, 0.0);
+  test.SetPile( true, "pancake", 3.0, 0.0);
 
-  test.SetLayerProp(23,0.0,0.0);
+  test.SetLayerProp(27,0.0,0.0);
   
   std::vector<std::vector<double>> EarthPath = test.Create3DPath( );
 
 
-  std::cout << "Path differences" << std::endl;
+  std::cout << "Mine" << std::endl;
 
 
-    for (int i = 0; i < paths.size() ; ++i)
+  double sumL = 0;
+
+  TMultiGraph * ThePaths = new TMultiGraph();
+
+  TGraph * MyModel = new TGraph(EarthPath.size());
+
+  TGraph * apcModel = new TGraph(paths.size());
+
+
+ 
+  std::ofstream ModelPath("ModelPath.csv"); 
+
+  for (int i = 0; i < EarthPath.size() ; ++i)
   {
-    
-    std::cout << i << " " <<paths[i].length - EarthPath[i][0] << " " << paths[i].density - EarthPath[i][1]  << " " << paths[i].zoa - EarthPath[i][2]<< std::endl;
+
+    sumL += EarthPath[i][0]; 
+    std::cout<< i << "  me " << sumL<< " " << std::setprecision(10) <<EarthPath[i][0] << " " <<EarthPath[i][1]  << " " <<EarthPath[i][2]<< std::endl;
+
+    ModelPath << sumL << " " << EarthPath[i][0] << " " << EarthPath[i][1]<< std::endl;
+
+    MyModel->SetPoint(i,sumL,EarthPath[i][1] );
 
   }
 
+  std::cout << "     " << std::endl;
+  std::cout << "OscProb" << std::endl;
+
+  sumL = 0;
+
+
+  std::ofstream OscProbPath("OscProbPath.csv"); 
+  
+  for (int i = 0; i < paths.size() ; ++i)
+  {
+
+    sumL += paths[i].length ; 
+    std::cout << i << " " << sumL << " " << paths[i].length << " " <<  paths[i].density  << " " << paths[i].zoa << std::endl;
+
+    OscProbPath << sumL << " " << paths[i].length << " " << paths[i].density << std::endl;
+
+    apcModel->SetPoint(i,sumL,paths[i].density  );
+
+  }
+
+  OscProbPath.close();
+  ModelPath.close();
+
+  ThePaths->Add(MyModel);
+  ThePaths->Add(apcModel);
 
  std::cout << zenmin << " " << zenmax <<  std::endl;
 
@@ -105,6 +159,20 @@ int main(int argc, char **argv)
   
   TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
   rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+
+
+  TCanvas * c1 = new TCanvas();
+
+  ThePaths->Draw("apl");
+
+  c1->Modified(); c1->Update();
+
+  
+  TRootCanvas *rc1 = (TRootCanvas *)c1->GetCanvasImp();
+  rc1->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+
+
+
   app.Run();
   
 

@@ -254,6 +254,7 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
 TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 {  
+    std::cout<< " ** * * * * * * * * * * * Internal Confirmation "<< HondaTable << std::endl;
     
     //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
 
@@ -320,6 +321,10 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
      MyEarthModel.SetModel(PremTable);
 
      MyEarthModel.SetDetector(Rdet);
+
+     MyEarthModel.PileThickness = PileHeight;  
+
+     MyEarthModel.aWidth = aperture;
 
      MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
 

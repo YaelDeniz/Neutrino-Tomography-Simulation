@@ -46,7 +46,7 @@ class Earth3DModel
   bool Pile = false; //By Default, model does not include LLVPs
   std::string PileShape = "pancake"; //LLVP shape: "pancake" or "cake"
   double PileThickness = 1000;
-  double aWidth = 45.0; //LLVP Angular With
+  double aWidth = 25.0; //LLVP Angular With
   double PileDensityContrats = 2; // 2% more dense
   double PileZoAContrats = 0.0; // 0% Chemical difference
 
