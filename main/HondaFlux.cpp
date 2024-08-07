@@ -7,6 +7,8 @@
 #include <math.h>
 
 //Cern ROOT
+#include "TApplication.h"
+#include "TRootCanvas.h"
 #include "TCanvas.h"
 #include "TH2.h"
 #include "TGraph.h"
@@ -32,7 +34,7 @@
 using namespace std;
 
 //------------------
-int main()
+int main(int argc, char **argv)
 {
  
     NuFlux HondaFlux;
@@ -81,25 +83,8 @@ ebflux->GetXaxis()->SetTitle("log_{10}(E/GeV)");
 ebflux->GetYaxis()->SetTitle("Cos(#theta_{z})");
 //ebflux->GetZaxis()->SetTitle("log_{10}(#Phi_{#nu})");
 
-TCanvas *c = new TCanvas();
-c->Divide(2,2);
-
-c->cd(1);
-eflux->Draw("COLZ");
 
 
-c->cd(2);
-ebflux->Draw("COLZ");
-
-c->cd(3);
-muflux->Draw("COLZ");
-
-c->cd(4);
-mubflux->Draw("COLZ");
-
-//c->SetCanvasSize(500, 500);
-
-c->SetWindowSize(1200, 800);
 
 //gStyle->SetPadLeftMargin(10000); 
 //gStyle->SetPadRightMargin(0.1);
@@ -162,7 +147,7 @@ c->SetWindowSize(1200, 800);
 
 
 
-    TCanvas *c1 = new TCanvas();
+   
     TMultiGraph * multi = new TMultiGraph();
 
     numu->SetLineColor(4);
@@ -188,8 +173,40 @@ c->SetWindowSize(1200, 800);
 
     multi->SetTitle("Bilinear interpolation of Honda flux");
 
+   
+    TApplication app("app", &argc, argv);    
+
+
+    TCanvas *c = new TCanvas();
+    c->Divide(2,2);
+    c->cd(1);
+    eflux->Draw("COLZ");
+    c->cd(2);
+    ebflux->Draw("COLZ");
+    c->cd(3);
+    muflux->Draw("COLZ");
+    c->cd(4);
+    mubflux->Draw("COLZ");
+    gPad->Update();
+
+    c->Modified(); c->Update();
+    TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
+    rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+
+   
+    
+    TCanvas *c1 = new TCanvas();
     gPad->SetGrid(1,1);
     multi->Draw("A");
+    gPad->Update();
+
+    c1->Modified(); c1->Update();
+    TRootCanvas *rc1 = (TRootCanvas *)c1->GetCanvasImp();
+    rc1->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+    
+    app.Run();
+
+
 
     c->SaveAs("/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/NeutrinoFlux/FluxHistSP.jpg");
     c1->SaveAs("/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/NeutrinoFlux/FluxInterpolSP.jpg");

@@ -130,9 +130,9 @@ int main(int argc, char **argv)
    AlternativeEarth.HondaTable = FluxTable;
    AlternativeEarth.SetDetectorPosition(rdet);
    AlternativeEarth.PileHeight = 1000;
-   AlternativeEarth.aperture=45;
+   AlternativeEarth.aperture=25;
    AlternativeEarth.MantleAnomaly = true;
-   AlternativeEarth.AnomalyShape="cake";
+   AlternativeEarth.AnomalyShape="pancake";
    AlternativeEarth.PileDensityContrast = 2;
    AlternativeEarth.PileChemContrast = 0.0;
    //AlternativeEarth.ModifyLayer(23,5.0,0.0);

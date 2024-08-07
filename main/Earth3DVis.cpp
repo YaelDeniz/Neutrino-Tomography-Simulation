@@ -53,9 +53,9 @@ int main(int argc, char **argv)
 
   //double cth = -0.8194; //Mid point lower center
 
-  //double cth = -0.957;
+  //double cth = -0.95;
 
-  double cth =  -0.7;
+  double cth =  -0.75;
 
   double phi = 0*TMath::Pi()/180.0;
 
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
   test.PileThickness = 1000;
 
-  test.aWidth = 45;
+  test.aWidth = 25;
   test.SetModel(path2prem);
 
   test.SetDirection(cth, phi);

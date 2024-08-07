@@ -7,6 +7,7 @@
 #include <vector>
 
 //CERN ROOT
+#include "TMath.h"
 #include "TH2.h"
 #include "TH3.h"
 #include "TObjArray.h"
@@ -25,10 +26,12 @@ class AsimovSimulation
     public:
     
 
-    double NnT; //Detector Exposure
+    std::string label = "std";
+
+    double NT; //Detector Exposure
   
     
-    double Rdet[3] = {0.0, 0.0, -1.0*Rearth};
+    double pos[3] = {0.0, 0.0, -1.0*Rearth};
     std::string FluxFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
     std::string FluxFile = "SP_AziAveraged_solmin/spl-nu-20-01-000.d";
     std::string HondaTable = FluxFolder + FluxFile; //Class Assumes Sout Pole flux as default
@@ -56,26 +59,28 @@ class AsimovSimulation
 
     //Neutrino Settings
     int flvf;
-    double EnuMin = 1.00; //GeV
-    double EnuMax = 10.00; //GeV
+    int nunubar = 1; //Neutrinos
 
-    double ZenMin; // Min 90;
-    double ZenMax; // Max 180;
+    double Emin = 1.00; //GeV
+    double Emax = 10.00; //GeV
 
-    double AziMin=0; // Min 0;
-    double AziMax=360; //Max 360;
+    double thmin; // Min 90;
+    double thmax; // Max 180;
+
+    double phimin=0; // Min 0;
+    double phimax=TMath::Pi(); //Max 360;
 
     //Simulation Settings
-    int nbinsZen; //Bins in Zenith
-    int nbinsAzi; //Bins in Azimuth
-    int nbinsE; //Bins in Energy
+    int ibins; //Bins in Zenith
+    int jbins; //Bins in Azimuth
+    int kbins; //Bins in Energy
 
     void SetDetectorPosition( double x[3])
     {
 
-        Rdet[0] = x[0];
-        Rdet[1] = x[1];
-        Rdet[2] = x[2];
+        pos[0] = x[0];
+        pos[1] = x[1];
+        pos[2] = x[2];
 
     }
 
@@ -89,46 +94,46 @@ class AsimovSimulation
 
     }
 
-    void SetIntervals(double zlow, double zup, double alow, double aup, double elow, double eup)
+    void SetIntervals(double th1, double th2, double phi1, double phi2, double Enu1, double Enu2)
     {
-        ZenMin = zlow;
-        ZenMax = zup;
+        thmin = th1*TMath::Pi()/180;
+        thmax = th2*TMath::Pi()/180;
 
-        AziMin = alow;
-        AziMax = aup;
+        phimin = phi1*TMath::Pi()/180;
+        phimax = phi2*TMath::Pi()/180;
         
-        EnuMin = elow;
-        EnuMax = eup;
+        Emin = Enu1;
+        Emax = Enu2;
 
     }
 
-    void SetBinning(int zbins, int abins, int ebins)
+    void SetBinning(int i, int j, int k)
     {
-        nbinsZen = zbins;
-        nbinsAzi = abins;
-        nbinsE   = ebins;
+        ibins = i;
+        jbins = j;
+        kbins = k;
     }
 
-    void SetExposure(double exposure) 
+    void SetExposure(double xposure) 
     {
 
-        NnT = exposure;
+        NT = xposure; //MTon-Years
 
     }
 
-    TH3D * GetTrueEvents3D();
+   // TH3D * GetTrueEvents3D();
 
     TH2D * GetTrueEvents2D(); //Azimuth independet
 
-    TH2D * GetOscProb2D(int flvi, int flvf, bool nunubar  ); //Azimuth independet
+   // TH2D * GetOscProb2D(int flvi, int flvf, bool nunubar  ); //Azimuth independet
     
     TGraph * GetOscProb( int flvi, int flvf, bool nunubar, double cth ); //To be Deleted
     
-    TH2D * SensitivityTrueEvents2D( int n, double pct ); //To be Del
+   // TH2D * SensitivityTrueEvents2D( int n, double pct ); //To be Del
 
     //TH2D * TestTrueEvents2D(std::string model_std , std::string model_alt);
 
-    std::vector< std::vector<double> > GetPremMatrix( std::string path2table  );
+   // std::vector< std::vector<double> > GetPremMatrix( std::string path2table  );
 
 
 

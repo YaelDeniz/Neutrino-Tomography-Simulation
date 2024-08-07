@@ -143,7 +143,11 @@ std::vector< std::vector<double> > Earth3DModel::ChangeLayerProp(std::vector< st
  
   EarthMatrix[PremRow][1] = (1.0 + LayerDensityContrats/100.0) * EarthMatrix[PremRow][1];
 
+  double test = (1.0 + LayerDensityContrats/100.0) * EarthMatrix[PremRow][1];
+
   EarthMatrix[PremRow][2] = (1.0 + LayerZoAContrats/100.0) * EarthMatrix[PremRow][2];
+
+  std::cout << " ******************************************************************************+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+* " <<  100.0*(test  - EarthMatrix[PremRow][1])/EarthMatrix[PremRow][1] << std::endl;
 
   return EarthMatrix;}
 

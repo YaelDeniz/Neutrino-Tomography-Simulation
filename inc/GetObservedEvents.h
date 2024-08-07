@@ -10,20 +10,40 @@
 #include "TH2.h"
 #include "TH3.h"
 #include "TObjArray.h"
+#include "TGraph.h"
+
+# define Rocean 6368.0 // Earth radius in (km)
+# define Rearth 6371.0 // Earth radius in (km)
 
 class AsimovObsSimulation
 {
     public:
 
-    //Earth Settings
-    std::string PremModel="prem_44layers";
-    bool Pile = false;
-    std::string PileShape ="pancake";
+    //Detector
+    double xyzTelescope[3] = {0.0, 0.0, -1.0*Rearth};
+
+    std::string FluxFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
+    std::string FluxFile = "SP_AziAveraged_solmin/spl-nu-20-01-000.d";
+    std::string TheHondaTable = FluxFolder + FluxFile; //Class Assumes Sout Pole flux as default
+
+    //The Earth model
+    std::string PremFolder = "/home/dehy0499/OscProb/PremTables/";
+    std::string PremName = "prem_44layers.txt";
+    std::string ThePremTable = PremFolder+PremName;
 
     //Modify specific Layers
     int PremLayer = 44 ;
-    double DensityContrast = 0 ;
-    double ChemicalContrats = 0 ;
+    double DensityContrast = 0;
+    double ChemicalContrats = 0;
+
+    //LLVP
+
+    bool PileInModel = false; 
+    std::string ShapeOfPile = "cake";
+    double ThePileHight = 1000.0;
+    double ThePileAperture=45.0;
+    double ThePileDensityContrast = 10.0;
+    double ThePileChemicalContrast = 10.0;
 
     //Neutrino Settings
     int flvf;
@@ -71,12 +91,12 @@ class AsimovObsSimulation
 
 
 
-    void ModifyLayer (int LayerNumber , double PctInDensity , double PctInZoA)
+    void ModifyLayer (int LayerNumber , double rhopct , double zoapct)
     {
 
-        PremTableNumber = LayerNumber; // Index of layer
-        DensityContrast = PctInDensity; // Density percentage difference
-        ChemicalContrats= PctInZoA; // zoa(compositional) perctengae differnce
+        PremLayer = LayerNumber; // Index of layer
+        DensityContrast = rhopct; // Density percentage difference
+        ChemicalContrats= zoapct; // zoa(compositional) perctengae differnce
 
     }
 
@@ -115,20 +135,28 @@ class AsimovObsSimulation
 
     }
 
-    TH3D * GetObsEvents3D();
+    void SetDetectorXYZ(double xyz[3])
+    {
+        xyzTelescope[0]=xyz[0];
+        xyzTelescope[1]=xyz[1];
+        xyzTelescope[2]=xyz[2];
 
-    TH2D * GetObsEvents2D(); //Azimuth independet
+    }
 
-    TH2D * TestObsEvents2D(std::string model_std , std::string model_alt);
+    //TH3D * GetObsEvents3D();
+
+    TH2D * GetObsEvents2Dcth(); //Azimuth independet
+
+    //TH2D * TestObsEvents2D(std::string model_std , std::string model_alt);
 
 
 
 
 };
 
-TH2D*  AsimovObservedEvents(std::string modelname, int flvf, double Region[], int Bins[],double Det_par[], double NnT);
+//TH2D*  AsimovObservedEvents(std::string modelname, int flvf, double Region[], int Bins[],double Det_par[], double NnT);
 
-TH2D*  DetectorRes( double Region[], int Bins[],double Det_par[] );
+//TH2D*  DetectorRes( double Region[], int Bins[],double Det_par[] );
 
 //TH2D*  GetObservedEvents(std::string modelname, int flvf, double Region[], int Bins[],double Det_par[], double NnT);
 
