@@ -10,6 +10,106 @@
 #include <vector>
 #include <valarray>
 #include <string.h>
+#include <fstream>
+
+//CERN ROOT libraries
+#include "TH2.h"
+#include "TH3.h"
+#include "TMath.h"
+
+
+
+//StatsTool
+void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)
+{
+
+
+   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/EarthSensitivity2D.csv"); 
+
+   double cth, e, Nexp, Nobs, dN;
+
+
+        for (int i = 1; i <= diff->GetXaxis()->GetNbins(); ++i)
+        {
+            cth=diff->GetXaxis()->GetBinCenter(i);
+         
+            for (int k = 1; k <= diff->GetYaxis()->GetNbins(); ++k)
+            {
+
+                e=diff->GetYaxis()->GetBinCenter(k);
+                Nexp = histstd->GetBinContent(i,k);
+                Nobs = histalt->GetBinContent(i,k);
+                dN = 100*(Nobs-Nexp)/Nexp;
+
+                diff->SetBinContent(i,k, dN);
+
+                TrueDiffFile << cth  << " , " << e << " , " << dN << std::endl;
+
+            }
+        }
+        
+    TrueDiffFile.close();
+
+
+}
+
+double Get3DChi2( TH3D * histstd, TH3D * histalt)
+{
+
+    double  Nexp, Nobs;
+
+    double chi2 = 0;
+
+    for (int j = 1; j <= histstd->GetYaxis()->GetNbins(); ++j) //loop in azimuth
+    {
+        
+        for (int i = 1; i <= histstd->GetXaxis()->GetNbins(); ++i) //loop in zenith
+        {
+         
+            for (int k = 1; k <= histstd->GetZaxis()->GetNbins(); ++k) //loop in energy
+            {
+
+                Nexp = histstd->GetBinContent(i,j,k);
+                Nobs = histalt->GetBinContent(i,j,k);
+                chi2 +=  2*( Nexp - Nobs + Nobs*TMath::Log(Nobs/Nexp) ); // LLRT
+
+            }
+        }
+        
+    }
+
+    return chi2;
+
+}
+
+double Get2DChi2( TH2D * histstd, TH2D * histalt)
+{
+
+    double  Nexp, Nobs;
+
+    double chi2 = 0;
+
+    for (int j = 1; j <= histstd->GetYaxis()->GetNbins(); ++j) //loop in azimuth
+    {
+        
+        for (int i = 1; i <= histstd->GetXaxis()->GetNbins(); ++i) //loop in zenith
+        {
+        
+
+                Nexp = histstd->GetBinContent(i,j);
+                Nobs = histalt->GetBinContent(i,j);
+                chi2 +=  2*( Nexp - Nobs + Nobs*TMath::Log(Nobs/Nexp) ); // LLRT
+
+            
+        }
+        
+    }
+
+    return chi2;
+
+}
+
+
 
 // Calculates the factorial of n
 double factorial(const int& n)

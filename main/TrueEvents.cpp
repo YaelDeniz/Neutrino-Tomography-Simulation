@@ -42,29 +42,31 @@
 
 using namespace std;
 
-void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff);
-void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff); 
-double Get2DChi2( TH2D * histstd, TH2D * histalt);
-double Get3DChi2( TH3D * histstd, TH3D * histalt);
-
 int main(int argc, char **argv)
 {
     // Plot and Histogram2D settings
 
     std::cout << " Neutrino Oscillation tomography. " << std::endl;
 
-    //Set detector location
-    double rdet[3] = {0.0,0.0, -1*Rocean };
-
+    //Detetcor Settings
+    
     //Detector size-------------------------------------------------------------
     double DetMass = 10.0*MTon; //Mass in megaton units
     double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
     double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
     double NnT = Nn*T; // Exposure [Mton*years]
 
+    //Detector location 
+    double Rdet = Rearth; //South Pole
+
+    //Set detector location
+    double rdet[3] = {0.0,0.0, -1*Rdet };
+
+
     //Set Neutrino Flux
     std::string FluxFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
-    std::string FluxFile = "GRN_AziAveraged_solmin/grn-nu-20-01-000.d";
+    //std::string FluxFile = "GRN_AziAveraged_solmin/grn-nu-20-01-000.d"; // Sea
+    std::string FluxFile = "SP_AziAveraged_solmin/spl-nu-20-01-000.d"; //South Pole
     std::string FluxTable = FluxFolder + FluxFile; //Class Assumes Sout Pole flux as default
 
 
@@ -84,26 +86,33 @@ int main(int argc, char **argv)
     //SIMULATION SET UP---------------------------------------------------------
 
     // Binning------------------------------------------------------------------
-    int czbins=100 ; // # Bins in zenith/cos(zenith)
-    int abins =1; // # Bins in azimuth
-    int ebins =100; // bins in energy
+    int czbins=50 ; // # Bins in zenith/cos(zenith)
+    int abins =100; // # Bins in azimuth (optimal bins are 110 or 22)
+    int ebins =50; // bins in energy
 
     //Energy interval (in GeV)--------------------------------------------------
     double EnuMin=1.0 ; 
-    double EnuMax=25.0 ;
+    double EnuMax=10.0 ;
 
     //Zenith Angle Interval-----------------------------------------------------
-    double zenmin = 180-TMath::ASin( DepthMax/Rocean )*(180.0/TMath::Pi()) ; // min 90
-    double zenmax = 180-TMath::ASin( (DepthMin)/Rocean )*(180.0/TMath::Pi()) ; // max 180
+    double zenmin = 180-TMath::ASin( DepthMax/Rdet )*(180.0/TMath::Pi()) ; // min 90
+    double zenmax = 180-TMath::ASin( (DepthMin)/Rdet )*(180.0/TMath::Pi()) ; // max 180
 
     double Czmin = cos(zenmax*TMath::Pi()/180.0);// Cos(zenmin) - Minimum possible is -1    
     double Czmax = cos(zenmin*TMath::Pi()/180.0);// Cos(zenmax) - Maximum possible is 0
 
     //Azimuthal Interal---------------------------------------------------------
-    double phimin = -55.0;
-    double phimax =  55.0 ;
+    double phi_a = -50;
+    double phi_b =  50;
+    double dPhi = (phi_b-phi_a)/(2.0*abins);
+    
+    // for bins centered
+    double phimin = phi_a - dPhi; 
+    double phimax = phi_b + dPhi;
 
+    
 
+    
 
    //SIMULATION-----------------------------------------------------------------
    int nuflv = 1; // neutrino  final state: nue (0), numu (1) or nutau (2)
@@ -120,7 +129,9 @@ int main(int argc, char **argv)
    StandardEarth.SetExposure(NnT);
    StandardEarth.flvf=nuflv;
 
-   TH2D * TrueStd = StandardEarth.GetTrueEvents2D();
+   //TH2D * TrueStd = StandardEarth.GetTrueEvents2D();
+
+    std::vector< TH2D* >  TrueStd = StandardEarth.GetTrueEvents3D();
 
     //Alternative Earth--------------------------------------------------------- 
 
@@ -130,64 +141,128 @@ int main(int argc, char **argv)
    AlternativeEarth.HondaTable = FluxTable;
    AlternativeEarth.SetDetectorPosition(rdet);
    AlternativeEarth.PileHeight = 1000;
-   AlternativeEarth.aperture=25;
+   AlternativeEarth.aperture=45;
    AlternativeEarth.MantleAnomaly = true;
    AlternativeEarth.AnomalyShape="pancake";
    AlternativeEarth.PileDensityContrast = 2;
    AlternativeEarth.PileChemContrast = 0.0;
-   //AlternativeEarth.ModifyLayer(23,5.0,0.0);
-   //AlternativeEarth.AnomalousLayers = layers;
    AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
    AlternativeEarth.SetBinning(czbins,abins,ebins);
    AlternativeEarth.SetExposure(NnT);
    AlternativeEarth.flvf=nuflv;
 
-   TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
+   //TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
+
+    std::vector< TH2D* > TrueAlt= AlternativeEarth.GetTrueEvents3D();
+
 
   //Data Analysis---------------------------------------------------------------
    
     //TH3D * TrueDiff3D = new TH3D("TrueHist","True Event Histrogram", czbins,Czmin,Czmax,abins,phimin,phimax,ebins,EnuMin,EnuMax); //binning in cth 
 
+/*
+
+    TGraph * chi2plot = new TGraph(7);
+
+    for (int i = 0; i <= 6; ++i)
+    {
+
+        AlternativeEarth.PileDensityContrast = -3 + i;
+        std::vector< TH2D* > TrueAlt= AlternativeEarth.GetTrueEvents3D();
+
+        double chi2tot = 0;
+
+        for (int n = 0; n < TrueAlt.size(); ++n)
+        {
+            chi2tot += Get2DChi2( TrueStd[n] , TrueAlt[n]);
+        }
+
+        chi2plot->AddPoint(-3+i,chi2total);
+
+        
+    }
+    
+*/
+
+    std::cout << " vector size "  << TrueStd.size() << std::endl;  
+
     TH2D * TrueDiff2D = new TH2D("TrueHist","True Event Histrogram", czbins,Czmin,Czmax,ebins,EnuMin,EnuMax); //binning in cth 
 
 
-   GetDiff2D( TrueStd , TrueAlt, TrueDiff2D );
-
    TApplication app("app", &argc, argv);
 
-   TCanvas *c = new TCanvas();
-   gStyle->SetPalette(kBlueGreenYellow);
 
    //double cthbottom = -0.8376; 
-   double cthbottom = TMath::Cos(TMath::Pi()-TMath::ASin( 3480.0/Rocean ));
-   double cthmid_bottom = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+300)/Rocean ));;
-   double cthmid_top = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+600)/Rocean ));;
-   double cthtop = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Rocean ));;
+   double cthbottom = TMath::Cos(TMath::Pi()-TMath::ASin( 3480.0/Rdet ));
+   double cthmid_bottom = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+300)/Rdet ));;
+   double cthmid_top = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+600)/Rdet ));;
+   double cthtop = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Rdet ));;
 
    std::cout << cthtop << std::endl;
 
-   TLine * lbottom = new TLine(cthbottom,1.0,cthbottom,25);
-   TLine * lmid_bottom = new TLine(cthmid_bottom,1.0,cthmid_bottom,25);
-   TLine * lmid_top = new TLine(cthmid_top,1.0,cthmid_top,25);
-   TLine * ltop = new TLine(cthtop,1.0,cthtop,25);
+   TLine * lbottom = new TLine(cthbottom,EnuMin,cthbottom,EnuMax);
+   TLine * lmid_bottom = new TLine(cthmid_bottom,EnuMin,cthmid_bottom,EnuMax);
+   TLine * lmid_top = new TLine(cthmid_top,EnuMin,cthmid_top,EnuMax);
+   TLine * ltop = new TLine(cthtop,EnuMin,cthtop,EnuMax);
+
+   TCanvas *c = new TCanvas();
+
+   gStyle->SetPalette(kBlueGreenYellow);
+
+    c->Divide(2,3,0.01,0.01);
+
+    c->cd(1);
+
+    GetDiff2D( TrueStd[51] , TrueAlt[51], TrueDiff2D );
+    TrueDiff2D->Draw("COLZ");
+    TrueDiff2D->SetStats(0);
+    lbottom->Draw("same");
+    lmid_bottom->Draw("same");
+    lmid_top->Draw("same");
+    ltop->Draw("same");
+
+    c->cd(2);
+
+    GetDiff2D( TrueStd[61] , TrueAlt[61], TrueDiff2D );
+    TrueDiff2D->Draw("COLZ");
+    TrueDiff2D->SetStats(0);
+    lbottom->Draw("same");
+    lmid_bottom->Draw("same");
+    lmid_top->Draw("same");
+    ltop->Draw("same");
+    
+    c->cd(3);
+    GetDiff2D( TrueStd[71] , TrueAlt[71], TrueDiff2D );
+    TrueDiff2D->Draw("COLZ");
+    TrueDiff2D->SetStats(0);
+    lbottom->Draw("same");
+    lmid_bottom->Draw("same");
+    lmid_top->Draw("same");
+    ltop->Draw("same");
+
+    c->cd(4);
+    GetDiff2D( TrueStd[81] , TrueAlt[81], TrueDiff2D );
+    TrueDiff2D->Draw("COLZ");
+    TrueDiff2D->SetStats(0);
+    lbottom->Draw("same");
+    lmid_bottom->Draw("same");
+    lmid_top->Draw("same");
+    ltop->Draw("same");
+
+
+    c->cd(5);
+    GetDiff2D( TrueStd[91] , TrueAlt[91], TrueDiff2D );
+    TrueDiff2D->Draw("COLZ");
+    TrueDiff2D->SetStats(0);
+    lbottom->Draw("same");
+    lmid_bottom->Draw("same");
+    lmid_top->Draw("same");
+    ltop->Draw("same");
 
 
 
-   TrueDiff2D->Draw("COLZ");
-   TrueDiff2D->SetStats(0);
-
-   lbottom->Draw("same");
-   lmid_bottom->Draw("same");
-   lmid_top->Draw("same");
-   ltop->Draw("same");
-
-
-
-   gPad->Update();
-
-   c->Modified(); c->Update();
-
-  
+    gPad->Update();
+    c->Modified(); c->Update();
     TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
     rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
     app.Run();
@@ -196,135 +271,3 @@ int main(int argc, char **argv)
 
 }
 
-
-
-void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff)
-{
-
-
-   double cth, azi, e, Nexp, Nobs, dN;
-
-
-    std::string filename = "dNTrueAziFixLayered.csv";
-    std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/3DEarth/"+filename); 
-        
-
-    for (int j = 1; j <= diff->GetYaxis()->GetNbins(); ++j)
-    {
-        
-        azi=diff->GetYaxis()->GetBinCenter(j);
-
-        for (int i = 1; i <= diff->GetXaxis()->GetNbins(); ++i)
-        {
-            cth=diff->GetXaxis()->GetBinCenter(i);
-         
-            for (int k = 1; k <= diff->GetZaxis()->GetNbins(); ++k)
-            {
-
-                e=diff->GetZaxis()->GetBinCenter(k);
-                Nexp = histstd->GetBinContent(i,j,k);
-                Nobs = histalt->GetBinContent(i,j,k);
-                dN = 100*(Nobs-Nexp)/Nexp;
-
-                diff->SetBinContent(i,j,k,dN);
-
-                std::cout<< diff->GetXaxis()->GetNbins() << " " << azi << " , " <<  cth  << " , " << e << " , " << dN << std::endl;
-
-                TrueDiffFile << cth << " , " <<  azi  << " , " << e << " , " << dN << std::endl;
-
-            }
-        }
-        
-    }
-
-    TrueDiffFile.close();
-}
-
-void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)
-{
-
-
-   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/EarthSensitivity2D.csv"); 
-
-   double cth, e, Nexp, Nobs, dN;
-
-
-        for (int i = 1; i <= diff->GetXaxis()->GetNbins(); ++i)
-        {
-            cth=diff->GetXaxis()->GetBinCenter(i);
-         
-            for (int k = 1; k <= diff->GetYaxis()->GetNbins(); ++k)
-            {
-
-                e=diff->GetYaxis()->GetBinCenter(k);
-                Nexp = histstd->GetBinContent(i,k);
-                Nobs = histalt->GetBinContent(i,k);
-                dN = 100*(Nobs-Nexp)/Nexp;
-
-                diff->SetBinContent(i,k, dN);
-
-                TrueDiffFile << cth  << " , " << e << " , " << dN << std::endl;
-
-            }
-        }
-        
-    TrueDiffFile.close();
-
-
-}
-
-double Get3DChi2( TH3D * histstd, TH3D * histalt)
-{
-
-    double  Nexp, Nobs;
-
-    double chi2 = 0;
-
-    for (int j = 1; j <= histstd->GetYaxis()->GetNbins(); ++j) //loop in azimuth
-    {
-        
-        for (int i = 1; i <= histstd->GetXaxis()->GetNbins(); ++i) //loop in zenith
-        {
-         
-            for (int k = 1; k <= histstd->GetZaxis()->GetNbins(); ++k) //loop in energy
-            {
-
-                Nexp = histstd->GetBinContent(i,j,k);
-                Nobs = histalt->GetBinContent(i,j,k);
-                chi2 +=  2*( Nexp - Nobs + Nobs*TMath::Log(Nobs/Nexp) ); // LLRT
-
-            }
-        }
-        
-    }
-
-    return chi2;
-
-}
-
-double Get2DChi2( TH2D * histstd, TH2D * histalt)
-{
-
-    double  Nexp, Nobs;
-
-    double chi2 = 0;
-
-    for (int j = 1; j <= histstd->GetYaxis()->GetNbins(); ++j) //loop in azimuth
-    {
-        
-        for (int i = 1; i <= histstd->GetXaxis()->GetNbins(); ++i) //loop in zenith
-        {
-        
-
-                Nexp = histstd->GetBinContent(i,j);
-                Nobs = histalt->GetBinContent(i,j);
-                chi2 +=  2*( Nexp - Nobs + Nobs*TMath::Log(Nobs/Nexp) ); // LLRT
-
-            
-        }
-        
-    }
-
-    return chi2;
-
-}

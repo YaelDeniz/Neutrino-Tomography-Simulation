@@ -53,6 +53,7 @@ bool isCINT = true;
 
 using namespace std;
 
+
 // Some Constants i need
 //# define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
 //# define MTon  1E9  //Metric MegaTon
@@ -61,43 +62,26 @@ using namespace std;
 # define mN   1.67492749804E-27  // Nucleons mass (~ Neutron mass) in kg
 
 // Make oscillogram for given final flavour and MH
-/*
-TH3D* AsimovSimulation::GetTrueEvents3D()
+
+std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
 {  
-
-    //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
-
-    //Energy Intervals
-    double Emin      = EnuMin;//Lower limit for Energy
-    double Emax      = EnuMax;//Upper limit for Energy
-
-    //Angular Intervals
-
-    //Zenith (given  in degrees -> transformed to radians)
-    double thmin = ZenMin*TMath::Pi()/180; //[min pi/2]
-    double thmax = ZenMax*TMath::Pi()/180;  //[max pi]
+    std::ofstream IndexAzi("SimulationResults/TrueIndexTable.csv"); 
 
     double cthmin = cos(thmax); //min cth = -1 
     double cthmax = cos(thmin); // max cth = 0
 
-    //Azimuth (given  in degrees -> transformed to radians)
-    double phimin = AziMin*TMath::Pi()/180; //[min 0]
-    double phimax = AziMax*TMath::Pi()/180;  //[max 2pi]
+    int bins = jbins+1;
 
-    //Bins
-    int ibins = nbinsZen; //Bins in Zenith
-    int jbins = nbinsAzi; //Bins in Azimuth
-    int kbins = nbinsE;   //Bins in Energy
 
     double N_ijk = 0   ;   //Poisson mean for bin ijk.
 
-//Histrogram--------------------------------------------------------------------------------------------------------------------
+    //Histrogram--------------------------------------------------------------------------------------------------------------------
 
     // TH3D * TrueHist("TrueHist","True Event Histrogram", ibins,thmin,thmax,jbins,phimin,phimax,kbins,Emin,Emax) //binning in th
 
-    TH3D * TrueHist = new TH3D("TrueHist","True Event Histrogram", ibins,cthmin,cthmax,jbins,phimin,phimax,kbins,Emin,Emax); //binning in cth 
-    
-//Neutrino event generation-----------------------------------------------------------------------------------------
+    TH3D * EventHist3D = new TH3D("TrueHist","True Event Histrogram", ibins,cthmin,cthmax,bins,phimin,phimax,kbins,Emin,Emax);
+
+    //Neutrino event generation-----------------------------------------------------------------------------------------
 
     // Neutrino final flavour
     int nue        = 0;  // electron neutrino  
@@ -107,12 +91,12 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
     int nu         = 1; //neutrino
     int nubar      = -1; //antineutrino
 
-//Neutrino Oscillation Probabilities calculation--------------------------------------------------------------------
+    //Neutrino Oscillation Probabilities calculation--------------------------------------------------------------------
     OscProb::PMNS_Fast PMNS_H; // Create PMNS objects
 
     PMNS_H.SetStdPars(); // Set PDG 3-flavor parameters
 
-//Honda flux distribution-----------------------------------------------------------------------------------------------------
+    //Honda flux distribution-----------------------------------------------------------------------------------------------------
 
     NuFlux HondaFlux;
 
@@ -125,42 +109,54 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
     TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData); //EFlux
     TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); //EBarFlux
 
-//Set earth model -------------------------------------------------------------------------------------------------------------
+    //Set earth model -------------------------------------------------------------------------------------------------------------
     
      Earth3DModel MyEarthModel;
 
      MyEarthModel.SetModel(PremTable);
 
-     MyEarthModel.SetDetector(Rdet);
+     MyEarthModel.SetDetector(pos);
+
+     MyEarthModel.PileThickness = PileHeight;  
+
+     MyEarthModel.aWidth = aperture;
 
      MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
 
      MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
-
-//Event Calculation
+    //Event Calculation
     
-    double l,d,z,ly;
+    double l,d,z;
 
-    for (int j = 1; j <= jbins; j++) //Loop In Azimuth
+    std::vector< TH2D* > HistVec;
+    TH2D * EventHist2D[bins];
+
+    for (int j = 1; j <= bins; j++) //Loop In Azimuth
     {
-        double phi = TrueHist->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
+        double phi = EventHist3D->GetYaxis()->GetBinCenter(j); //< This will defined a constant L por different values of ct provided Dct is Small
         
-        double dphi = TrueHist -> GetYaxis()->GetBinWidth(j); //In Radians
+        double dphi = EventHist3D-> GetYaxis()->GetBinWidth(j); //In Radians
+
+
+
+        char int_stg[32];
+        sprintf(int_stg, "%d", j);//Layer Index
+        char histchar[64]="truehist";
+        strcat(histchar, int_stg);
+        const char *histname = histchar;
+
+        EventHist2D[j-1] = new TH2D(histname,histname, ibins,cthmin,cthmax,kbins,Emin,Emax); 
         
-      
         for(int i=1; i<= ibins ; i++) //Loop in Zenith
         {    
 
             // Get cos(eta) from bin center, This is used to calculate the baseline.
 
-            double cth = TrueHist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-            double dcth = (TrueHist -> GetXaxis()->GetBinWidth(i));
-            //double th =acos(cth);
+            double cth = EventHist2D[j-1]->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+            double dcth = EventHist2D[j-1] -> GetXaxis()->GetBinWidth(i);
 
             if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
             
-            //std::vector< std::vector<double> >  PathMatrix = NuPATHS3D (PREM_MODELTEST, eta , 0.0, LLVP);
-
             MyEarthModel.SetDirection(cth,phi); 
 
             std::vector<std::vector<double>> EarthPath = MyEarthModel.Create3DPath();
@@ -168,18 +164,16 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
             l = EarthPath[0][0];
             d = EarthPath[0][1];
             z = EarthPath[0][2];
-            //ly =  PathMatrix[0][3]; 
             
             PMNS_H.SetPath(l,d,z);
             
            
-            for (int i = 1; i < EarthPath.size(); i++) 
+            for (int np = 1; np < EarthPath.size(); np++) 
             { 
         
-                l = EarthPath[i][0];
-                d = EarthPath[i][1];
-                z = EarthPath[i][2];
-               // ly =  PathMatrix[i][3]; 
+                l = EarthPath[np][0];
+                d = EarthPath[np][1];
+                z = EarthPath[np][2];
                 
                 PMNS_H.AddPath(l,d,z);
             
@@ -187,15 +181,17 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
             
             for (int k = 1; k <=kbins; ++k)
             { 
-                double e = TrueHist->GetZaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
-                double dE = TrueHist->GetZaxis()->GetBinWidth(k);
+                double e = EventHist2D[j-1]->GetYaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
+                double dE = EventHist2D[j-1]->GetYaxis()->GetBinWidth(k);
                 double logEi = log10(e);
                 
 
                 //Neutrino Flux bilinear interpolation
-
+                 
+                // std::cout << "Hist domain " << Emin << " " << e << " " << logEi << " " << cth <<std::endl;
 
                  double logdPsiMu = muflux->Interpolate(logEi,cth);
+
                  double logdPsiMub = mubflux->Interpolate(logEi,cth);
                  double logdPsiE = eflux->Interpolate(logEi,cth);
                  double logdPsiEb = ebflux->Interpolate(logEi,cth);
@@ -215,8 +211,6 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
                 double  Ri_mu = XSec(e,nu)*(PMNS_H.Prob(numu, flvf, e)*dPsiMudEdct); //Muon neutrino contribution  
                 
                 double Ri_nu = Ri_e + Ri_mu;
-
-                //double Ri_nu = XSec(e,nu)*( PMNS_H.Prob(numu, flvf, e)*dPsiMudE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEdE.Eval(e) );
                 
                 //Antineutrino contribution
                 PMNS_H.SetIsNuBar(true); 
@@ -227,30 +221,27 @@ TH3D* AsimovSimulation::GetTrueEvents3D()
 
                 double Ri_nubar = Ri_eb + Ri_mub;
 
-                //double Ri_nubar = XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardE.Eval(e) + PMNS_H.Prob(nue,flvf,e)*dPsiEbardE.Eval(e) ); 
+                double N_ijk = NT*(Ri_nu + Ri_nubar)*dE*dcth*dphi; //Binning in cth
 
-                //Events at bin
-                //double N_ijk = (Ri_nu + Ri_nubar); //Rates
-                double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dcth*dphi; //Binning in cth
-                //double N_ijk = NnT*(Ri_nu + Ri_nubar)*dE*dth*dphi; //Binning in th
+                EventHist2D[j-1]->SetBinContent(i,k, N_ijk); //Create histogram for  kth Pseudo-Experimens
 
-                TrueHist->SetBinContent(i,j,k, N_ijk); //Create histogram for  kth Pseudo-Experimens
+                std::cout << i << " " << j << " " << k << " " << std::endl;
 
             } // loop energy
 
         } // Loop zenith
 
+
+        IndexAzi << j << " "  << phi << " " << dphi << std::endl;
+
+        HistVec.push_back(EventHist2D[j-1]);
+
     } //Loop in Azimuth
-
-    std::cout << "  3D true simulation summary: " << std::endl;
-    std::cout << "  Energy range [" << EnuMin << " - " << EnuMax << "] Binning " << kbins  << std::endl;
-    std::cout << "  Zenith range [" << cthmin << "(" << ZenMax <<") - "<< cthmax << "(" << ZenMin <<")]" << " Binning " << ibins  << std::endl;
-    std::cout << "  Azimuth range [" << AziMin << " - " << AziMax << "] Binning " << jbins  << std::endl;
-
           
-    return TrueHist;
+    IndexAzi.close();
+    return HistVec;
 }
-*/
+
 
 TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 {   
@@ -324,7 +315,7 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
     TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); //EBarFlux
 
 //Set earth model -------------------------------------------------------------------------------------------------------------
-    /*
+    
      Earth3DModel MyEarthModel;
 
      MyEarthModel.SetModel(PremTable);
@@ -338,15 +329,15 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
      MyEarthModel.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
 
      MyEarthModel.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
-    */
+    
 
-     OscProb::PremModel prem(PremTable);
+     //OscProb::PremModel prem(PremTable);
     
      //Event Calculation
     
-        //double l,d,z,ly;
+        double l,d,z,ly;
 
-        //double phi = 0.0; //< This will defined a constant L for different values of ct provided Dct is Small
+        double phi = 0.0; //< This will defined a constant L for different values of ct provided Dct is Small
     
         for(int i=1; i<= ibins ; i++) //Loop in Zenith
         {    
@@ -359,36 +350,36 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
             if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
             
              
-            //MyEarthModel.SetDirection(cth,phi); 
+            MyEarthModel.SetDirection(cth,phi); 
 
-            //std::vector<std::vector<double>> EarthPath = MyEarthModel.Create3DPath();
+            std::vector<std::vector<double>> EarthPath = MyEarthModel.Create3DPath();
 
-            //l = EarthPath[0][0];
-            //d = EarthPath[0][1];
-            //z = EarthPath[0][2];
+            l = EarthPath[0][0];
+            d = EarthPath[0][1];
+            z = EarthPath[0][2];
             //ly =  PathMatrix[0][3]; 
             
-            //PMNS_H.SetPath(l,d,z);
+            PMNS_H.SetPath(l,d,z);
             
            
-           // for (int i = 1; i < EarthPath.size(); i++) 
-           // { 
+           for (int i = 1; i < EarthPath.size(); i++) 
+           { 
         
-           //     l = EarthPath[i][0];
-           //     d = EarthPath[i][1];
-           //     z = EarthPath[i][2];
-               // ly =  PathMatrix[i][3]; 
+              l = EarthPath[i][0];
+              d = EarthPath[i][1];
+              z = EarthPath[i][2];
+              //ly =  PathMatrix[i][3]; 
                 
-           //   PMNS_H.AddPath(l,d,z);
+              PMNS_H.AddPath(l,d,z);
             
-            //} 
+            } 
              
           
             
 
-            prem.FillPath(cth); // Fill paths from PREM model
+            //prem.FillPath(cth); // Fill paths from PREM model
 
-            PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
+            //PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
             
             for (int k = 1; k <=kbins; ++k)
             { 

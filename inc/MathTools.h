@@ -16,6 +16,24 @@ parts of a program
 #include <vector>
 #include <valarray>
 
+//CERN ROOT libraries
+#include "TH2.h"
+#include "TH3.h"
+
+
+
+
+
+
+
+
+
+
+void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff); // Create a histogram containing the difference between oscillograms
+
+double Get3DChi2( TH3D * histstd, TH3D * histalt); // Calculate chi2 values in a 3 variable binning scheme
+
+double Get2DChi2( TH2D * histstd, TH2D * histalt); // Calculate chi2 values in a 2 variable binning scheme
 
 //Factorial of a function
 double factorial(const int& n);

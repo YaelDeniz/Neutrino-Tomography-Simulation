@@ -124,6 +124,8 @@ class AsimovSimulation
    // TH3D * GetTrueEvents3D();
 
     TH2D * GetTrueEvents2D(); //Azimuth independet
+    
+    std::vector< TH2D* >  GetTrueEvents3D();
 
    // TH2D * GetOscProb2D(int flvi, int flvf, bool nunubar  ); //Azimuth independet
     

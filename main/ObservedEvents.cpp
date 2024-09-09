@@ -36,7 +36,7 @@
 
 
 using namespace std;
-void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff);
+//void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff);
 
 
 int main(int argc, char **argv)
@@ -197,6 +197,7 @@ int main(int argc, char **argv)
 
 }
 
+/*
 void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)
 {
 
@@ -229,3 +230,4 @@ void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)
 
 
 }
+*/

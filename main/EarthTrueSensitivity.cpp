@@ -43,10 +43,10 @@
 using namespace std;
 
 
-void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff);
-void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff);
-double Get2DChi2( TH2D * histstd, TH2D * histalt);
-double Get3DChi2( TH3D * histstd, TH3D * histalt);
+//void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff);
+//void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff);
+//double Get2DChi2( TH2D * histstd, TH2D * histalt);
+//double Get3DChi2( TH3D * histstd, TH3D * histalt);
 
 int main(int argc, char **argv)
 {
@@ -280,6 +280,7 @@ int main(int argc, char **argv)
 
 }
 
+/*
 void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff)
 {
 
@@ -316,6 +317,7 @@ void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff)
 
     TrueDiffFile.close();
 }
+
 
 void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)
 {
@@ -409,3 +411,4 @@ double Get2DChi2( TH2D * histstd, TH2D * histalt)
     return chi2;
 
 }
+*/

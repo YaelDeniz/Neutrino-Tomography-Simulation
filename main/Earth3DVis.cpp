@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
   double cth =  -0.75;
 
-  double phi = 0*TMath::Pi()/180.0;
+  double phi = 50.0*TMath::Pi()/180.0;
 
   // OSCPROB
 
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
   test.PileThickness = 1000;
 
-  test.aWidth = 25;
+  test.aWidth = 45;
   test.SetModel(path2prem);
 
   test.SetDirection(cth, phi);
