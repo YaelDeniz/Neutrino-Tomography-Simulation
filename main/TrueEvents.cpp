@@ -86,9 +86,9 @@ int main(int argc, char **argv)
     //SIMULATION SET UP---------------------------------------------------------
 
     // Binning------------------------------------------------------------------
-    int cthbins=50 ; // # Bins in zenith/cos(zenith)
+    int cthbins=10 ; // # Bins in zenith/cos(zenith)
     int abins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int ebins =50; // bins in energy
+    int ebins =10; // bins in energy
 
     //Energy interval (in GeV)--------------------------------------------------
     double EnuMin=1.0 ; 
@@ -156,8 +156,11 @@ int main(int argc, char **argv)
 
 
    //Sensitivity
-    std::string chi2name = "TrueChi2"+std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins)+".txt";
-    std::string chi2path = "/SimulationResults/Sensitivity/True"+chi2name;
+    std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
+    std::string ResultsFolder = "/SimulationResults/Sensitivity/True/"; 
+    std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
+    std::string chi2name  = "TrueChi2"+BinLabel+".txt";
+    std::string chi2path  = NuTomoPath+ResultsFolder+chi2name;
 
     std::ofstream SenvData(chi2path); 
 
@@ -176,7 +179,7 @@ int main(int argc, char **argv)
             chi2tot += Get2DChi2( TrueStd[n] , NewAlt[n]);
         }
 
-        std::cout << "Density %: " << rpct << " Chi2: " << chi2tot << std::endl;
+    //std::cout << "Density %: " << rpct << " Chi2: " << chi2tot << std::endl;
 
         SenvData << rpct << " " << chi2tot << " " << cthbins << " " << abins << " " << ebins << std::endl; 
 
