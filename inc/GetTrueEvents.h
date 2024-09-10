@@ -94,23 +94,23 @@ class AsimovSimulation
 
     }
 
-    void SetIntervals(double th1, double th2, double phi1, double phi2, double Enu1, double Enu2)
+    void SetIntervals(double zLow, double zUpper, double azLow, double azUpper, double eLow, double eUpper)
     {
-        thmin = th1*TMath::Pi()/180;
-        thmax = th2*TMath::Pi()/180;
+        thmin = zLow*TMath::Pi()/180;
+        thmax = zUpper*TMath::Pi()/180;
 
-        phimin = phi1*TMath::Pi()/180;
-        phimax = phi2*TMath::Pi()/180;
+        phimin = azLow*TMath::Pi()/180;
+        phimax = azUpper*TMath::Pi()/180;
         
-        Emin = Enu1;
-        Emax = Enu2;
+        Emin = eLow;
+        Emax = eUpper;
 
     }
 
     void SetBinning(int i, int j, int k)
     {
         ibins = i;
-        jbins = j;
+        jbins = j+1; // Bins centered at values
         kbins = k;
     }
 

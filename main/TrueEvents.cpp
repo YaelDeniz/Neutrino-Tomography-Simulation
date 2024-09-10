@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     //SIMULATION SET UP---------------------------------------------------------
 
     // Binning------------------------------------------------------------------
-    int czbins=50 ; // # Bins in zenith/cos(zenith)
+    int cthbins=50 ; // # Bins in zenith/cos(zenith)
     int abins =100; // # Bins in azimuth (optimal bins are 110 or 22)
     int ebins =50; // bins in energy
 
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
    StandardEarth.SetDetectorPosition(rdet);
    StandardEarth.MantleAnomaly = false;
    StandardEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
-   StandardEarth.SetBinning(czbins,abins,ebins);
+   StandardEarth.SetBinning(cthbins,abins,ebins);
    StandardEarth.SetExposure(NnT);
    StandardEarth.flvf=nuflv;
 
@@ -147,47 +147,46 @@ int main(int argc, char **argv)
    AlternativeEarth.PileDensityContrast = 2;
    AlternativeEarth.PileChemContrast = 0.0;
    AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
-   AlternativeEarth.SetBinning(czbins,abins,ebins);
+   AlternativeEarth.SetBinning(cthbins,abins,ebins);
    AlternativeEarth.SetExposure(NnT);
    AlternativeEarth.flvf=nuflv;
 
    //TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
-
     std::vector< TH2D* > TrueAlt= AlternativeEarth.GetTrueEvents3D();
 
 
-  //Data Analysis---------------------------------------------------------------
-   
-    //TH3D * TrueDiff3D = new TH3D("TrueHist","True Event Histrogram", czbins,Czmin,Czmax,abins,phimin,phimax,ebins,EnuMin,EnuMax); //binning in cth 
+   //Sensitivity
+    std::string chi2name = "TrueChi2"+std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins)+".txt";
+    std::string chi2path = "/SimulationResults/Sensitivity/True"+chi2name;
 
-/*
+    std::ofstream SenvData(chi2path); 
 
-    TGraph * chi2plot = new TGraph(7);
 
-    for (int i = 0; i <= 6; ++i)
+    for (int rpct = -4; rpct <= 4; ++ rpct)
     {
 
-        AlternativeEarth.PileDensityContrast = -3 + i;
-        std::vector< TH2D* > TrueAlt= AlternativeEarth.GetTrueEvents3D();
+        AlternativeEarth.PileDensityContrast = rpct; //Adjust the LLVP contrats density
+
+        std::vector< TH2D* > NewAlt= AlternativeEarth.GetTrueEvents3D();
 
         double chi2tot = 0;
 
         for (int n = 0; n < TrueAlt.size(); ++n)
         {
-            chi2tot += Get2DChi2( TrueStd[n] , TrueAlt[n]);
+            chi2tot += Get2DChi2( TrueStd[n] , NewAlt[n]);
         }
 
-        chi2plot->AddPoint(-3+i,chi2total);
+        std::cout << "Density %: " << rpct << " Chi2: " << chi2tot << std::endl;
+
+        SenvData << rpct << " " << chi2tot << " " << cthbins << " " << abins << " " << ebins << std::endl; 
 
         
     }
+
+    SenvData.close();
     
-*/
 
-    std::cout << " vector size "  << TrueStd.size() << std::endl;  
-
-    TH2D * TrueDiff2D = new TH2D("TrueHist","True Event Histrogram", czbins,Czmin,Czmax,ebins,EnuMin,EnuMax); //binning in cth 
-
+   // Visualization of Events
 
    TApplication app("app", &argc, argv);
 
@@ -205,65 +204,43 @@ int main(int argc, char **argv)
    TLine * lmid_top = new TLine(cthmid_top,EnuMin,cthmid_top,EnuMax);
    TLine * ltop = new TLine(cthtop,EnuMin,cthtop,EnuMax);
 
-   TCanvas *c = new TCanvas();
+   lbottom -> SetLineColor(kRed);
+   lmid_bottom -> SetLineColor(kRed);
+   lmid_top -> SetLineColor(kRed);
+   ltop -> SetLineColor(kRed);
+
+   lbottom -> SetLineStyle(2);
+   lmid_bottom -> SetLineStyle(2);
+   lmid_top -> SetLineStyle(2);
+   ltop -> SetLineStyle(2);
+
+   TCanvas *c1 = new TCanvas();
 
    gStyle->SetPalette(kBlueGreenYellow);
 
-    c->Divide(2,3,0.01,0.01);
+   c1->Divide(5,5);
 
-    c->cd(1);
+   for(int i = 0 ; i < 25 ; ++i )
 
-    GetDiff2D( TrueStd[51] , TrueAlt[51], TrueDiff2D );
+   {
+
+    int nhist = (51 + 2*i)-1;
+    c1->cd(i+1);
+
+    TH2D * TrueDiff2D = new TH2D(Form("OscDiff2D%d",nhist),Form("Oscillogram%d",nhist), cthbins,Czmin,Czmax,ebins,EnuMin,EnuMax); //binning in cth 
+    GetDiff2D( TrueStd[nhist] , TrueAlt[nhist], TrueDiff2D );
     TrueDiff2D->Draw("COLZ");
     TrueDiff2D->SetStats(0);
     lbottom->Draw("same");
     lmid_bottom->Draw("same");
     lmid_top->Draw("same");
     ltop->Draw("same");
-
-    c->cd(2);
-
-    GetDiff2D( TrueStd[61] , TrueAlt[61], TrueDiff2D );
-    TrueDiff2D->Draw("COLZ");
-    TrueDiff2D->SetStats(0);
-    lbottom->Draw("same");
-    lmid_bottom->Draw("same");
-    lmid_top->Draw("same");
-    ltop->Draw("same");
-    
-    c->cd(3);
-    GetDiff2D( TrueStd[71] , TrueAlt[71], TrueDiff2D );
-    TrueDiff2D->Draw("COLZ");
-    TrueDiff2D->SetStats(0);
-    lbottom->Draw("same");
-    lmid_bottom->Draw("same");
-    lmid_top->Draw("same");
-    ltop->Draw("same");
-
-    c->cd(4);
-    GetDiff2D( TrueStd[81] , TrueAlt[81], TrueDiff2D );
-    TrueDiff2D->Draw("COLZ");
-    TrueDiff2D->SetStats(0);
-    lbottom->Draw("same");
-    lmid_bottom->Draw("same");
-    lmid_top->Draw("same");
-    ltop->Draw("same");
-
-
-    c->cd(5);
-    GetDiff2D( TrueStd[91] , TrueAlt[91], TrueDiff2D );
-    TrueDiff2D->Draw("COLZ");
-    TrueDiff2D->SetStats(0);
-    lbottom->Draw("same");
-    lmid_bottom->Draw("same");
-    lmid_top->Draw("same");
-    ltop->Draw("same");
-
-
+ 
+   }
 
     gPad->Update();
-    c->Modified(); c->Update();
-    TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
+    c1->Modified(); c1->Update();
+    TRootCanvas *rc = (TRootCanvas *)c1->GetCanvasImp();
     rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
     app.Run();
 
