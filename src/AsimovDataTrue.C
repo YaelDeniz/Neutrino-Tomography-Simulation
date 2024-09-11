@@ -200,14 +200,9 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
                 // Set the bin content in the 2D histogram
                 EventHist2D[j]->SetBinContent(i,k, N_ijk); 
 
-                std::cout << i << " " << j << " " << k << " " << std::endl;
-
             } // End energy loop 
 
         } // End zenith loop
-
-
-        IndexAzi << j << " "  << phi << " " << dphi << std::endl;
 
         // Add the current 2D histogram to the vector
 

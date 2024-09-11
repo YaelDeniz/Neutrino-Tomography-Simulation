@@ -34,27 +34,31 @@
 # define years2sec 3.154E7 // Years in Seconds
 
 
-
 using namespace std;
-//void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff);
-
 
 int main(int argc, char **argv)
 {
-    // Plot and Histogram2D settings
+    //Detector setting 
+    double DetMass = 10.0*MTon; //Mass in megaton units
+    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
+    double NT = Nn*T; // Exposure [Mton*years]
 
-    std::cout << " Neutrino Oscillation tomography. " << std::endl;
-    std::cout << " Observed Events: track-like only. "<< std::endl; 
+    double Rdet = Rearth;
 
-    int ErecoBins=40; // # of Bins of Energy
-    int CthRecoBins=40; // # of Bins of cosEta
+    //Set detector location
+    double rdet[3] = {0.0,0.0, -1*Rdet };
 
-    int EtrueBins=100; // # of Bins of Energy
-    int CthTrueBins=10; // # of Bins of cosEta
-    int AziTrueBins=100;
+    //Set Neutrino Flux
+    std::string FluxFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
+    //std::string FluxFile = "GRN_AziAveraged_solmin/grn-nu-20-01-000.d"; // Sea
+    std::string FluxFile = "SP_AziAveraged_solmin/spl-nu-20-01-000.d"; //South Pole
+    std::string FluxTable = FluxFolder + FluxFile; //Class Assumes Sout Pole flux as default
 
-
-    //Target SetUp
+    // Earth Models
+    std::string PremFolder ="/home/dehy0499/OscProb/PremTables/";
+    std::string PremName = "prem_44layers.txt";
+    std::string path2prem = PremFolder+PremName;
 
     //Pile Set Up---------------------------------------------------------------
     double PileHeight = 600; // Height of LLVP in km
@@ -62,27 +66,27 @@ int main(int argc, char **argv)
     double DepthMin = Rcmb-1000;
     double DepthMax = PileRadius+200; // Distance from the center of the Earth
     double PileDensityPct = 2.0; // 2% density contrats for LLVP
-
-    //Detector SetUp
-
-    //Set detector location
-    double xyz[3] = {0.0,0.0, -1*Rocean };
-
-    //Set Neutrino Flux
-    std::string FluxFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
-    std::string FluxFile = "GRN_AziAveraged_solmin/grn-nu-20-01-000.d";
-    std::string FluxTable = FluxFolder + FluxFile; //Class Assumes Sout Pole flux as default
+    std::string shape = "pancake"; // LLVP shape
 
 
-    //Detector size-------------------------------------------------------------
-    double DetMass = 10.0*MTon; //Mass in megaton units
-    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
-    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
-    double NnT = Nn*T; // Exposure [Mton*years]
+    //Simulation Setup
 
-    //Detector Parameters
+    // Binning------------------------------------------------------------------
+    int cthtruebins=50 ; // # Bins in zenith/cos(zenith)
+    int atruebins =100; // # Bins in azimuth (optimal bins are 110 or 22)
+    int etruebins =50; // bins in energy
 
-    //....
+      // Binning------------------------------------------------------------------
+    int cthrecobins=50 ; // # Bins in zenith/cos(zenith)
+    int arecobins =100; // # Bins in azimuth (optimal bins are 110 or 22)
+    int erecobins =50; // bins in energy
+
+    int ErecoBins=40; // # of Bins of Energy
+    int CthRecoBins=40; // # of Bins of cosEta
+
+    int EtrueBins=100; // # of Bins of Energy
+    int CthTrueBins=100; // # of Bins of cosEta
+    int AziTrueBins=100;
 
     //Reconstructed Energy interval (in GeV):
     double Emin = 2.0; 
@@ -91,43 +95,39 @@ int main(int argc, char **argv)
     //Reconstructed Directions
 
     //Zenith Angle Interval-----------------------------------------------------
-    double zenmin = 180-TMath::ASin( DepthMax/Rocean )*(180.0/TMath::Pi()) ; // min 90
-    double zenmax = 180-TMath::ASin( (DepthMin)/Rocean )*(180.0/TMath::Pi()) ; // max 180
+    double thmin = 180-TMath::ASin( DepthMax/Rocean )*(180.0/TMath::Pi()) ; // min 90
+    double thmax = 180-TMath::ASin( (DepthMin)/Rocean )*(180.0/TMath::Pi()) ; // max 180
 
-    double Czmin = cos(zenmax*TMath::Pi()/180.0);// Cos(zenmin) - Minimum possible is -1    
-    double Czmax = cos(zenmin*TMath::Pi()/180.0);// Cos(zenmax) - Maximum possible is 0
+    double cthmin = cos(thmax*TMath::Pi()/180.0);// Cos(thmin) - Minimum possible is -1    
+    double cthmax = cos(thmin*TMath::Pi()/180.0);// Cos(thmax) - Maximum possible is 0
 
-    //Azimuthal Interal---------------------------------------------------------
+    //Azimuthal Interval---------------------------------------------------------
     double phimin = -55.0;
     double phimax =  55.0 ;
 
-    // Earth Models
-    std::string PremFolder ="/home/dehy0499/OscProb/PremTables/";
-    std::string PremName = "prem_44layers.txt";
-    std::string path2prem = PremFolder+PremName;
-
-    //SIMULATION-----------------------------------------------------------------
-   int nuflv = 1; // neutrino  final state: nue (0), numu (1) or nutau (2)
+    int nuflv = 1; // neutrino  final state: nue (0), numu (1) or nutau (2)
     
    //Standart Earth-------------------------------------------------------------
    AsimovObsSimulation StandardEarth;
 
    StandardEarth.ThePremTable = path2prem;
    StandardEarth.TheHondaTable = FluxTable;
-   StandardEarth.SetDetectorXYZ(xyz);
+   StandardEarth.SetDetectorXYZ(rdet);
    StandardEarth.PileInModel = false;
-   StandardEarth.SetIntervals(zenmin,zenmax,phimin,phimax,Emin,Emax);
+
+   //Simulation of Standard Earth
+   StandardEarth.SetIntervals(thmin,thmax,phimin,phimax,Emin,Emax);
    StandardEarth.SetTrueBinning(CthTrueBins,AziTrueBins,EtrueBins);
    StandardEarth.SetRecoBinning(CthRecoBins,AziTrueBins,ErecoBins);
-   StandardEarth.SetExposure(NnT);
+   StandardEarth.SetExposure(NT);
    StandardEarth.flvf=nuflv;
 
-      //Standart Earth-------------------------------------------------------------
+    //Alternative Earth-------------------------------------------------------------
    AsimovObsSimulation AlternativeEarth;
 
    AlternativeEarth.ThePremTable = path2prem;
    AlternativeEarth.TheHondaTable = FluxTable;
-   AlternativeEarth.SetDetectorXYZ(xyz);
+   AlternativeEarth.SetDetectorXYZ(rdet);
    AlternativeEarth.SetEnergyResolution(0.001,0.0);
    AlternativeEarth.SetAngularResolution(0.001,0.0);
    
@@ -139,8 +139,8 @@ int main(int argc, char **argv)
    AlternativeEarth.ThePileDensityContrast = 2.0;
    AlternativeEarth.ThePileChemicalContrast = 0.0;
    
-
-   AlternativeEarth.SetIntervals(zenmin,zenmax,phimin,phimax,Emin,Emax);
+   //Simulation of Alternative Earth
+   AlternativeEarth.SetIntervals(thmin,thmax,phimin,phimax,Emin,Emax);
    AlternativeEarth.SetTrueBinning(CthTrueBins,AziTrueBins,EtrueBins);
    AlternativeEarth.SetRecoBinning(CthRecoBins,AziTrueBins,ErecoBins);
    AlternativeEarth.SetExposure(NnT);
@@ -149,7 +149,7 @@ int main(int argc, char **argv)
 
    TH2D * ObsStd = StandardEarth.GetObsEvents2Dcth();
    TH2D * ObsAlt = AlternativeEarth.GetObsEvents2Dcth();
-   TH2D * ObsDiff2D = new TH2D("ObsHist","Obs Event Histrogram", CthRecoBins,Czmin,Czmax,ErecoBins,Emin,Emax); //binning in cth 
+   TH2D * ObsDiff2D = new TH2D("ObsHist","Obs Event Histrogram", CthRecoBins,cthmin,cthmax,ErecoBins,Emin,Emax); //binning in cth 
    GetDiff2D( ObsStd , ObsAlt, ObsDiff2D );
 
 
@@ -197,37 +197,3 @@ int main(int argc, char **argv)
 
 }
 
-/*
-void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)
-{
-
-
-   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/EarthSensitivity2D.csv"); 
-
-   double cth, e, Nexp, Nobs, dN;
-
-
-        for (int i = 1; i <= diff->GetXaxis()->GetNbins(); ++i)
-        {
-            cth=diff->GetXaxis()->GetBinCenter(i);
-         
-            for (int k = 1; k <= diff->GetYaxis()->GetNbins(); ++k)
-            {
-
-                e=diff->GetYaxis()->GetBinCenter(k);
-                Nexp = histstd->GetBinContent(i,k);
-                Nobs = histalt->GetBinContent(i,k);
-                dN = 100*(Nobs-Nexp)/Nexp;
-
-                diff->SetBinContent(i,k, dN);
-
-                TrueDiffFile << cth  << " , " << e << " , " << dN << std::endl;
-
-            }
-        }
-        
-    TrueDiffFile.close();
-
-
-}
-*/

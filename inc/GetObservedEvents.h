@@ -116,7 +116,7 @@ class AsimovObsSimulation
     void SetTrueBinning(int zbins, int abins, int ebins)
     {
         truebinsZen = zbins;
-        truebinsAzi = abins;
+        truebinsAzi = abins+1;
         truebinsE   = ebins;
     }
 
