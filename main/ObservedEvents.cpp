@@ -72,21 +72,14 @@ int main(int argc, char **argv)
     //Simulation Setup
 
     // Binning------------------------------------------------------------------
-    int cthtruebins=50 ; // # Bins in zenith/cos(zenith)
+    int cthtruebins=20 ; // # Bins in zenith/cos(zenith)
     int atruebins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int etruebins =50; // bins in energy
+    int etruebins =20; // bins in energy
 
       // Binning------------------------------------------------------------------
-    int cthrecobins=50 ; // # Bins in zenith/cos(zenith)
+    int cthrecobins=20 ; // # Bins in zenith/cos(zenith)
     int arecobins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int erecobins =50; // bins in energy
-
-    int ErecoBins=40; // # of Bins of Energy
-    int CthRecoBins=40; // # of Bins of cosEta
-
-    int EtrueBins=100; // # of Bins of Energy
-    int CthTrueBins=100; // # of Bins of cosEta
-    int AziTrueBins=100;
+    int erecobins =20; // bins in energy
 
     //Reconstructed Energy interval (in GeV):
     double Emin = 2.0; 
@@ -117,8 +110,8 @@ int main(int argc, char **argv)
 
    //Simulation of Standard Earth
    StandardEarth.SetIntervals(thmin,thmax,phimin,phimax,Emin,Emax);
-   StandardEarth.SetTrueBinning(CthTrueBins,AziTrueBins,EtrueBins);
-   StandardEarth.SetRecoBinning(CthRecoBins,AziTrueBins,ErecoBins);
+   StandardEarth.SetTrueBinning(cthtruebins,atruebins,etruebins);
+   StandardEarth.SetRecoBinning(cthrecobins,arecobins,erecobins);
    StandardEarth.SetExposure(NT);
    StandardEarth.flvf=nuflv;
 
@@ -133,7 +126,7 @@ int main(int argc, char **argv)
    
    //Set LLVP
    AlternativeEarth.PileInModel = true;
-   AlternativeEarth.ShapeOfPile = "cake";
+   AlternativeEarth.ShapeOfPile = shape;
    AlternativeEarth.ThePileHight = 1000.0;
    AlternativeEarth.ThePileAperture = 45;
    AlternativeEarth.ThePileDensityContrast = 2.0;
@@ -141,59 +134,78 @@ int main(int argc, char **argv)
    
    //Simulation of Alternative Earth
    AlternativeEarth.SetIntervals(thmin,thmax,phimin,phimax,Emin,Emax);
-   AlternativeEarth.SetTrueBinning(CthTrueBins,AziTrueBins,EtrueBins);
-   AlternativeEarth.SetRecoBinning(CthRecoBins,AziTrueBins,ErecoBins);
-   AlternativeEarth.SetExposure(NnT);
+   AlternativeEarth.SetTrueBinning(cthtruebins,atruebins,etruebins);
+   AlternativeEarth.SetRecoBinning(cthrecobins,arecobins,erecobins);
+   AlternativeEarth.SetExposure(NT);
    AlternativeEarth.flvf=nuflv;
 
 
-   TH2D * ObsStd = StandardEarth.GetObsEvents2Dcth();
-   TH2D * ObsAlt = AlternativeEarth.GetObsEvents2Dcth();
-   TH2D * ObsDiff2D = new TH2D("ObsHist","Obs Event Histrogram", CthRecoBins,cthmin,cthmax,ErecoBins,Emin,Emax); //binning in cth 
-   GetDiff2D( ObsStd , ObsAlt, ObsDiff2D );
-
+   std::vector<TH2D*>  ObsStd = StandardEarth.GetObsEvents3Dcth();
+   std::vector<TH2D*>  ObsAlt = AlternativeEarth.GetObsEvents3Dcth();
 
    TApplication app("app", &argc, argv);
 
-   TCanvas *c = new TCanvas();
-   gStyle->SetPalette(kBlueGreenYellow);
 
    //double cthbottom = -0.8376; 
-   double cthbottom = TMath::Cos(TMath::Pi()-TMath::ASin( 3480.0/Rocean ));
-   double cthmid_bottom = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+300)/Rocean ));;
-   double cthmid_top = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+600)/Rocean ));;
-   double cthtop = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Rocean ));;
+   double cthbottom = TMath::Cos(TMath::Pi()-TMath::ASin( 3480.0/Rdet ));
+   double cthmid_bottom = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+300)/Rdet ));;
+   double cthmid_top = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+600)/Rdet ));;
+   double cthtop = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Rdet ));;
+
+   TLine * lbottom = new TLine(cthbottom,Emin,cthbottom,Emax);
+   TLine * lmid_bottom = new TLine(cthmid_bottom,Emin,cthmid_bottom,Emax);
+   TLine * lmid_top = new TLine(cthmid_top,Emin,cthmid_top,Emax);
+   TLine * ltop = new TLine(cthtop,Emin,cthtop,Emax);
+
+   lbottom -> SetLineColor(kRed);
+   lmid_bottom -> SetLineColor(kRed);
+   lmid_top -> SetLineColor(kRed);
+   ltop -> SetLineColor(kRed);
+
+   lbottom -> SetLineStyle(2);
+   lmid_bottom -> SetLineStyle(2);
+   lmid_top -> SetLineStyle(2);
+   ltop -> SetLineStyle(2);
+
+   TCanvas *c1 = new TCanvas();
+
+   gStyle->SetPalette(kBlueGreenYellow);
+
+   c1->Divide(5,5);
+
+   for(int i = 0 ; i < 25 ; ++i )
+
+   {
+
+    int nhist = (51 + 2*i)-1;
+    c1->cd(i+1);
+
+    TH2D * TrueDiff2D = new TH2D(Form("ObsDiff2D%d",nhist),Form("OscObs%d",nhist), cthrecobins,cthmin,cthmax,erecobins,Emin,Emax); //binning in cth 
+    GetDiff2D( ObsStd[nhist] , ObsAlt[nhist], TrueDiff2D );
+    TrueDiff2D->Draw("COLZ");
+    TrueDiff2D->SetStats(0);
+    lbottom->Draw("same");
+    lmid_bottom->Draw("same");
+    lmid_top->Draw("same");
+    ltop->Draw("same");
 
 
-   TLine * lbottom = new TLine(cthbottom,1.0,cthbottom,25);
-   TLine * lmid_bottom = new TLine(cthmid_bottom,1.0,cthmid_bottom,25);
-   TLine * lmid_top = new TLine(cthmid_top,1.0,cthmid_top,25);
-   TLine * ltop = new TLine(cthtop,1.0,cthtop,25);
+    //std::string BinLabel = std::to_string(cthrecobins)+std::to_string(arecobins)+std::to_string(erecobins);
+    //std::string filename  = "ObsDiff_"+std::to_string(nuflv)+shape+BinLabel+std::to_string(nhist)+".txt";
+    //ExportToCSV(TrueDiff2D, filename);
 
+ 
+   }
 
-
-   ObsDiff2D->Draw("COLZ");
-   ObsDiff2D->SetStats(0);
-
-   lbottom->Draw("same");
-   lmid_bottom->Draw("same");
-   lmid_top->Draw("same");
-   ltop->Draw("same");
-
-
-
-   gPad->Update();
-
-   c->Modified(); c->Update();
-
-  
-   TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
-   rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
-   app.Run();
-
-
+    gPad->Update();
+    c1->Modified(); c1->Update();
+    TRootCanvas *rc = (TRootCanvas *)c1->GetCanvasImp();
+    rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+    app.Run();
 
     return 0;
+   
+
 
 }
 

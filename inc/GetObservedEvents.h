@@ -116,14 +116,14 @@ class AsimovObsSimulation
     void SetTrueBinning(int zbins, int abins, int ebins)
     {
         truebinsZen = zbins;
-        truebinsAzi = abins+1;
+        truebinsAzi = abins;
         truebinsE   = ebins;
     }
 
     void SetRecoBinning(int zbins, int abins, int ebins) 
     {
         recobinsZen = zbins;
-        recobinsAzi = abins;
+        recobinsAzi = abins+1;
         recobinsE   = ebins;
     }
 
@@ -146,6 +146,9 @@ class AsimovObsSimulation
     //TH3D * GetObsEvents3D();
 
     TH2D * GetObsEvents2Dcth(); //Azimuth independet
+
+    std::vector < TH2D* >  GetObsEvents3Dcth();
+
 
     //TH2D * TestObsEvents2D(std::string model_std , std::string model_alt);
 

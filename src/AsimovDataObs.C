@@ -215,7 +215,7 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
     for (int nphi = 0 ; nphi < TrueHist.size(); ++nphi)
     {
 
-        RecoHist[nphi] = new TH2D(From("RecoHist%d",nphi),Form("ObsOscillogram%d",nphi),
+        RecoHist[nphi] = new TH2D(Form("RecoHist%d",nphi),Form("ObsOscillogram%d",nphi),
                                   mbins,CthrecoMin,CthrecoMax,
                                   nbins,ErecoMin,ErecoMax); // xbins correspond to energy values and ybins to zenith angle cost
 
@@ -271,8 +271,6 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
         HistVec.push_back(RecoHist[nphi]); 
 
     } // End Histogram loop
-
-   delete TrueHist;
    
    return HistVec;}
 
@@ -432,4 +430,3 @@ TH2D*  AsimovObsSimulation::GetObsEvents2Dcth(){
    
    return RecoHist;}
 
-[nphi]
