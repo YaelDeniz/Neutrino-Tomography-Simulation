@@ -74,7 +74,10 @@ int main(int argc, char **argv)
 
     //Energy interval (in GeV)
     double Emin=1.0 ; 
-    double Emax=40.0 ;
+    double Emax=20.0 ;
+
+    int intE1= 1;
+    int intE2= 20;
 
     //Zenith Angle Interval
     double thmin = 90.01; // Not Able to use 90 degrees
@@ -115,7 +118,7 @@ int main(int argc, char **argv)
     //Expected Interacting Events for a Standard Earth.
     std::string ResultFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/";
     std::string IntEvntsFolder = "/TrueEventsResults/IntStdEarth/";
-    std::string EnergyLabel= "ENE"+std::to_string(intE1) + std::to_string(intE2); = "ENE"+std::to_string(intE1) + std::to_string(intE2); 
+    std::string EnergyLabel= "ENE"+std::to_string(intE1) + std::to_string(intE2);
     
     for (int nhist = 0; nhist < TrueStd_mu.size(); nhist++)
     {
@@ -131,7 +134,6 @@ int main(int argc, char **argv)
 
     //Sentivitity to Earth layers.
     std::string SenvFolder = "/Sensitivity/Sensitivity2Layers/";
-    std::string EnergyLabel= "ENE"+std::to_string(intE1) + std::to_string(intE2); 
     std::string chi2name = "EarthSenv"+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+EnergyLabel+".txt";
     std::string chi2path = ResultFolder + SenvFolder  + chi2name;
     
