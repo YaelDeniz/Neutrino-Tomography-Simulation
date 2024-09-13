@@ -164,7 +164,7 @@ int main(int argc, char **argv)
     double chi2mu = Get2DChi2( TrueStd_mu[4], TrueAlt_mu[4]); // Muon Neutrino
     double chi2total = chi2e + chi2mu;
 
-    chi2file << std::setprecision(10) << chi2e << " " << chi2mu  << " " << chi2total << " " << rhopct << " " << layer  std::endl;
+    chi2file << std::setprecision(10) << chi2e << " " << chi2mu  << " " << chi2total << " " << rhopct << " " << layer <<  std::endl;
 
     //ChiPoints_e->SetPoint(layer-1, chi2e, layer);
     //ChiPoints_mu->SetPoint(layer-1, chi2mu, layer);
