@@ -243,7 +243,7 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
                             
      std::vector < TH2D * >  Histflv; //Store Oscillograms for (muflv, muflvbar, eflv, eflvbar, flv+ flvbar)
      
-     TH2D * Hist[5]
+     TH2D * Hist[5];
     
     //Neutrino properties
 
