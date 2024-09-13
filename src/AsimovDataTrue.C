@@ -217,152 +217,103 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
 }
 
 
-TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
+std::vector< TH2D* > AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 {   
+    //Define cos(theta) range and azimuthal angle range
+    double cthmin = cos(thmax); // min cos(theta) = -1 
+    double cthmax = cos(thmin); // max cos(theta) = 0
+    double dphi = phimax - phimin; //Azimutham angle range
 
+    //Bin labels
+    // ibins - Bins in Zenith
+    // jbins - Bins in Azimuth
+    // kbins - Bins in Energy
 
-    std::string filename = "ControlData_"+label+"_.csv";
+    //Initialize histograms for neutrino events
+    TH2D * EventHist = new TH2D("EventHist","True Event Histrogram", 
+                                 ibins,cthmin,cthmax,kbins,Emin,Emax); 
+    TH2D * Evtseflv = new TH2D("Evtseflv","Electron contribution to True Event", 
+                                 ibins,cthmin,cthmax,kbins,Emin,Emax); 
+    TH2D * Evtseflvb = new TH2D("Evtseflvb","Electron(b) contribution to True Event", 
+                                 ibins,cthmin,cthmax,kbins,Emin,Emax); 
+    TH2D * Evtsmuflv = new TH2D("Evtsmuflv","Muon contribution to True Event", 
+                                 ibins,cthmin,cthmax,kbins,Emin,Emax);
+    TH2D * Evtsmuflvb = new TH2D("Evtsmuflvb","Muon(b) contribution to True Event", 
+                                 ibins,cthmin,cthmax,kbins,Emin,Emax); 
+                            
+     std::vector < TH2D * >  Histflv; //Store Oscillograms for (muflv, muflvbar, eflv, eflvbar, flv+ flvbar)
+     
+     TH2D * Hist[5]
     
-    std::ofstream Control("SimulationResults/Control/ControlData/"+filename); 
+    //Neutrino properties
 
-    std::ofstream ControlFlux("SimulationResults/Control/ControlFlux/ControlFlux_"+label+"_.csv"); 
-
-    std::ofstream ControlProb("SimulationResults/Control/ControlProb/ControlProb_"+label+"_.csv");
-
-    //Binnig scheme and Oscillogram-------------------------------------------------------------------------------------
-
-    //Energy Intervals
-//    double Emin      = EnuMin;//Lower limit for Energy
-//    double Emax      = EnuMax;//Upper limit for Energy
-
-    //Angular Intervals
-
-    //Zenith (given  in degrees -> transformed to radians)
-    //double thmin = ZenMin*TMath::Pi()/180; //[min pi/2]
-    //double thmax = ZenMax*TMath::Pi()/180;  //[max pi]
-
-    double cthmin = cos(thmax); //min cth = -1 
-    double cthmax = cos(thmin); // max cth = 0
-
-    //Azimuth (given  in degrees -> transformed to radians)
-    //double phimin = AziMin*TMath::Pi()/180; //[min 0]
-    //double phimax = AziMax*TMath::Pi()/180;  //[max 2pi]
-    
-    double dphi = phimax - phimin;
-
-    //Bins
-    //int ibins = nbinsZen; //Bins in Zenith
-    //int jbins = nbinsAzi; //Bins in Azimuth
-    //int kbins = nbinsE;   //Bins in Energy
-
-
-
-//Histrogram--------------------------------------------------------------------------------------------------------------------
-
-     TH2D * TrueHist = new TH2D("TrueHist","True Event Histrogram", ibins,cthmin,cthmax,kbins,Emin,Emax); //binning in cth 
-    
-//Neutrino event generation-----------------------------------------------------------------------------------------
-
-    // Neutrino final flavour
-    int nue        = 0;  // electron neutrino  
-    int numu       = 1; // muon neutrino
-
+    // Neutrino initial flavour
+    int nue        = 0;  // Electron neutrino  
+    int numu       = 1;  // Muon neutrino
     // Particle type
-    int nu         = 1; //neutrino
-    int nubar      = -1; //antineutrino
+    int nu         = 1;  // Neutrino
+    int nubar      = -1; // Antineutrino
 
-//Neutrino Oscillation Probabilities calculation--------------------------------------------------------------------
-    OscProb::PMNS_Fast PMNS_H; // Create PMNS objects
-
+    // PMNS matrix setup
+    OscProb::PMNS_Fast PMNS_H; 
     PMNS_H.SetStdPars(); // Set PDG 3-flavor parameters
 
-//Honda flux distribution-----------------------------------------------------------------------------------------------------
-
+    // Load Honda flux data and create histograms for different neutrino types
     NuFlux HondaFlux;
     std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaTable);
+    //Generate flux histograms for different neutrino flavours
+    TH2D* muflux =  HondaFlux.GetFluxHist(1,FluxData); // Muon neutrino
+    TH2D* mubflux =  HondaFlux.GetFluxHist(2,FluxData);// Muon antineutrino
+    TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData);  // Electron neutrino
+    TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); // Electron antineutrino
 
-    //Matrix for Histogram & Histogram Draw
-
-    TH2D* muflux =  HondaFlux.GetFluxHist(1,FluxData); //MuFlux
-    TH2D* mubflux =  HondaFlux.GetFluxHist(2,FluxData); //MuBarFlux
-    TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData); //EFlux
-    TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); //EBarFlux
-
-//Set earth model -------------------------------------------------------------------------------------------------------------
-    
-     Earth3DModel Earth3D;
-
-     Earth3D.SetModel(PremTable);
-
-     Earth3D.SetDetector(pos);
-
-     Earth3D.PileThickness = PileHeight;  
-
-     Earth3D.aWidth = aperture;
-
-     Earth3D.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
-
-     Earth3D.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
-    
-
-     //OscProb::PremModel prem(PremTable);
-    
-     //Event Calculation
-    
-        double l,d,z,ly;
-
-        double phi = 0.0; //< This will defined a constant L for different values of ct provided Dct is Small
-    
+    // Set Earth model and Detector    
+    Earth3DModel Earth3D;
+    Earth3D.SetModel(PremTable); // Earth model
+    Earth3D.SetDetector(pos);    // Detector position
+    // Modify Specific layer properties
+    Earth3D.SetLayerProp(PremTableNumber, 
+                         DensityContrast, ChemicalContrast); 
+    // Set heterogeneities in lower mantle (e.g., LLVPs)
+    Earth3D.PileThickness = PileHeight;  // Height of LLVP
+    Earth3D.aWidth = aperture;           // Aperture of LLVP
+    Earth3D.SetPile( MantleAnomaly, 
+                   AnomalyShape, PileDensityContrast, PileChemContrast);
+        
+        // Loop over zenith bins (cos(theta))
         for(int i=1; i<= ibins ; i++) //Loop in Zenith
         {    
+            // Get the center and width of a bin in cos(theta)
+            double cth  = EventHist->GetXaxis()->GetBinCenter(i);
+            double dcth = EventHist -> GetXaxis()->GetBinWidth(i);
 
-            // Get cos(eta) from bin center, This is used to calculate the baseline.
-
-            double cth  = TrueHist->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-            double dcth = TrueHist -> GetXaxis()->GetBinWidth(i);
-
-            if(cth < -1 || cth > 1) break; // Skip if cosEta is unphysical 
+            if(cth < -1 || cth > 1) break; // Skip unphysical values 
             
-             
-            Earth3D.SetDirection(cth,phi); 
-
+            // Set the path through the Earth for direction (cos(theta),phi)
+            Earth3D.SetDirection(cth,0);  
             std::vector<std::vector<double>> EarthPath = Earth3D.Create3DPath();
 
-            l = EarthPath[0][0];
-            d = EarthPath[0][1];
-            z = EarthPath[0][2];
-            //ly =  PathMatrix[0][3]; 
+            // Distance through "ith" layer : l - EarthPath[i][0];
+            // Densty of "ith" layer : rho - EarthPath[i][2];
+            // z/a of "ith" layer : zoa - EarthPath[i][3];
             
-            PMNS_H.SetPath(l,d,z);
+            // Set initial Earth path in the PMNS model
+            PMNS_H.SetPath(EarthPath[0][0],EarthPath[0][1],EarthPath[0][2]);
             
-           
-           for (int i = 1; i < EarthPath.size(); i++) 
-           { 
-        
-              l = EarthPath[i][0];
-              d = EarthPath[i][1];
-              z = EarthPath[i][2];
-              //ly =  PathMatrix[i][3]; 
-                
-              PMNS_H.AddPath(l,d,z);
-            
+            // Add subsequent segments of the path
+            for (int i = 1; i < EarthPath.size(); i++) 
+            { 
+              PMNS_H.AddPath(EarthPath[i][0],EarthPath[i][1],EarthPath[i][2]);
             } 
-             
-          
-            
 
-            //prem.FillPath(cth); // Fill paths from PREM model
-
-            //PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
-            
+            // Loop through energy bins 
             for (int k = 1; k <=kbins; ++k)
             { 
-                double e = TrueHist->GetYaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
-                double dE = TrueHist->GetYaxis()->GetBinWidth(k);
+                double e = EventHist->GetYaxis()->GetBinCenter(k); 
+                double dE = EventHist->GetYaxis()->GetBinWidth(k);
                 double logEi = log10(e);
                 
-                //Neutrino Flux interpolation
-
+                //Interpolate neutrino fluxes
                  double logdPsiMu = muflux->Interpolate(logEi,cth);
                  double logdPsiMub = mubflux->Interpolate(logEi,cth);
                  double logdPsiE = eflux->Interpolate(logEi,cth);
@@ -376,70 +327,63 @@ TH2D* AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 
 
                 //Neutrino Contribution;
+                PMNS_H.SetIsNuBar(false); // Set neutrino probabilities 
+                // iflv -> fflv oscillation probabilities
+                double Pef = PMNS_H.Prob(nue,flvf,e);   // nue -> nufinal
+                double Pmuf = PMNS_H.Prob(numu,flvf, e);// numu -> nufinal
 
-                PMNS_H.SetIsNuBar(false); 
-
-                double Pef = PMNS_H.Prob(nue,flvf,e);
-
-                double Pmuf = PMNS_H.Prob(numu,flvf, e);
-                 
-                double R_ef = (XSec(e,nu)/mN)*( Pef*dPsiEdEdct); //Electron neutrino to final-neutrino contribution
-
-                double  R_muf = (XSec(e,nu)/mN)*(Pmuf*dPsiMudEdct); //Muon neutrino to final-neutrino contribution
-
+                // Neutrino Interacting rate
+                double R_ef = (XSec(e,nu)/mN)*( Pef*dPsiEdEdct);
+                double  R_muf = (XSec(e,nu)/mN)*(Pmuf*dPsiMudEdct); 
                 double R_f = R_ef + R_muf; // Events in the final-neutrino channel
 
-                
                 //Antineutrino contribution
-                PMNS_H.SetIsNuBar(true); 
-
-                double Pefb = PMNS_H.Prob(nue,flvf,e);
-
-                double Pmufb = PMNS_H.Prob(numu,flvf, e);
-
-                double R_efb=(XSec(e,nubar)/mN)*(  Pefb*dPsiEbardEdct ); //Electron anti-neutrino to final-anti-neutrino contribution
-
-                double R_mufb=(XSec(e,nubar)/mN)*( Pmufb *dPsiMubardEdct ); //Muon anti-neutrino to final-anti-neutrino contribution
-
+                PMNS_H.SetIsNuBar(true); // Set antineutrino probabilities 
+                // iflv -> fflv oscillation probabilities
+                double Pefb = PMNS_H.Prob(nue,flvf,e);   // nuebar -> nufinalbar
+                double Pmufb = PMNS_H.Prob(numu,flvf, e);// numubar -> nufinalbar
+                
+                // Antineutrino Interacting rate
+                double R_efb=(XSec(e,nubar)/mN)*(  Pefb*dPsiEbardEdct ); 
+                double R_mufb=(XSec(e,nubar)/mN)*( Pmufb *dPsiMubardEdct ); 
                 double R_fbar = R_efb + R_mufb; //// Events in the final-antineutrino channel
 
-                 
+                // Total Event rate
                 double R = R_f+R_fbar;
+                double N_f = NT*(R)*dE*(dcth)*(2*TMath::Pi());  // Number of events for bin (cth,e)
                 
-                double N_f = NT*(R)*dE*(dcth)*dphi;  //Total events in the final-neutrino channel
+                Evtseflv->SetBinContent(i,k,  (NT*dE*dcth*2*TMath::Pi())*R_ef );
+                Evtseflvb->SetBinContent(i,k, (NT*dE*dcth*2*TMath::Pi())*R_efb );
+                Evtsmuflv->SetBinContent(i,k, (NT*dE*dcth*2*TMath::Pi())*R_muf );
+                Evtsmuflvb->SetBinContent(i,k,(NT*dE*dcth*2*TMath::Pi())*R_mufb );
+                EventHist->SetBinContent(i,k, N_f ); //Create histogram for  kth Pseudo-Experimens
 
-                //Dispaly events 
+            } // End of loop in energy
 
-                std::cout << i << " " <<  k << " " << ibins << " " << kbins <<  " | " << R << " " << N_f << " " << e << " " << cth << " " << dcth << " " << dphi << " " << dE << std::endl;
-
-                Control << cth << " " << e << " " << dcth << " " << dE << " " <<  R_ef << " " << R_muf << " " << R_efb << " " << R_mufb << " " << R << " " << N_f << std::endl; 
-
-                ControlProb << cth << " " << e << " " << Pef << " " << Pefb << " " << Pmuf << " " << Pmuf << " " << XSec(e,nu) << " " << XSec(e,nubar) << std::endl;
-
-                ControlFlux << cth << " " << e << " " << dPsiEdEdct << " " << dPsiEbardEdct << " " << dPsiMudEdct << " " << dPsiMubardEdct << std::endl;
-
-                TrueHist->SetBinContent(i,k, N_f ); //Create histogram for  kth Pseudo-Experimens
-
-            } // loop energy
-
+            // Clear PMNS path for the next iteration
             PMNS_H.ClearPath();
 
-        } // Loop zenith
+        }   //   End of loop in zenith
 
-        //Simulation Summary
+    //Store all histrogram in a vector
+    
+    Histflv.push_back(Evtsmuflv); // Muon neutrino contribution to events
+    Histflv.push_back(Evtsmuflvb);// Muon antineutrino contribution to events
+    Histflv.push_back(Evtseflv);  // Electron neutrino contribution to events
+    Histflv.push_back(Evtseflvb); // Electron antineutrino contribution to events
+    Histflv.push_back(EventHist); // flvf neutrino events
 
+    // Simulation summary output
     std::cout << "Detector location" << pos[2] << std::endl;
     std::cout << "PREM model: " << PremTable  <<std::endl;
     std::cout << "Flux Table: " << HondaTable  <<std::endl;
-    std::cout << "Pile| h:" <<  PileHeight << " aWidth:" << aperture << " Shape: " << AnomalyShape << " rhopct: " << PileDensityContrast << std::endl;
-    std::cout <<" Simulation Summary| flvf:" << flvf << " IsNuBar:" <<  (nunubar <= 0) << " E: " << Emin <<  " " <<  Emax << " cth:" << cthmin << " " << cthmax << " th:"<< thmin*180.0/TMath::Pi() << " " << thmax*180.0/TMath::Pi() <<  std::endl;
+    std::cout << "Pile| h:" <<  PileHeight << " aWidth:" << aperture 
+              << " Shape: " << AnomalyShape << " rhopct: " << PileDensityContrast << std::endl;
+    std::cout <<" Simulation Summary| flvf:" << flvf << " IsNuBar:" <<  (nunubar <= 0) << " E: " 
+              << Emin <<  " " <<  Emax << " cth:" << cthmin << " " << cthmax << " th:"<< thmin*180.0/TMath::Pi() 
+              << " " << thmax*180.0/TMath::Pi() <<  std::endl;
 
-
-    Control.close();
-    ControlProb.close();
-    ControlFlux.close();
-
-    return TrueHist;
+    return Histflv;
 }
 
 

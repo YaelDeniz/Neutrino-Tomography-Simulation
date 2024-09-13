@@ -123,7 +123,7 @@ class AsimovSimulation
 
    // TH3D * GetTrueEvents3D();
 
-    TH2D * GetTrueEvents2D(); //Azimuth independet
+    std::vector< TH2D* > GetTrueEvents2D(); //Azimuth independet
     
     std::vector< TH2D* >  GetTrueEvents3D();
 

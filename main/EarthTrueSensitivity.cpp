@@ -42,135 +42,135 @@
 
 using namespace std;
 
+void ExportToCSV(TH2D* hist, std::string filename); //Export File to CSV format
 
-//void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff);
-//void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff);
-//double Get2DChi2( TH2D * histstd, TH2D * histalt);
-//double Get3DChi2( TH3D * histstd, TH3D * histalt);
 
 int main(int argc, char **argv)
 {
-    // Plot and Histogram2D settings
-    std::cout << " Neutrino Oscillation tomography. " << std::endl;
+    //Setup the detector
+    double R =  Rocean;                // Underwater detector
+    double rdet[3] = {0.0,0.0, -1*R }; // Detector location
+    double DetMass = 10.0*MTon;        // Mass in megaton units
+    double T       = 20.0*years2sec;   // Detector Exposure time in sec: One Year
+    double NT = DetMass*T;             // Exposure [Mton*years]
 
-
-    //Set detector location
-    double rdet[3] = {0.0,0.0, -1*Rocean };
-
-    //Detector size-------------------------------------------------------------
-    double DetMass = 10.0*MTon; //Mass in megaton units
-    double T       = 20.0*years2sec; //Detector Exposure time in sec: One Year
-    double NT = DetMass*T; // Exposure [Mton*years]
-
-
-    //Set Neutrino Flux
+    //Set the neutrino Neutrino Flux
     std::string FluxFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
-    std::string FluxFile = "GRN_AziAveraged_solmin/grn-nu-20-01-000.d";
-    std::string FluxTable = FluxFolder + FluxFile; //Class Assumes Sout Pole flux as default
+    std::string FluxFile = "GRN_AziAveraged_solmin/grn-nu-20-01-000.d"; //Gran Sasso
+    std::string FluxTable = FluxFolder + FluxFile; 
 
-
-    // Earth Models
-
-    //std
+    //Set the Earth models
     std::string PremFolder ="/home/dehy0499/OscProb/PremTables/";
-    std::string PremName = "prem_44layers.txt";
-    std::string path2prem = PremFolder+PremName;
+    std::string PremName = "prem_44layers";
+    std::string PremFile = PremName+".txt";
+    std::string path2prem = PremFolder+PremFile;
 
-    int MaxLayers = 44;
+    //Set Layer Density contrats
+    int rhopct = 10;
 
-    //Modified
-    std::string PremFolderAlt ="/home/dehy0499/OscProb/PremTables/Prem44pct10/";
-    
+    //int MaxLayers = 44;
+    //std::string PremFolderAlt ="/home/dehy0499/OscProb/PremTables/Prem44pct10/";
 
-    //Interval of integration in Zenith, Azimuth and E for Neutrino Events
+    //Simulation Setup
 
-    //Energy interval (in GeV)--------------------------------------------
-    double EnuMin=1.0 ; 
-    double EnuMax=40.0 ;
+    //Energy interval (in GeV)
+    double Emin=1.0 ; 
+    double Emax=40.0 ;
 
-    //Zenith Angle Interval-----------------------------------------------------------------------------------
-    double zenmin = 90.01; // Not Able to use 90 degrees
-    double zenmax = 180.0;
+    //Zenith Angle Interval
+    double thmin = 90.01; // Not Able to use 90 degrees
+    double thmax = 180.0;
+    double cthmin = cos(thmax*TMath::Pi()/180.0);
+    double cthmax = cos(thmin*TMath::Pi()/180.0);
 
-    double czmin = cos(zenmax*TMath::Pi()/180.0);
-    double czmax = cos(zenmin*TMath::Pi()/180.0);
-
-    //Azimuthal Interal-------------------------------------------------------------------------
+    //Azimuthal angle Interval
     double phimin = 0.0;
-    double phimax = 360.0 ;
+    double phimax = 360.0 ; //Whole Earth
     
     // Number of bins
-    int czbins=100; // # Bins in zenith/cos(zenith)
-    int abins= 50 ; // # Bins in azimuth
+    int cthbins=100; // # Bins in zenith/cos(zenith)
+    int abins = 1;
     int ebins= 100; // bins in energy
 
-   //Event generation------------------------------------------------------------------------------------------------
+    //TMultiGraph *Pnu = new TMultiGraph(); // Oscillations to muon neutrinos
+    //TMultiGraph *Pnubar = new TMultiGraph(); // Oscillation to electron neutrinos
 
-    TMultiGraph *Pnu = new TMultiGraph(); // Oscillations to muon neutrinos
-    TMultiGraph *Pnubar = new TMultiGraph(); // Oscillation to electron neutrinos
-
-    // Standard Earth model
+    // Signal from a Standard Earth model
     AsimovSimulation TrueEvents;
-
     TrueEvents.HondaTable = FluxTable;
-    TrueEvents.SetIntervals(zenmin,zenmax,phimin,phimax,EnuMin,EnuMax);
-    TrueEvents.SetBinning(czbins,abins,ebins);
+    TrueEvents.SetIntervals(thmin,thmax,phimin,phimax,Emin,Emax);
+    TrueEvents.SetBinning(cthbins,abins,ebins);
     TrueEvents.SetDetectorPosition(rdet);
     TrueEvents.SetExposure(NT);
-        
-    //Standar Earth 
-
     TrueEvents.PremTable = path2prem;
+
+    //Muon neutrinio like events
     TrueEvents.flvf=1;
-    TH2D * TrueStd_mu = TrueEvents.GetTrueEvents2D();
+    std::vector< TH2D * > TrueStd_mu = TrueEvents.GetTrueEvents2D();
 
+    // Electron netrino like events
     TrueEvents.flvf=0;
-    TH2D * TrueStd_e = TrueEvents.GetTrueEvents2D();
+    std::vector< TH2D * > TrueStd_e = TrueEvents.GetTrueEvents2D();
 
+    /* Export to CSV */
+    //Expected Interacting Events for a Standard Earth.
+    std::string ResultFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/";
+    std::string IntEvntsFolder = "/TrueEventsResults/IntStdEarth/";
+    
+    for (int nhist = 0; nhist < TrueStd_mu.size(); nhist++)
+    {
+        std::string  muname= "IntStdEarth"+std::to_string(1)+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+".txt"
+        std::string mufile = ResultFolder + IntEvntsFolder  + muname;
+        ExportToCSV(TrueStd_mu[nhist],mufile);
 
-    std::string ChiFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/chi2results/chi2true/";
-    std::string ChiName = "chi2test_2.csv";
-    std::string chi2path = ChiFolder + ChiName;
+        std::string  ename= "IntStdEarth"+std::to_string(0)+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+".txt"
+        std::string efile = ResultFolder + IntEvntsFolder  + ename;
+        ExportToCSV(TrueStd_e[nhist],efile);
+    }
+    
+
+    //Sentivitity to Earth layers.
+    std::string ResultFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/";
+    std::string SenvFolder = "/Sensitivity/Sensitivity2Layers/";
+    std::string chi2name = "EarthSenv"+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+".txt"
+    std::string chi2path = ResultFolder + SenvFolder  + chi2name;
     
     std::ofstream chi2file(chi2path);
 
-    TGraph * MultiChi     = new TGraph(MaxLayers);
-    TGraph * ChiPoints_e  = new TGraph(MaxLayers);
-    TGraph * ChiPoints_mu = new TGraph(MaxLayers);
-    TGraph * ChiPoints = new TGraph(MaxLayers);
+    //TGraph * MultiChi     = new TGraph(MaxLayers);
+    //TGraph * ChiPoints_e  = new TGraph(MaxLayers);
+    //TGraph * ChiPoints_mu = new TGraph(MaxLayers);
+    //TGraph * ChiPoints = new TGraph(MaxLayers);
 
     //Alternative Earth
     for (int layer = 1; layer <= MaxLayers; ++layer)
     {
-        
-
+    //PremName = "Prem44pct10/prem_44layers_"+std::to_string(layer) +"_10pct.txt";
+    //path2prem = PremFolder+PremName; // std prem
+    //TrueEvents.label = "Alt"+std::to_string(layer);
     
-    PremName = "Prem44pct10/prem_44layers_"+std::to_string(layer) +"_10pct.txt";
-    path2prem = PremFolder+PremName; // std prem
-    
-    TrueEvents.label = "Alt"+std::to_string(layer);
     TrueEvents.PremTable = path2prem;
     TrueEvents.MantleAnomaly = false;
-    TrueEvents.ModifyLayer(layer,10.0,0.0);
-    
+    TrueEvents.ModifyLayer(layer,rhopct,0.0);
+
+    //Muon-neutrino signal
     TrueEvents.flvf=1;
-    TH2D * TrueAlt_mu = TrueEvents.GetTrueEvents2D();
+    std::vector <TH2D *> TrueAlt_mu = TrueEvents.GetTrueEvents2D();
 
+    //Electron Neutrino signal
     TrueEvents.flvf=0;
-    TH2D * TrueAlt_e = TrueEvents.GetTrueEvents2D();
+    std::vector <TH2D *> TrueAlt_e = TrueEvents.GetTrueEvents2D();
 
-
-    double chi2e = Get2DChi2( TrueStd_e,  TrueAlt_e);
-
-    double chi2mu = Get2DChi2( TrueStd_mu, TrueAlt_mu);
-
+    //Calculate chi2 values
+    double chi2e = Get2DChi2( TrueStd_e[4],  TrueAlt_e[4]);   // Electron neutrino
+    double chi2mu = Get2DChi2( TrueStd_mu[4], TrueAlt_mu[4]); // Muon Neutrino
     double chi2total = chi2e + chi2mu;
 
     chi2file << std::setprecision(10) << chi2e << " " << chi2mu  << " " << chi2total << std::endl;
 
-    ChiPoints_e->SetPoint(layer-1, chi2e, layer);
-    ChiPoints_mu->SetPoint(layer-1, chi2mu, layer);
-    ChiPoints->SetPoint(layer-1, chi2total, layer);
+    //ChiPoints_e->SetPoint(layer-1, chi2e, layer);
+    //ChiPoints_mu->SetPoint(layer-1, chi2mu, layer);
+    //ChiPoints->SetPoint(layer-1, chi2total, layer);
 
     
     }
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 
     chi2file.close();
 
-
+    /*
     //Some Neutrino Oscillations---------------------------------------------------------------------------------------------------------------------------------------
 
     // Neutrino final flavour
@@ -273,142 +273,30 @@ int main(int argc, char **argv)
     app.Run();
 
     std::cout << PremName << std::endl;
-
+    */
 
 
   return 0;
 
 }
 
-/*
-void GetDiff3D( TH3D * histstd , TH3D * histalt, TH3D * diff)
+void ExportToCSV(TH2D* hist, std::string filename)
 {
+   
+    std::ofstream outfile(filename);
 
-
-   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/dN_true_3D.csv"); 
-
-   double cth, azi, e, Nexp, Nobs, dN;
-
-
-    for (int j = 1; j <= diff->GetYaxis()->GetNbins(); ++j)
+    // Recorre los bins y guarda el contenido
+    for (int i = 1; i <= hist->GetNbinsX(); ++i)
     {
-        azi=diff->GetYaxis()->GetBinCenter(j);
-        
-        for (int i = 1; i <= diff->GetXaxis()->GetNbins(); ++i)
+        for (int j = 1; j <= hist->GetNbinsY(); ++j)
         {
-            cth=diff->GetXaxis()->GetBinCenter(i);
-         
-            for (int k = 1; k <= diff->GetZaxis()->GetNbins(); ++k)
-            {
+            double x = hist->GetXaxis()->GetBinCenter(i);
+            double y = hist->GetYaxis()->GetBinCenter(j);
+            double content = hist->GetBinContent(i, j);
 
-                e=diff->GetZaxis()->GetBinCenter(k);
-                Nexp = histstd->GetBinContent(i,j,k);
-                Nobs = histalt->GetBinContent(i,j,k);
-                dN = 100*(Nobs-Nexp)/Nexp;
-
-                diff->SetBinContent(i,j,k,dN);
-
-                TrueDiffFile << cth << " , " << azi << " , " << e << " , " << dN << std::endl;
-
-            }
+            outfile << x << "," << y << "," << content << std::endl;
         }
-        
     }
 
-    TrueDiffFile.close();
+    outfile.close();
 }
-
-
-void GetDiff2D( TH2D * histstd , TH2D * histalt, TH2D * diff)
-{
-
-
-   std::ofstream TrueDiffFile("SimulationResults/TrueEventsResults/EarthSensitivity2D.csv"); 
-
-   double cth, e, Nexp, Nobs, dN;
-
-
-        for (int i = 1; i <= diff->GetXaxis()->GetNbins(); ++i)
-        {
-            cth=diff->GetXaxis()->GetBinCenter(i);
-         
-            for (int k = 1; k <= diff->GetYaxis()->GetNbins(); ++k)
-            {
-
-                e=diff->GetYaxis()->GetBinCenter(k);
-                Nexp = histstd->GetBinContent(i,k);
-                Nobs = histalt->GetBinContent(i,k);
-                dN = 100*(Nobs-Nexp)/Nexp;
-
-                diff->SetBinContent(i,k, dN);
-
-                TrueDiffFile << cth  << " , " << e << " , " << dN << std::endl;
-
-            }
-        }
-        
-    TrueDiffFile.close();
-
-
-}
-
-double Get3DChi2( TH3D * histstd, TH3D * histalt)
-{
-
-    double  Nexp, Nobs;
-
-    double chi2 = 0;
-
-    for (int j = 1; j <= histstd->GetYaxis()->GetNbins(); ++j) //loop in azimuth
-    {
-        
-        for (int i = 1; i <= histstd->GetXaxis()->GetNbins(); ++i) //loop in zenith
-        {
-         
-            for (int k = 1; k <= histstd->GetZaxis()->GetNbins(); ++k) //loop in energy
-            {
-
-                Nexp = histstd->GetBinContent(i,j,k);
-                Nobs = histalt->GetBinContent(i,j,k);
-                
-                chi2 +=  2*( Nexp - Nobs + Nobs*TMath::Log(Nobs/Nexp) ); // LLRT
-
-                //chi2 +=((Nexp-Nobs)*(Nexp-Nobs))/Nexp; 
-
-            }
-        }
-        
-    }
-
-    return chi2;
-
-}
-
-double Get2DChi2( TH2D * histstd, TH2D * histalt)
-{
-
-    double  Nexp, Nobs;
-
-    double chi2 = 0;
-
-    for (int j = 1; j <= histstd->GetYaxis()->GetNbins(); ++j) //loop in energy
-    {
-        
-        for (int i = 1; i <= histstd->GetXaxis()->GetNbins(); ++i) //loop in zenith
-        {
-        
-
-                Nexp = histstd->GetBinContent(i,j);
-                Nobs = histalt->GetBinContent(i,j);
-                chi2 +=  2*( Nexp - Nobs + Nobs*TMath::Log(Nobs/Nexp) ); // LLRT
-                chi2 +=((Nexp-Nobs)*(Nexp-Nobs))/Nexp; 
-
-            
-        }
-        
-    }
-
-    return chi2;
-
-}
-*/
