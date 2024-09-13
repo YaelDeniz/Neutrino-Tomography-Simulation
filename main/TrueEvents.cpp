@@ -255,6 +255,8 @@ int main(int argc, char **argv)
     rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
     app.Run();
 
+    c1->Print("AzimuthHist.png");
+
     return 0;
 
 }

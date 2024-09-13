@@ -7,10 +7,8 @@ TrueChi2nue = readmatrix(TrueSenvNue)
 TrueChi2(:,1) = TrueChi2numu(:,1)
 TrueChi2(:,2) = TrueChi2numu(:,2) + TrueChi2nue(:,2)
 
-tiledlayout(2,2)
-nexttile
+figure
 plot(TrueChi2(:,1),TrueChi2numu(:,2))
-
 title("True Sensitivity to LLVP material[\mu-signal]")
 xlabel("{\Delta n_e}/{n_e}")
 ylabel("\Delta \chi^2")
@@ -18,10 +16,11 @@ ylabel("\Delta \chi^2")
 yline(9,'--',"3\sigma")
 yline(4,'--',"2\sigma")
 yline(1,'--',"1\sigma")
+saveas(gcf,'True/chi2LLVPmu.png')
 
 
 
-nexttile
+figure
 plot(TrueChi2(:,1),TrueChi2nue(:,2))
 title("True Sensitivity to LLVP material[e-signal]")
 xlabel("{\Delta n_e}/{n_e}")
@@ -30,9 +29,11 @@ ylabel("\Delta \chi^2")
 yline(9,'--',"3\sigma")
 yline(4,'--',"2\sigma")
 yline(1,'--',"1\sigma")
+saveas(gcf,'True/chi2LLVPe.png')
 
 
-nexttile
+
+figure
 plot(TrueChi2(:,1),TrueChi2(:,2))
 
 title("True Sensitivity to LLVP material")
@@ -50,4 +51,6 @@ plot(TrueChi2(:,1),4*TrueChi2(:,2))
 
 
 hold off
+
+saveas(gcf,'True/chi2LLVPtot.png')
 
