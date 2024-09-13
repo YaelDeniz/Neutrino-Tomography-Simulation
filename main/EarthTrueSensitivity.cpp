@@ -62,13 +62,12 @@ int main(int argc, char **argv)
     //Set the Earth models
     std::string PremFolder ="/home/dehy0499/OscProb/PremTables/";
     std::string PremName = "prem_44layers";
+    int MaxLayers = 44;
     std::string PremFile = PremName+".txt";
     std::string path2prem = PremFolder+PremFile;
-
     //Set Layer Density contrats
     int rhopct = 10;
 
-    //int MaxLayers = 44;
     //std::string PremFolderAlt ="/home/dehy0499/OscProb/PremTables/Prem44pct10/";
 
     //Simulation Setup
