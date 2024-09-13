@@ -29,7 +29,7 @@
 
 # define myPi 3.14159265358979323846  /* pi */
 
-//Some import Earth Radius
+//Some important Earth Radius
 # define Rcmb 3480.0 // Core-Mantle-Boundary Radius (km)
 # define Rocean 6368.0 // Earth radius in (km)
 # define Rearth 6371.0 // Earth radius in (km)
