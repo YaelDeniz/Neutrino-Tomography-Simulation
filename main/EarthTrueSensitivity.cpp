@@ -119,20 +119,19 @@ int main(int argc, char **argv)
     
     for (int nhist = 0; nhist < TrueStd_mu.size(); nhist++)
     {
-        std::string  muname= "IntStdEarth"+std::to_string(1)+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+".txt"
+        std::string  muname= "IntStdEarth"+std::to_string(1)+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+".txt";
         std::string mufile = ResultFolder + IntEvntsFolder  + muname;
         ExportToCSV(TrueStd_mu[nhist],mufile);
 
-        std::string  ename= "IntStdEarth"+std::to_string(0)+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+".txt"
+        std::string  ename= "IntStdEarth"+std::to_string(0)+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+".txt";
         std::string efile = ResultFolder + IntEvntsFolder  + ename;
         ExportToCSV(TrueStd_e[nhist],efile);
     }
     
 
     //Sentivitity to Earth layers.
-    std::string ResultFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/";
     std::string SenvFolder = "/Sensitivity/Sensitivity2Layers/";
-    std::string chi2name = "EarthSenv"+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+".txt"
+    std::string chi2name = "EarthSenv"+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+".txt";
     std::string chi2path = ResultFolder + SenvFolder  + chi2name;
     
     std::ofstream chi2file(chi2path);
