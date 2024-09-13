@@ -274,6 +274,7 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
    
    return HistVec;}
 
+/*
 TH2D*  AsimovObsSimulation::GetObsEvents2Dcth(){  
 
     std::cout << "Asimov Approach Simulation for Observed Events" << std::endl;
@@ -429,4 +430,4 @@ TH2D*  AsimovObsSimulation::GetObsEvents2Dcth(){
    delete TrueHist;
    
    return RecoHist;}
-
+*/

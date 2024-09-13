@@ -145,7 +145,7 @@ class AsimovObsSimulation
 
     //TH3D * GetObsEvents3D();
 
-    TH2D * GetObsEvents2Dcth(); //Azimuth independet
+    //TH2D * GetObsEvents2Dcth(); //Azimuth independet
 
     std::vector < TH2D* >  GetObsEvents3Dcth();
 
