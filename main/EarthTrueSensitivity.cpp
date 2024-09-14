@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 
     //Energy interval (in GeV)
     double Emin=1.0 ; 
-    double Emax=20.0 ;
+    double Emax=21.0 ;
 
     int intE1= 1;
     int intE2= 20;
@@ -90,9 +90,9 @@ int main(int argc, char **argv)
     double phimax = 360.0 ; //Whole Earth
     
     // Number of bins
-    int cthbins=100; // # Bins in zenith/cos(zenith)
+    int cthbins=40; // # Bins in zenith/cos(zenith)
     int abins = 1;
-    int ebins= 100; // bins in energy
+    int ebins=  40; // bins in energy
 
     //TMultiGraph *Pnu = new TMultiGraph(); // Oscillations to muon neutrinos
     //TMultiGraph *Pnubar = new TMultiGraph(); // Oscillation to electron neutrinos
@@ -130,8 +130,23 @@ int main(int argc, char **argv)
         std::string efile = ResultFolder + IntEvntsFolder  + ename;
         ExportToCSV(TrueStd_e[nhist],efile);
     }
-    
 
+    TApplication app("app", &argc, argv);
+    TCanvas *c = new TCanvas();
+
+    gStyle->SetPalette(kBlueGreenYellow);
+    TrueStd_mu[4]->Draw("COLZ");
+    TrueStd_mu[4]->SetStats(0);
+
+    
+    c->Modified(); 
+    c->Update();
+    TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
+
+    app.Run();
+
+    
+    /*
     //Sentivitity to Earth layers.
     std::string SenvFolder = "/Sensitivity/Sensitivity2Layers/";
     std::string chi2name = "EarthSenv"+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+EnergyLabel+".txt";
@@ -183,7 +198,7 @@ int main(int argc, char **argv)
 
     chi2file.close();
 
-    /*
+    
     //Some Neutrino Oscillations---------------------------------------------------------------------------------------------------------------------------------------
 
     // Neutrino final flavour

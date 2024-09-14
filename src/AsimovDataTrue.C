@@ -56,11 +56,10 @@ using namespace std;
 
 
 // Some Constants i need
-//# define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
-//# define MTon  1E9  //Metric MegaTon
-//# define years2sec 3.154E7 // Years in Seconds
+# define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
+# define MTon  1E9  //Metric MegaTon
+# define years2sec 3.154E7 // Years in Seconds
 
-# define mN   1.67492749804E-27  // Nucleons mass (~ Neutron mass) in kg
 
 // Make oscillogram for given final flavour and MH
 
@@ -350,7 +349,15 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
 
                 // Total Event rate
                 double R = R_f+R_fbar;
-                double N_f = NT*(R)*dE*(dcth)*(2*TMath::Pi());  // Number of events for bin (cth,e)
+
+                double  Meff = 14.6*pow(log(e),1.8 )*MTon;
+                double  N_A = 6.02214E23;
+                double  T = 1*years2sec;
+                double  N_f = (2*TMath::Pi())*T*Meff*R*dE*dcth;  // Number of events for bin (cth,e)
+
+                std::cout << dcth << " " << dE << std::endl;
+
+                //double  N_f = NT*(R)*dE*(dcth)*(2*TMath::Pi());  // Number of events for bin (cth,e)
                 
                 Evtseflv->SetBinContent(i,k,  (NT*dE*dcth*2*TMath::Pi())*R_ef );
                 Evtseflvb->SetBinContent(i,k, (NT*dE*dcth*2*TMath::Pi())*R_efb );
