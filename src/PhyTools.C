@@ -30,7 +30,7 @@ double XSec(double E, int ptype)
         //case "neutrino":
         case 1:
                 //std::cout << "Neutrino XSEC" << std::endl;
-                xsc = (0.75E-38*E); // Results is in cm2 
+                xsc = (0.9E-38*E); // Results is in cm2 
                 break;
 
         //case "antineutrino":

@@ -51,8 +51,8 @@ int main(int argc, char **argv)
     double R =  Rocean;                // Underwater detector
     double rdet[3] = {0.0,0.0, -1*R }; // Detector location
     double DetMass = 10.0*MTon;        // Mass in megaton units
-    double T       = 1.0*years2sec;   // Detector Exposure time in sec: One Year
-    double NT = DetMass*T;             // Exposure [Mton*years]
+    double T       = 10.0*years2sec;   // Detector Exposure time in sec: One Year
+    double MT = DetMass*T;             // Exposure [Mton*years]
 
     //Set the neutrino Neutrino Flux
     std::string FluxFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/";
@@ -74,10 +74,10 @@ int main(int argc, char **argv)
 
     //Energy interval (in GeV)
     double Emin=1.0 ; 
-    double Emax=21.0 ;
+    double Emax=40.0 ;
 
     int intE1= 1;
-    int intE2= 20;
+    int intE2= 40;
 
     //Zenith Angle Interval
     double thmin = 90.01; // Not Able to use 90 degrees
@@ -90,9 +90,9 @@ int main(int argc, char **argv)
     double phimax = 360.0 ; //Whole Earth
     
     // Number of bins
-    int cthbins=40; // # Bins in zenith/cos(zenith)
+    int cthbins=100; // # Bins in zenith/cos(zenith)
     int abins = 1;
-    int ebins=  40; // bins in energy
+    int ebins=  100; // bins in energy
 
     //TMultiGraph *Pnu = new TMultiGraph(); // Oscillations to muon neutrinos
     //TMultiGraph *Pnubar = new TMultiGraph(); // Oscillation to electron neutrinos
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     TrueEvents.SetIntervals(thmin,thmax,phimin,phimax,Emin,Emax);
     TrueEvents.SetBinning(cthbins,abins,ebins);
     TrueEvents.SetDetectorPosition(rdet);
-    TrueEvents.SetExposure(NT);
+    TrueEvents.SetExposure(MT);
     TrueEvents.PremTable = path2prem;
 
     //Muon neutrinio like events
@@ -113,10 +113,11 @@ int main(int argc, char **argv)
     // Electron netrino like events
     TrueEvents.flvf=0;
     std::vector< TH2D * > TrueStd_e = TrueEvents.GetTrueEvents2D();
-
-    /* Export to CSV */
+    
+    // Export to CSV 
     //Expected Interacting Events for a Standard Earth.
     std::string ResultFolder = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/";
+    /*
     std::string IntEvntsFolder = "/TrueEventsResults/IntStdEarth/";
     std::string EnergyLabel= "ENE"+std::to_string(intE1) + std::to_string(intE2);
     
@@ -130,26 +131,64 @@ int main(int argc, char **argv)
         std::string efile = ResultFolder + IntEvntsFolder  + ename;
         ExportToCSV(TrueStd_e[nhist],efile);
     }
-
+    */
+    
     TApplication app("app", &argc, argv);
-    TCanvas *c = new TCanvas();
+    
+    TCanvas *c1 = new TCanvas();
+    gStyle->SetPalette(kSolar);
+    TColor::InvertPalette();
+    TrueStd_e[4]->Draw("COLZ");
+    TrueStd_e[4]->SetStats(0);
+    c1->Modified(); 
+    c1->Update();
+    TRootCanvas *rc1 = (TRootCanvas *)c1->GetCanvasImp();
 
-    gStyle->SetPalette(kBlueGreenYellow);
-    TrueStd_mu[4]->Draw("COLZ");
-    TrueStd_mu[4]->SetStats(0);
+    TCanvas *c2 = new TCanvas();
+
+    c2->Divide(2,2);
+
+    c2->cd(1);
+    gStyle->SetPalette(kSolar);
+    TColor::InvertPalette();
+    TrueStd_e[0]->Draw("COLZ");
+    TrueStd_e[0]->SetStats(0);
+    c2->Modified(); 
+    c2->Update();
+    
+    c2->cd(2);
+    gStyle->SetPalette(kSolar);
+    TColor::InvertPalette();
+    TrueStd_e[1]->Draw("COLZ");
+    TrueStd_e[1]->SetStats(0);
+    c2->Modified(); 
+    c2->Update();
+    
+    c2->cd(3);
+    gStyle->SetPalette(kSolar);
+    TColor::InvertPalette();
+    TrueStd_e[2]->Draw("COLZ");
+    TrueStd_e[2]->SetStats(0);
+    c2->Modified(); 
+    c2->Update();
+    
+    c2->cd(4);
+    gStyle->SetPalette(kSolar);
+    TColor::InvertPalette();
+    TrueStd_e[3]->Draw("COLZ");
+    TrueStd_e[3]->SetStats(0);
+    c2->Modified(); 
+    c2->Update();
+
+    TRootCanvas *rc2 = (TRootCanvas *)c2->GetCanvasImp();
+
+    //app.Run();
 
     
-    c->Modified(); 
-    c->Update();
-    TRootCanvas *rc = (TRootCanvas *)c->GetCanvasImp();
-
-    app.Run();
-
     
-    /*
     //Sentivitity to Earth layers.
     std::string SenvFolder = "/Sensitivity/Sensitivity2Layers/";
-    std::string chi2name = "EarthSenv"+PremName+std::to_string(rhopct)+"_"+std::to_string(cthbins)+std::to_string(abins)+EnergyLabel+".txt";
+    std::string chi2name = "EarthSenvMeff.txt";
     std::string chi2path = ResultFolder + SenvFolder  + chi2name;
     
     std::ofstream chi2file(chi2path);
@@ -198,7 +237,7 @@ int main(int argc, char **argv)
 
     chi2file.close();
 
-    
+    /*
     //Some Neutrino Oscillations---------------------------------------------------------------------------------------------------------------------------------------
 
     // Neutrino final flavour

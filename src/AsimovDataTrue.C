@@ -56,7 +56,6 @@ using namespace std;
 
 
 // Some Constants i need
-# define mN   1.67492749804E-27  // Nucleons mass ~ Neutron mass
 # define MTon  1E9  //Metric MegaTon
 # define years2sec 3.154E7 // Years in Seconds
 
@@ -193,8 +192,10 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
                 double Ri_mub=XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardEdct );
                 double Ri_nubar = Ri_eb + Ri_mub;
 
+                double  mN = 1.67492749804E-27; // Approximate mass of nucleon
                 // Calculate Poisson mean for the current bins (N_ijk)
-                double N_ijk = NT*(Ri_nu + Ri_nubar)*dE*dcth*dphi; 
+                // Note : MT/mN  refers to target nucleons per year
+                double N_ijk = (MT/mN)*(Ri_nu + Ri_nubar)*dE*dcth*dphi; 
 
                 // Set the bin content in the 2D histogram
                 EventHist2D[j]->SetBinContent(i,k, N_ijk); 
@@ -231,13 +232,13 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
     //Initialize histograms for neutrino events
     TH2D * EventHist = new TH2D("EventHist","True Event Histrogram", 
                                  ibins,cthmin,cthmax,kbins,Emin,Emax); 
-    TH2D * Evtseflv = new TH2D("Evtseflv","Electron contribution to True Event", 
+    TH2D * Evtseflv = new TH2D("Evtseflv","#nu_{e} contribution to True Event", 
                                  ibins,cthmin,cthmax,kbins,Emin,Emax); 
-    TH2D * Evtseflvb = new TH2D("Evtseflvb","Electron(b) contribution to True Event", 
+    TH2D * Evtseflvb = new TH2D("Evtseflvb","#bar{#nu}_{e} contribution to True Event", 
                                  ibins,cthmin,cthmax,kbins,Emin,Emax); 
-    TH2D * Evtsmuflv = new TH2D("Evtsmuflv","Muon contribution to True Event", 
+    TH2D * Evtsmuflv = new TH2D("Evtsmuflv","#nu_{#mu} contribution to True Event", 
                                  ibins,cthmin,cthmax,kbins,Emin,Emax);
-    TH2D * Evtsmuflvb = new TH2D("Evtsmuflvb","Muon(b) contribution to True Event", 
+    TH2D * Evtsmuflvb = new TH2D("Evtsmuflvb","#bar{#nu}_{#mu} contribution to True Event", 
                                  ibins,cthmin,cthmax,kbins,Emin,Emax); 
                             
      std::vector < TH2D * >  Histflv; //Store Oscillograms for (muflv, muflvbar, eflv, eflvbar, flv+ flvbar)
@@ -332,8 +333,8 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
                 double Pmuf = PMNS_H.Prob(numu,flvf, e);// numu -> nufinal
 
                 // Neutrino Interacting rate
-                double R_ef = (XSec(e,nu)/mN)*( Pef*dPsiEdEdct);
-                double  R_muf = (XSec(e,nu)/mN)*(Pmuf*dPsiMudEdct); 
+                double R_ef = XSec(e,nu)*( Pef*dPsiEdEdct);
+                double  R_muf = XSec(e,nu)*(Pmuf*dPsiMudEdct); 
                 double R_f = R_ef + R_muf; // Events in the final-neutrino channel
 
                 //Antineutrino contribution
@@ -343,26 +344,28 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
                 double Pmufb = PMNS_H.Prob(numu,flvf, e);// numubar -> nufinalbar
                 
                 // Antineutrino Interacting rate
-                double R_efb=(XSec(e,nubar)/mN)*(  Pefb*dPsiEbardEdct ); 
-                double R_mufb=(XSec(e,nubar)/mN)*( Pmufb *dPsiMubardEdct ); 
+                double R_efb=XSec(e,nubar)*(  Pefb*dPsiEbardEdct ); 
+                double R_mufb=XSec(e,nubar)*( Pmufb *dPsiMubardEdct ); 
                 double R_fbar = R_efb + R_mufb; //// Events in the final-antineutrino channel
 
                 // Total Event rate
                 double R = R_f+R_fbar;
 
-                double  Meff = 14.6*pow(log(e),1.8 )*MTon;
-                double  N_A = 6.02214E23;
-                double  T = 1*years2sec;
-                double  N_f = (2*TMath::Pi())*T*Meff*R*dE*dcth;  // Number of events for bin (cth,e)
+                double  mN = 1.67492749804E-27; // Approximate mass of nucleon
+                double  Meff = 14.6*pow(log10(e),1.8 )*MTon;
+                //double    Meff = 10*MTon;
+                //double  N_A = 6.02214E23;
+                double  T = 10*years2sec;
+                double  N_f = (2*TMath::Pi())*(Meff*T/mN)*R*dE*dcth;  // Number of events for bin (cth,e)
 
-                std::cout << dcth << " " << dE << std::endl;
+                  
+                //Note : MT/mN  refers to target nucleons per year
+                //double  N_f = (2*TMath::Pi())*(MT/mN)*R*dE*dcth;  // Number of events for bin (cth,e) 
 
-                //double  N_f = NT*(R)*dE*(dcth)*(2*TMath::Pi());  // Number of events for bin (cth,e)
-                
-                Evtseflv->SetBinContent(i,k,  (NT*dE*dcth*2*TMath::Pi())*R_ef );
-                Evtseflvb->SetBinContent(i,k, (NT*dE*dcth*2*TMath::Pi())*R_efb );
-                Evtsmuflv->SetBinContent(i,k, (NT*dE*dcth*2*TMath::Pi())*R_muf );
-                Evtsmuflvb->SetBinContent(i,k,(NT*dE*dcth*2*TMath::Pi())*R_mufb );
+                Evtseflv->SetBinContent(i,k,  ((Meff*T/mN)*dE*dcth*2*TMath::Pi())*R_ef );
+                Evtseflvb->SetBinContent(i,k, ((Meff*T/mN)*dE*dcth*2*TMath::Pi())*R_efb );
+                Evtsmuflv->SetBinContent(i,k, ((Meff*T/mN)*dE*dcth*2*TMath::Pi())*R_muf );
+                Evtsmuflvb->SetBinContent(i,k,((Meff*T/mN)*dE*dcth*2*TMath::Pi())*R_mufb );
                 EventHist->SetBinContent(i,k, N_f ); //Create histogram for  kth Pseudo-Experimens
 
             } // End of loop in energy

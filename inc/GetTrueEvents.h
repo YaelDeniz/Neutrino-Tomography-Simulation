@@ -28,7 +28,7 @@ class AsimovSimulation
 
     std::string label = "std";
 
-    double NT; //Detector Exposure
+    double MT; //Detector Exposure
   
     
     double pos[3] = {0.0, 0.0, -1.0*Rearth};
@@ -114,10 +114,10 @@ class AsimovSimulation
         kbins = k;
     }
 
-    void SetExposure(double xposure) 
+    void SetExposure(double MassTime) 
     {
 
-        NT = xposure; //MTon-Years
+        MT = MassTime; //MTon-Years
 
     }
 
