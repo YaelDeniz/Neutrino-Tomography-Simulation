@@ -40,9 +40,9 @@ int main(int argc, char **argv)
 {
     //Detector setting 
     double DetMass = 10.0*MTon; //Mass in megaton units
-    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+    double M      = DetMass; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
     double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
-    double NT = Nn*T; // Exposure [Mton*years]
+    double MT = M*T; // Exposure [Mton*years]
 
     double Rdet = Rearth;
 
@@ -60,13 +60,13 @@ int main(int argc, char **argv)
     std::string PremName = "prem_44layers.txt";
     std::string path2prem = PremFolder+PremName;
 
-    //Pile Set Up---------------------------------------------------------------
-    double PileHeight = 600; // Height of LLVP in km
+     //Pile Set Up---------------------------------------------------------------
+    double PileHeight = 1000; // Height of LLVP in km
     double PileRadius = Rcmb + PileHeight; //km
-    double DepthMin = Rcmb-1000;
-    double DepthMax = PileRadius+200; // Distance from the center of the Earth
+    double DepthMin = Rcmb-2500;
+    double DepthMax = PileRadius+500; // Distance from the center of the Earth
     double PileDensityPct = 2.0; // 2% density contrats for LLVP
-    std::string shape = "pancake"; // LLVP shape
+    std::string shape = "pancake";
 
 
     //Simulation Setup
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
    StandardEarth.SetIntervals(thmin,thmax,phimin,phimax,Emin,Emax);
    StandardEarth.SetTrueBinning(cthtruebins,atruebins,etruebins);
    StandardEarth.SetRecoBinning(cthrecobins,arecobins,erecobins);
-   StandardEarth.SetExposure(NT);
+   StandardEarth.SetExposure(MT);
    StandardEarth.flvf=nuflv;
 
     //Alternative Earth-------------------------------------------------------------
@@ -121,8 +121,8 @@ int main(int argc, char **argv)
    AlternativeEarth.ThePremTable = path2prem;
    AlternativeEarth.TheHondaTable = FluxTable;
    AlternativeEarth.SetDetectorXYZ(rdet);
-   AlternativeEarth.SetEnergyResolution(0.001,0.0);
-   AlternativeEarth.SetAngularResolution(0.001,0.0);
+   //AlternativeEarth.SetEnergyResolution(0.001,0.0);
+   //AlternativeEarth.SetAngularResolution(0.001,0.0);
    
    //Set LLVP
    AlternativeEarth.PileInModel = true;
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
    AlternativeEarth.SetIntervals(thmin,thmax,phimin,phimax,Emin,Emax);
    AlternativeEarth.SetTrueBinning(cthtruebins,atruebins,etruebins);
    AlternativeEarth.SetRecoBinning(cthrecobins,arecobins,erecobins);
-   AlternativeEarth.SetExposure(NT);
+   AlternativeEarth.SetExposure(MT);
    AlternativeEarth.flvf=nuflv;
 
 

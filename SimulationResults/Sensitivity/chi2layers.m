@@ -1,4 +1,4 @@
-Senv2Layer = 'Sensitivity2Layers/EarthSenvprem_44layers10_1001.txt';
+Senv2Layer = 'Sensitivity2Layers/EarthSenvMeff.txt';
 PREM = readmatrix('prem_44layers.txt');
 depth = PREM(:,1)
 

@@ -1,0 +1,70 @@
+%Interacting Events Oscillogram
+
+%% Muon-like events
+clear all;  close all;  clc;
+IntData_ithAzi_mu = 'IntEvents/IntLLVP_pancakenu1_5010050_50.txt';
+IntDataMu = readmatrix(IntData_ithAzi_mu)
+
+%create surface plot
+cth = unique(IntDataMu(:,1)); %Xaxis
+e   = unique(IntDataMu(:,2)); %Yaxis
+nmu_ij= IntDataMu(:,3);
+[Cth,E] = meshgrid(cth,e);
+Nmu = reshape(nmu_ij,length(cth),length(e));
+
+% electron-like events
+IntData_ithAzi_e = 'IntEvents/IntLLVP_pancakenu0_5010050_50.txt';
+IntDatae = readmatrix(IntData_ithAzi_e)
+
+%create surface plot
+cth = unique(IntDatae(:,1)); %Xaxis
+e   = unique(IntDatae(:,2)); %Yaxis
+ne_ij= IntDatae(:,3);
+[Cth,E] = meshgrid(cth,e);
+Ne = reshape(ne_ij,length(cth),length(e));
+
+%% Oscillogram visualization
+
+% Muon-like
+% figure 
+figure('Renderer', 'painters', 'Position', [10 10 1000 800])
+mudatatrue=pcolor(Cth,E,Nmu);
+set(gca,'FontSize',20, 'FontName', 'Courier')
+set(mudatatrue,'edgecolor','none')
+title( '\nu_\mu - like events[Int]' ,'FontSize',30);
+
+xlabel('cos(\theta_z)','FontSize',30)
+set(gca, 'XDir','reverse')
+ylabel('E_{\nu}[GeV]','FontSize',30)
+
+hold on 
+topl = xline(cosd(138.8),'--','Top of LLVP','LineWidth',2.5) %Upper Mantle
+topl.FontSize=25;
+cmbl = xline(cosd(146.8),'--','CMB','LineWidth',2.5) %CMB
+cmbl.FontSize=25;
+hold off
+
+h = colorbar;
+ylabel(h,'$$\Delta N/N[\%]$$','Interpreter','latex','FontSize',30)
+
+% electron-like
+% figure 
+figure('Renderer', 'painters', 'Position', [10 10 1000 800])
+mudatatrue=pcolor(Cth,E,Ne);
+set(gca,'FontSize',20, 'FontName', 'Courier')
+set(mudatatrue,'edgecolor','none')
+title( '\nu_e - like events[Int]' ,'FontSize',30);
+
+xlabel('cos(\theta_z)','FontSize',30)
+set(gca, 'XDir','reverse')
+ylabel('E_{\nu}[GeV]','FontSize',30)
+
+hold on 
+topl = xline(cosd(138.8),'--','Top of LLVP','LineWidth',2.5) %Upper Mantle
+topl.FontSize=25;
+cmbl = xline(cosd(146.8),'--','CMB','LineWidth',2.5) %CMB
+cmbl.FontSize=25;
+hold off
+
+h = colorbar;
+ylabel(h,'$$\Delta N/N[\%]$$','Interpreter','latex','FontSize',30)

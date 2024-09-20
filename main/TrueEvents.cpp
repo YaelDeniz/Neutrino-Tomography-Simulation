@@ -7,6 +7,8 @@
 #include <fstream>
 #include <vector>
 #include <math.h>
+#include <sys/stat.h>
+
 
 //Cern ROOT
 #include "TApplication.h"
@@ -53,10 +55,9 @@ int main(int argc, char **argv)
     //Detetcor Settings
     
     //Detector size-------------------------------------------------------------
-    double DetMass = 10.0*MTon; //Mass in megaton units
-    double Nn      = DetMass/mN; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+    double M = 10.0*MTon; //Mass in megaton units
     double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
-    double NnT = Nn*T; // Exposure [Mton*years]
+    double MT = M*T; // Exposure [Mton*years]
 
     //Detector location 
     double Rdet = Rearth; //South Pole
@@ -125,7 +126,7 @@ int main(int argc, char **argv)
    //Simulation of Standard Earth
    StandardEarth.SetIntervals(thmin,thmax,phimin,phimax,EnuMin,EnuMax);
    StandardEarth.SetBinning(cthbins,abins,ebins);
-   StandardEarth.SetExposure(NnT);
+   StandardEarth.SetExposure(MT);
    StandardEarth.flvf=nuflv;
 
    //TH2D * TrueStd = StandardEarth.GetTrueEvents2D();
@@ -142,28 +143,30 @@ int main(int argc, char **argv)
 
    // Construct LLVPs
    AlternativeEarth.MantleAnomaly = true;
-   AlternativeEarth.PileHeight = 1000;
+   AlternativeEarth.PileHeight = PileHeight;
    AlternativeEarth.aperture=45;
    AlternativeEarth.AnomalyShape=shape;
-   AlternativeEarth.PileDensityContrast = 2;
+   AlternativeEarth.PileDensityContrast = PileDensityPct;
    AlternativeEarth.PileChemContrast = 0.0;
 
    //Simulation of Standard Earth
    AlternativeEarth.SetIntervals(thmin,thmax,phimin,phimax,EnuMin,EnuMax);
    AlternativeEarth.SetBinning(cthbins,abins,ebins);
-   AlternativeEarth.SetExposure(NnT);
+   AlternativeEarth.SetExposure(MT);
    AlternativeEarth.flvf=nuflv;
 
    //TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
     std::vector< TH2D* > TrueAlt= AlternativeEarth.GetTrueEvents3D();
 
 
+   /* 
    //Sensitivity
     std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
-    std::string ResultsFolder = "/SimulationResults/Sensitivity/True/"; 
+    std::string SenvFolder = "/SimulationResults/PreliminaryResults/IntChi2/";
     std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
-    std::string chi2name  = "TrueChi2_"+std::to_string(nuflv)+"_"+shape+BinLabel+".txt";
-    std::string chi2path  = NuTomoPath+ResultsFolder+chi2name;
+    //std::string SimLabel = std::to_string(thmin)+std::to_string(thmax)+std::to_string(EnuMin)+std::to_string(EnuMax);
+    std::string chi2name  = "IntChi2LLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+".txt";
+    std::string chi2path  = NuTomoPath+SenvFolder+chi2name;
 
     std::ofstream SenvData(chi2path); 
 
@@ -190,7 +193,7 @@ int main(int argc, char **argv)
     }
 
     SenvData.close();
-    
+   */
 
    // Visualization of Events
 
@@ -243,8 +246,8 @@ int main(int argc, char **argv)
     ltop->Draw("same");
 
     std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
-    std::string filename  = "TruDiff_"+std::to_string(nuflv)+shape+BinLabel+std::to_string(nhist)+".txt";
-    ExportToCSV(TrueDiff2D, filename);
+    std::string eventsfile = "IntLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
+    ExportToCSV(TrueDiff2D, eventsfile);
 
  
    }
@@ -263,12 +266,11 @@ int main(int argc, char **argv)
 
 void ExportToCSV(TH2D* hist, std::string filename)
 {
-
     std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
-    std::string ResultsFolder = "/SimulationResults/3DEarth/True/"; 
-    std::string chi2path  = NuTomoPath+ResultsFolder+filename;
+    std::string IntFolder = "/SimulationResults/PreliminaryResults/IntEvents/";
+    std::string path2file  = NuTomoPath+IntFolder+filename;
    
-    std::ofstream outfile(filename);
+    std::ofstream outfile(path2file);
 
     // Recorre los bins y guarda el contenido
     for (int i = 1; i <= hist->GetNbinsX(); ++i)

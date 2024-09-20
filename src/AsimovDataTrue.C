@@ -64,7 +64,10 @@ using namespace std;
 
 std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
 {  
-    std::ofstream IndexAzi("SimulationResults/TrueIndexTable.csv"); 
+    std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
+    std::string IntFolder = "/SimulationResults/PreliminaryResults/IntEvents/";
+    std::string AziIndex = NuTomoPath+IntFolder+"TrueIndexTable.txt";
+    std::ofstream IndexAzi(AziIndex); 
 
     // Neutrino final flavour
     int nue        = 0;  // electron neutrino  
@@ -122,6 +125,8 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
         // Get azimuth center and width for the current bin
         double phi = EventHist3D->GetYaxis()->GetBinCenter(j); 
         double dphi = EventHist3D-> GetYaxis()->GetBinWidth(j); 
+
+        IndexAzi << j << " " << phi*180/TMath::Pi() << " " << dphi*180/TMath::Pi() << std::endl; 
 
         // Create a new 2D histogram for each azimuth bin
         //char histchar[64];
@@ -267,6 +272,9 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
     TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData);  // Electron neutrino
     TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); // Electron antineutrino
 
+    OscProb::PremModel prem(PremTable);
+
+
     // Set Earth model and Detector    
     Earth3DModel Earth3D;
     Earth3D.SetModel(PremTable); // Earth model
@@ -290,21 +298,24 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
             if(cth < -1 || cth > 1) break; // Skip unphysical values 
             
             // Set the path through the Earth for direction (cos(theta),phi)
-            Earth3D.SetDirection(cth,0);  
-            std::vector<std::vector<double>> EarthPath = Earth3D.Create3DPath();
+            prem.FillPath(cth); // Fill paths from PREM model
+            prem.FillPath(cth); // Fill paths from PREM model
+            PMNS_H.SetPath(prem.GetNuPath()); // Set paths in OscProb  
+            //Earth3D.SetDirection(cth,0);  
+            //std::vector<std::vector<double>> EarthPath = Earth3D.Create3DPath();
 
             // Distance through "ith" layer : l - EarthPath[i][0];
             // Densty of "ith" layer : rho - EarthPath[i][2];
             // z/a of "ith" layer : zoa - EarthPath[i][3];
             
             // Set initial Earth path in the PMNS model
-            PMNS_H.SetPath(EarthPath[0][0],EarthPath[0][1],EarthPath[0][2]);
+            //PMNS_H.SetPath(EarthPath[0][0],EarthPath[0][1],EarthPath[0][2]);
             
             // Add subsequent segments of the path
-            for (int i = 1; i < EarthPath.size(); i++) 
-            { 
-              PMNS_H.AddPath(EarthPath[i][0],EarthPath[i][1],EarthPath[i][2]);
-            } 
+            //for (int i = 1; i < EarthPath.size(); i++) 
+            //{ 
+              //PMNS_H.AddPath(EarthPath[i][0],EarthPath[i][1],EarthPath[i][2]);
+            //} 
 
             // Loop through energy bins 
             for (int k = 1; k <=kbins; ++k)
@@ -352,15 +363,16 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents2D( ) //To be Deleted
                 double R = R_f+R_fbar;
 
                 double  mN = 1.67492749804E-27; // Approximate mass of nucleon
-                double  Meff = 14.6*pow(log10(e),1.8 )*MTon;
-                //double    Meff = 10*MTon;
+                //double  Meff = 14.6*pow(log10(e),1.8 )*MTon;
+                double    Meff = 1*MTon;
                 //double  N_A = 6.02214E23;
-                double  T = 10*years2sec;
-                double  N_f = (2*TMath::Pi())*(Meff*T/mN)*R*dE*dcth;  // Number of events for bin (cth,e)
+                double  T = 1*years2sec;
+                //double  N_f = (2*TMath::Pi())*(Meff*T/mN)*R*dE*dcth;  // Number of events for bin (cth,e)
 
                   
                 //Note : MT/mN  refers to target nucleons per year
-                //double  N_f = (2*TMath::Pi())*(MT/mN)*R*dE*dcth;  // Number of events for bin (cth,e) 
+                //double  N_f = (2*TMath::Pi())*(MT/mN)*R*dE*dcth;  // Number of events for bin (cth,e)
+                double  N_f = (e*e)*(2*TMath::Pi())*(Meff*T/mN)*R*dcth;  // Number of events for bin (cth,e) 
 
                 Evtseflv->SetBinContent(i,k,  ((Meff*T/mN)*dE*dcth*2*TMath::Pi())*R_ef );
                 Evtseflvb->SetBinContent(i,k, ((Meff*T/mN)*dE*dcth*2*TMath::Pi())*R_efb );
