@@ -28,7 +28,7 @@ Ne = reshape(ne_ij,length(cth),length(e));
 % Muon-like
 % figure 
 figure('Renderer', 'painters', 'Position', [10 10 1000 800])
-mudatatrue=pcolor(Cth,E,Nmu);
+mudatatrue=pcolor(Cth,E,Nmu+Ne);
 set(gca,'FontSize',20, 'FontName', 'Courier')
 set(mudatatrue,'edgecolor','none')
 title( '\nu_\mu - like events[Int]' ,'FontSize',30);
@@ -36,6 +36,7 @@ title( '\nu_\mu - like events[Int]' ,'FontSize',30);
 xlabel('cos(\theta_z)','FontSize',30)
 set(gca, 'XDir','reverse')
 ylabel('E_{\nu}[GeV]','FontSize',30)
+
 
 hold on 
 topl = xline(cosd(138.8),'--','Top of LLVP','LineWidth',2.5) %Upper Mantle
@@ -45,12 +46,14 @@ cmbl.FontSize=25;
 hold off
 
 h = colorbar;
+caxis([-6 10])
+
 ylabel(h,'$$\Delta N/N[\%]$$','Interpreter','latex','FontSize',30)
 
 % electron-like
 % figure 
 figure('Renderer', 'painters', 'Position', [10 10 1000 800])
-mudatatrue=pcolor(Cth,E,Ne);
+mudatatrue=pcolor(Cth,E,Nmu);
 set(gca,'FontSize',20, 'FontName', 'Courier')
 set(mudatatrue,'edgecolor','none')
 title( '\nu_e - like events[Int]' ,'FontSize',30);
@@ -67,4 +70,6 @@ cmbl.FontSize=25;
 hold off
 
 h = colorbar;
+caxis([-6 10])
+
 ylabel(h,'$$\Delta N/N[\%]$$','Interpreter','latex','FontSize',30)

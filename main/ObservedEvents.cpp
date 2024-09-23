@@ -36,11 +36,12 @@
 
 using namespace std;
 
+void ExportToCSV(TH2D* hist, std::string filename);
+
 int main(int argc, char **argv)
 {
     //Detector setting 
-    double DetMass = 10.0*MTon; //Mass in megaton units
-    double M      = DetMass; //Number of target nucleons in the detector (Detector Mass / Nucleons Mass)
+    double M = 10.0*MTon; //Mass in megaton units
     double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
     double MT = M*T; // Exposure [Mton*years]
 
@@ -72,9 +73,9 @@ int main(int argc, char **argv)
     //Simulation Setup
 
     // Binning------------------------------------------------------------------
-    int cthtruebins=20 ; // # Bins in zenith/cos(zenith)
+    int cthtruebins=100 ; // # Bins in zenith/cos(zenith)
     int atruebins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int etruebins =20; // bins in energy
+    int etruebins =100; // bins in energy
 
       // Binning------------------------------------------------------------------
     int cthrecobins=20 ; // # Bins in zenith/cos(zenith)
@@ -98,7 +99,7 @@ int main(int argc, char **argv)
     double phimin = -55.0;
     double phimax =  55.0 ;
 
-    int nuflv = 1; // neutrino  final state: nue (0), numu (1) or nutau (2)
+    int nuflv = 0; // neutrino  final state: nue (0), numu (1) or nutau (2)
     
    //Standart Earth-------------------------------------------------------------
    AsimovObsSimulation StandardEarth;
@@ -127,9 +128,9 @@ int main(int argc, char **argv)
    //Set LLVP
    AlternativeEarth.PileInModel = true;
    AlternativeEarth.ShapeOfPile = shape;
-   AlternativeEarth.ThePileHight = 1000.0;
+   AlternativeEarth.ThePileHight = PileHeight;
    AlternativeEarth.ThePileAperture = 45;
-   AlternativeEarth.ThePileDensityContrast = 2.0;
+   AlternativeEarth.ThePileDensityContrast = PileDensityPct;
    AlternativeEarth.ThePileChemicalContrast = 0.0;
    
    //Simulation of Alternative Earth
@@ -141,7 +142,47 @@ int main(int argc, char **argv)
 
 
    std::vector<TH2D*>  ObsStd = StandardEarth.GetObsEvents3Dcth();
+   std::cout << "Generating Observed events" << std::endl;
    std::vector<TH2D*>  ObsAlt = AlternativeEarth.GetObsEvents3Dcth();
+
+   
+   //Sensitivity
+    std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
+    std::string SenvFolder = "/SimulationResults/PreliminaryResults/ObsChi2/";
+    std::string BinLabel = std::to_string(cthrecobins)+std::to_string(arecobins)+std::to_string(erecobins);
+    //std::string SimLabel = std::to_string(thmin)+std::to_string(thmax)+std::to_string(EnuMin)+std::to_string(EnuMax);
+    std::string chi2name  = "ObsChi2LLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+".txt";
+    std::string chi2path  = NuTomoPath+SenvFolder+chi2name;
+
+    std::ofstream SenvData(chi2path); 
+
+
+    for (int rpct = -4; rpct <= 4; ++ rpct)
+    {
+
+        AlternativeEarth.ThePileDensityContrast = rpct; //Adjust the LLVP contrats density
+
+        std::vector< TH2D* > NewAlt= AlternativeEarth.GetObsEvents3Dcth();
+
+        double chi2tot = 0;
+
+        for (int n = 0; n < ObsAlt.size(); ++n)
+        {
+            chi2tot += Get2DChi2( ObsStd[n] , NewAlt[n]);
+        }
+
+    //std::cout << "Density %: " << rpct << " Chi2: " << chi2tot << std::endl;
+
+        SenvData << rpct << " " << chi2tot << " " << cthrecobins << " " << arecobins << " " << erecobins << std::endl; 
+
+        
+    }
+
+    SenvData.close();
+   
+
+
+
 
    TApplication app("app", &argc, argv);
 
@@ -180,19 +221,18 @@ int main(int argc, char **argv)
     int nhist = (51 + 2*i)-1;
     c1->cd(i+1);
 
-    TH2D * TrueDiff2D = new TH2D(Form("ObsDiff2D%d",nhist),Form("OscObs%d",nhist), cthrecobins,cthmin,cthmax,erecobins,Emin,Emax); //binning in cth 
-    GetDiff2D( ObsStd[nhist] , ObsAlt[nhist], TrueDiff2D );
-    TrueDiff2D->Draw("COLZ");
-    TrueDiff2D->SetStats(0);
+    TH2D * ObsDiff2D = new TH2D(Form("ObsDiff2D%d",nhist),Form("OscObs%d",nhist), cthrecobins,cthmin,cthmax,erecobins,Emin,Emax); //binning in cth 
+    GetDiff2D( ObsStd[nhist] , ObsAlt[nhist], ObsDiff2D );
+    ObsDiff2D->Draw("COLZ");
+    ObsDiff2D->SetStats(0);
     lbottom->Draw("same");
     lmid_bottom->Draw("same");
     lmid_top->Draw("same");
     ltop->Draw("same");
 
-
-    //std::string BinLabel = std::to_string(cthrecobins)+std::to_string(arecobins)+std::to_string(erecobins);
-    //std::string filename  = "ObsDiff_"+std::to_string(nuflv)+shape+BinLabel+std::to_string(nhist)+".txt";
-    //ExportToCSV(TrueDiff2D, filename);
+    std::string BinLabel = std::to_string(cthrecobins)+std::to_string(arecobins)+std::to_string(erecobins);
+    std::string eventsfile = "ObsLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
+    ExportToCSV(ObsDiff2D, eventsfile);
 
  
    }
@@ -208,4 +248,29 @@ int main(int argc, char **argv)
 
 
 }
+
+void ExportToCSV(TH2D* hist, std::string filename)
+{
+    std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
+    std::string IntFolder = "/SimulationResults/PreliminaryResults/ObsEvents/";
+    std::string path2file  = NuTomoPath+IntFolder+filename;
+   
+    std::ofstream outfile(path2file);
+
+    // Recorre los bins y guarda el contenido
+    for (int i = 1; i <= hist->GetNbinsX(); ++i)
+    {
+        for (int j = 1; j <= hist->GetNbinsY(); ++j)
+        {
+            double x = hist->GetXaxis()->GetBinCenter(i);
+            double y = hist->GetYaxis()->GetBinCenter(j);
+            double content = hist->GetBinContent(i, j);
+
+            outfile << x << "," << y << "," << content << std::endl;
+        }
+    }
+
+    outfile.close();
+}
+
 
