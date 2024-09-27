@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
   double cth =  -0.75;
 
-  double phi = 50.0*TMath::Pi()/180.0;
+  double phi = 40.0*TMath::Pi()/180.0;
 
   // OSCPROB
 

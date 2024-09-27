@@ -2,26 +2,26 @@
 
 %% Muon-like events
 clear all;  close all;  clc;
-IntData_ithAzi_mu = 'IntEvents/IntLLVP_pancakenu1_5010050_50.txt';
-IntDataMu = readmatrix(IntData_ithAzi_mu)
+ObsData_ithAzi_mu = 'ObsEvents/ObsLLVP_pancakenu1_2010020_88.txt';
+obsDataMu = readmatrix(ObsData_ithAzi_mu)
 
 %create surface plot
-cth = unique(IntDataMu(:,1)); %Xaxis
-e   = unique(IntDataMu(:,2)); %Yaxis
-nmu_ij= IntDataMu(:,3);
+cth = unique(obsDataMu(:,1)); %Xaxis
+e   = unique(obsDataMu(:,2)); %Yaxis
+nmu_ij= obsDataMu(:,3);
 [Cth,E] = meshgrid(cth,e);
 Nmu = reshape(nmu_ij,length(cth),length(e));
 
 % electron-like events
-IntData_ithAzi_e = 'IntEvents/IntLLVP_pancakenu0_5010050_50.txt';
-IntDatae = readmatrix(IntData_ithAzi_e)
+ObsData_ithAzi_e = 'ObsEvents/ObsLLVP_pancakenu0_2010020_86.txt';
+ObsDatae = readmatrix(ObsData_ithAzi_e)
 
 %create surface plot
-cth = unique(IntDatae(:,1)); %Xaxis
-e   = unique(IntDatae(:,2)); %Yaxis
-ne_ij= IntDatae(:,3);
+cth = unique(ObsDatae(:,1)); %Xaxis
+e   = unique(ObsDatae(:,2)); %Yaxis
+ne_ij= ObsDatae(:,3);
 [Cth,E] = meshgrid(cth,e);
-Ne = reshape(ne_ij,length(cth),length(e));
+Nue = reshape(ne_ij,length(cth),length(e));
 
 %% Oscillogram visualization
 
@@ -31,12 +31,11 @@ figure('Renderer', 'painters', 'Position', [10 10 1000 800])
 mudatatrue=pcolor(Cth,E,Nmu);
 set(gca,'FontSize',20, 'FontName', 'Courier')
 set(mudatatrue,'edgecolor','none')
-title( '\nu_\mu detections [Int;\phi =0° ]' ,'FontSize',30);
+title( '\nu_\mu - like events[Obs]' ,'FontSize',30);
 
 xlabel('cos(\theta_z)','FontSize',30)
 set(gca, 'XDir','reverse')
 ylabel('E_{\nu}[GeV]','FontSize',30)
-
 
 hold on 
 topl = xline(cosd(138.8),'--','Top of LLVP','LineWidth',2.5) %Upper Mantle
@@ -46,19 +45,15 @@ cmbl.FontSize=25;
 hold off
 
 h = colorbar;
-caxis([-6 12])
-
 ylabel(h,'$$\Delta N/N[\%]$$','Interpreter','latex','FontSize',30)
-saveas(gcf,'NumuA0.png')
 
-
-% electron-like
-% figure 
+%electron-like
+figure 
 figure('Renderer', 'painters', 'Position', [10 10 1000 800])
-mudatatrue=pcolor(Cth,E,Ne);
+mudatatrue=pcolor(Cth,E,Nue);
 set(gca,'FontSize',20, 'FontName', 'Courier')
 set(mudatatrue,'edgecolor','none')
-title( '\nu_e - like events[Int]' ,'FontSize',30);
+title( '\nu_e - like events[Obs]' ,'FontSize',30);
 
 xlabel('cos(\theta_z)','FontSize',30)
 set(gca, 'XDir','reverse')
@@ -72,7 +67,4 @@ cmbl.FontSize=25;
 hold off
 
 h = colorbar;
-caxis([-1.5 1])
-
 ylabel(h,'$$\Delta N/N[\%]$$','Interpreter','latex','FontSize',30)
-saveas(gcf,'NueA0.png')
