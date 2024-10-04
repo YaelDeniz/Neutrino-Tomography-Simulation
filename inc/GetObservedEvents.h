@@ -66,7 +66,7 @@ class AsimovObsSimulation
     int recobinsE; //Bins in Energy
 
 
-    double NnT; //Detector Exposure //0.05*e +0.1*sqrt(e)
+    double MT; //Detector Exposure //0.05*e +0.1*sqrt(e)
     
     //Detector Resolution-------------------------------------------------------
 
@@ -82,9 +82,9 @@ class AsimovObsSimulation
 
     void SetAngularResolution(double A, double B);
 
-    double PDFth(double thReco, double Etrue, double thTrue); //Gaussian
+    double Gaussth(double thReco, double Etrue, double thTrue); //Gaussian
 
-    double PDFcth(double threco, double Etrue, double thtrue); //Von Mises Fisher
+    double VMFth(double threco, double Etrue, double thtrue); //Von Mises Fisher
 
 
 
@@ -100,6 +100,7 @@ class AsimovObsSimulation
 
     }
 
+    //Beware Angles are in degrees here
     void SetIntervals(double zlow, double zup, double alow, double aup, double elow, double eup)
     {
         ZenMin = zlow;
@@ -131,7 +132,7 @@ class AsimovObsSimulation
     void SetExposure(double exposure) 
     {
 
-        NnT = exposure;
+        MT = exposure;
 
     }
 

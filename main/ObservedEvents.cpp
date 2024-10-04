@@ -41,8 +41,8 @@ void ExportToCSV(TH2D* hist, std::string filename);
 int main(int argc, char **argv)
 {
     //Detector setting 
-    double M = 10.0*MTon; //Mass in megaton units
-    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
+    double M  = 10.0*MTon; //Mass in megaton units
+    double T  = 10.0*years2sec; //Detector Exposure time in sec: One Year
     double MT = M*T; // Exposure [Mton*years]
 
     double Rdet = Rearth;
@@ -73,14 +73,14 @@ int main(int argc, char **argv)
     //Simulation Setup
 
     // Binning------------------------------------------------------------------
-    int cthtruebins=100 ; // # Bins in zenith/cos(zenith)
+    int cthtruebins=100; // # Bins in zenith/cos(zenith)
     int atruebins =100; // # Bins in azimuth (optimal bins are 110 or 22)
     int etruebins =100; // bins in energy
 
       // Binning------------------------------------------------------------------
-    int cthrecobins=20 ; // # Bins in zenith/cos(zenith)
+    int cthrecobins=40; // # Bins in zenith/cos(zenith)
     int arecobins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int erecobins =20; // bins in energy
+    int erecobins =40; // bins in energy
 
     //Reconstructed Energy interval (in GeV):
     double Emin = 2.0; 
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
     //Reconstructed Directions
 
-    //Zenith Angle Interval-----------------------------------------------------
+    //Zenith Angle Interval (deg)-----------------------------------------------------
     double thmin = 180-TMath::ASin( DepthMax/Rocean )*(180.0/TMath::Pi()) ; // min 90
     double thmax = 180-TMath::ASin( (DepthMin)/Rocean )*(180.0/TMath::Pi()) ; // max 180
 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     double phimin = -55.0;
     double phimax =  55.0 ;
 
-    int nuflv = 0; // neutrino  final state: nue (0), numu (1) or nutau (2)
+    int nuflv = 1; // neutrino  final state: nue (0), numu (1) or nutau (2)
     
    //Standart Earth-------------------------------------------------------------
    AsimovObsSimulation StandardEarth;
@@ -141,20 +141,21 @@ int main(int argc, char **argv)
    AlternativeEarth.flvf=nuflv;
 
 
-   std::vector<TH2D*>  ObsStd = StandardEarth.GetObsEvents3Dcth();
+   std::vector<TH2D*>  ObsStd = StandardEarth.GetObsEvents3Dth();
    std::cout << "Generating Observed events" << std::endl;
-   std::vector<TH2D*>  ObsAlt = AlternativeEarth.GetObsEvents3Dcth();
+   std::vector<TH2D*>  ObsAlt = AlternativeEarth.GetObsEvents3Dth();
 
+   /*
    
    //Sensitivity
     std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
     std::string SenvFolder = "/SimulationResults/PreliminaryResults/ObsChi2/";
     std::string BinLabel = std::to_string(cthrecobins)+std::to_string(arecobins)+std::to_string(erecobins);
     //std::string SimLabel = std::to_string(thmin)+std::to_string(thmax)+std::to_string(EnuMin)+std::to_string(EnuMax);
-    std::string chi2name  = "ObsChi2LLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+".txt";
-    std::string chi2path  = NuTomoPath+SenvFolder+chi2name;
+    std::string chi2nameth  = "ObsChi2_th_LLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+".txt";
+    std::string chi2pathth  = NuTomoPath+SenvFolder+chi2nameth;
 
-    std::ofstream SenvData(chi2path); 
+    std::ofstream SenvData(chi2pathth); 
 
 
     for (int rpct = -4; rpct <= 4; ++ rpct)
@@ -162,25 +163,25 @@ int main(int argc, char **argv)
 
         AlternativeEarth.ThePileDensityContrast = rpct; //Adjust the LLVP contrats density
 
-        std::vector< TH2D* > NewAlt= AlternativeEarth.GetObsEvents3Dcth();
+        std::vector< TH2D* > NewAlt= AlternativeEarth.GetObsEvents3Dth();
 
-        double chi2tot = 0;
+        double chi2totth = 0;
 
         for (int n = 0; n < ObsAlt.size(); ++n)
         {
-            chi2tot += Get2DChi2( ObsStd[n] , NewAlt[n]);
+            chi2totth += Get2DChi2( ObsStd[n] , NewAlt[n]);
         }
 
     //std::cout << "Density %: " << rpct << " Chi2: " << chi2tot << std::endl;
 
-        SenvData << rpct << " " << chi2tot << " " << cthrecobins << " " << arecobins << " " << erecobins << std::endl; 
+        SenvData << rpct << " " << chi2totth << " " << cthrecobins << " " << arecobins << " " << erecobins << std::endl; 
 
         
     }
 
     SenvData.close();
    
-
+    */
 
 
 
@@ -188,25 +189,25 @@ int main(int argc, char **argv)
 
 
    //double cthbottom = -0.8376; 
-   double cthbottom = TMath::Cos(TMath::Pi()-TMath::ASin( 3480.0/Rdet ));
-   double cthmid_bottom = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+300)/Rdet ));;
-   double cthmid_top = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+600)/Rdet ));;
-   double cthtop = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Rdet ));;
+   double thbottom     = (TMath::Pi()/180.0)*( TMath::Pi()-TMath::ASin( 3480.0/Rdet ) );
+   double thmid_bottom = (TMath::Pi()/180.0)*(TMath::Pi()-TMath::ASin( (3480.0+300)/Rdet ));;
+   double thmid_top    = (TMath::Pi()/180.0)*(TMath::Pi()-TMath::ASin( (3480.0+600)/Rdet ));;
+   double thtop        = (TMath::Pi()/180.0)*(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Rdet ));;
 
-   TLine * lbottom = new TLine(cthbottom,Emin,cthbottom,Emax);
-   TLine * lmid_bottom = new TLine(cthmid_bottom,Emin,cthmid_bottom,Emax);
-   TLine * lmid_top = new TLine(cthmid_top,Emin,cthmid_top,Emax);
-   TLine * ltop = new TLine(cthtop,Emin,cthtop,Emax);
+   TLine * lbottomth = new TLine(thbottom,Emin,thbottom,Emax);
+   TLine * lmid_bottomth = new TLine(thmid_bottom,Emin,thmid_bottom,Emax);
+   TLine * lmid_topth = new TLine(thmid_top,Emin,thmid_top,Emax);
+   TLine * ltopth = new TLine(thtop,Emin,thtop,Emax);
 
-   lbottom -> SetLineColor(kRed);
-   lmid_bottom -> SetLineColor(kRed);
-   lmid_top -> SetLineColor(kRed);
-   ltop -> SetLineColor(kRed);
+   lbottomth -> SetLineColor(kRed);
+   lmid_bottomth -> SetLineColor(kRed);
+   lmid_topth -> SetLineColor(kRed);
+   ltopth -> SetLineColor(kRed);
 
-   lbottom -> SetLineStyle(2);
-   lmid_bottom -> SetLineStyle(2);
-   lmid_top -> SetLineStyle(2);
-   ltop -> SetLineStyle(2);
+   lbottomth -> SetLineStyle(2);
+   lmid_bottomth -> SetLineStyle(2);
+   lmid_topth -> SetLineStyle(2);
+   ltopth -> SetLineStyle(2);
 
    TCanvas *c1 = new TCanvas();
 
@@ -221,17 +222,17 @@ int main(int argc, char **argv)
     int nhist = (51 + 2*i)-1;
     c1->cd(i+1);
 
-    TH2D * ObsDiff2D = new TH2D(Form("ObsDiff2D%d",nhist),Form("OscObs%d",nhist), cthrecobins,cthmin,cthmax,erecobins,Emin,Emax); //binning in cth 
+    TH2D * ObsDiff2D = new TH2D(Form("ObsDiff2D%d",nhist),Form("OscObs%d",nhist), cthrecobins,thmin,thmax,erecobins,Emin,Emax); //binning in cth 
     GetDiff2D( ObsStd[nhist] , ObsAlt[nhist], ObsDiff2D );
     ObsDiff2D->Draw("COLZ");
     ObsDiff2D->SetStats(0);
-    lbottom->Draw("same");
-    lmid_bottom->Draw("same");
-    lmid_top->Draw("same");
-    ltop->Draw("same");
+    lbottomth->Draw("same");
+    lmid_bottomth->Draw("same");
+    lmid_topth->Draw("same");
+    ltopth->Draw("same");
 
     std::string BinLabel = std::to_string(cthrecobins)+std::to_string(arecobins)+std::to_string(erecobins);
-    std::string eventsfile = "ObsLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
+    std::string eventsfile = "ObsthLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
     ExportToCSV(ObsDiff2D, eventsfile);
 
  

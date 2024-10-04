@@ -61,18 +61,18 @@ double AsimovObsSimulation::PDFE(double Ereco , double Etrue ) {
     double pdfe = ROOT::Math::gaussian_pdf( Ereco, SigmaE, Etrue) ;
     return pdfe; } //Gaussian Distribution
 
-//Angular (Zenith only) Resolution Parameters
+//Angular Resolution Parameters (rad)
 void AsimovObsSimulation::SetAngularResolution(double A, double B){
     Ath = A;
     Bth = B;}
 
 //Angular(Zenith only) Resolution function
-double AsimovObsSimulation::PDFth(double thReco, double Etrue, double thTrue){
+double AsimovObsSimulation::Gaussth(double threco, double Etrue, double thtrue){
     double Sigmath = Ath + Bth/(sqrt(Etrue)); //Detector Angular Resolution
-    double pdfth = ROOT::Math::gaussian_pdf( thReco, Sigmath, thTrue) ;
+    double pdfth = ROOT::Math::gaussian_pdf( threco, Sigmath, thtrue) ;
     return pdfth; } //Gaussian Distribution
 
-double AsimovObsSimulation::PDFcth(double threco, double Etrue, double thtrue){
+double AsimovObsSimulation::VMFth(double threco, double Etrue, double thtrue){
 
     /// @param sigma - std. dev. in radians. Angular resolution
     /// kappa = 1/sigma^2 - VMF concentrarion parameter. 
@@ -204,7 +204,7 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
     TrueSimulation.ModifyLayer(PremLayer,DensityContrast,ChemicalContrats);
     TrueSimulation.SetIntervals(thtrueMin,thtrueMax,phiTrueMin,phiTrueMax,EtrueMin,EtrueMax);
     TrueSimulation.SetBinning(ibins,jbins,kbins);
-    TrueSimulation.SetExposure(NnT);
+    TrueSimulation.SetExposure(MT);
     TrueSimulation.flvf=flvf;
     std::vector<TH2D*> TrueHist= TrueSimulation.GetTrueEvents3D();
 
@@ -258,7 +258,7 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
 
                         double dEdcthReco = dEreco*dcthreco;
                        
-                        Nsmear += PDFcth(cthreco,Etrue,cthtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdcthReco);
+                        Nsmear += VMFth(cthreco,Etrue,cthtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdcthReco);
         
                     } // loop e
 
@@ -295,9 +295,9 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
     double ErecoMin      = EnuMin;
     double ErecoMax      = EnuMax;
     
-    //Observed Angle
-    double threcoMin   = ZenMin;
-    double threcoMax   = ZenMax;
+    //Observed Angle (rad)
+    double threcoMin   = ZenMin*TMath::Pi()/180.0;
+    double threcoMax   = ZenMax*TMath::Pi()/180.0;
 
     //double CthrecoMin = cos(threcoMax*TMath::Pi()/180.0); //min cth = -1 
     //double CthrecoMax = cos(threcoMin*TMath::Pi()/180.0); // max cth = 0
@@ -329,10 +329,10 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
     double EtrueMax = finder_max.Root();
 
     //True Angle-
-    double thtrueMin_a= (threcoMin*TMath::Pi()/180.0)-4*(Ath + Bth/sqrt(EtrueMin));
+    double thtrueMin_a= threcoMin - 4*(Ath + Bth/sqrt(EtrueMin));
     double thtrueMin_b= 0;
 
-    double thtrueMax_a= (threcoMax*TMath::Pi()/180.0)+4*(Ath + Bth/sqrt(EtrueMin));
+    double thtrueMax_a= threcoMax + 4*(Ath + Bth/sqrt(EtrueMin));
     double thtrueMax_b= TMath::Pi();
 
     // True Angular Range
@@ -342,11 +342,7 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
     //Azimuthal 
     double phiTrueMin = AziMin;
     double phiTrueMax = AziMax;
-
-
-    std::cout << "TrueVariable | E=[ " << EtrueMin << " , " << EtrueMax << " ] Zenith= [" << thtrueMin << " , " << thtrueMax << "]" << std::endl;
-    std::cout << "RecoVariable | E=[ " << ErecoMin << " , " << ErecoMax << " ] Zenith= [" << threcoMin << " , " << threcoMax << "]" << std::endl;
-
+    
 
     //HISTOGRAMS--------------------------------------------------------------------------------------------------------
      //True Histogram        
@@ -368,7 +364,7 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
     TrueSimulation.ModifyLayer(PremLayer,DensityContrast,ChemicalContrats);
     TrueSimulation.SetIntervals(thtrueMin,thtrueMax,phiTrueMin,phiTrueMax,EtrueMin,EtrueMax);
     TrueSimulation.SetBinning(ibins,jbins,kbins);
-    TrueSimulation.SetExposure(NnT);
+    TrueSimulation.SetExposure(MT);
     TrueSimulation.flvf=flvf;
     std::vector<TH2D*> TrueHist= TrueSimulation.GetTrueEvents3Dth();
 
@@ -392,9 +388,9 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
         {
 
             double threco = RecoHist[nphi]->GetXaxis()->GetBinCenter(m); // Angular bin from the "Observed" histogram
-            double cthreco  =  cos(threco);
-
             double dthreco= RecoHist[nphi]->GetXaxis()->GetBinWidth(m); // Angular bin width of the "Observed" histogram
+
+            double cthreco  =  cos(threco);
 
             //Loop over Reconstructed energy
             for (int n = 1; n <=nbins ; ++n) //Observed Energy bins
@@ -409,9 +405,9 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
                 {    
                     // Get cos(theta_z) from bin center, It fix a value of L
                     double thtrue = TrueHist[nphi]->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
-                    double cthtrue = cos(thtrue);
-                    
                     double dthtrue = TrueHist[nphi]->GetXaxis()->GetBinWidth(i); 
+
+                    double cthtrue = cos(thtrue);
 
                     for (int k = 1; k <= kbins; ++k)
                     { 
@@ -424,7 +420,7 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
 
                         double dEdthReco = dEreco*dthreco;
                        
-                        Nsmear += PDFcth(threco,Etrue,thtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdthReco);
+                        Nsmear += VMFth(threco,Etrue,thtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdthReco);
         
                     } // loop e
 
@@ -441,6 +437,9 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
         HistVec.push_back(RecoHist[nphi]); 
 
     } // End Histogram loop
+
+    std::cout << "TrueVariable | E=[ " << EtrueMin << " , " << EtrueMax << " ] Zenith= [" << thtrueMin << " , " << thtrueMax << "]" << std::endl;
+    std::cout << "RecoVariable | E=[ " << ErecoMin << " , " << ErecoMax << " ] Zenith= [" << threcoMin << " , " << threcoMax << "]" << std::endl;
    
    return HistVec;}
 

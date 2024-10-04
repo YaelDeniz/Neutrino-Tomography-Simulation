@@ -114,7 +114,7 @@ int main(int argc, char **argv)
     double phimax = phi_b + dPhi;
 
     //Neutrino
-    int nuflv = 0; // neutrino  final state: nue (0), numu (1) or nutau (2)
+    int nuflv = 1; // neutrino  final state: nue (0), numu (1) or nutau (2)
     
    //Standart Earth-------------------------------------------------------------
    AsimovSimulation StandardEarth;
