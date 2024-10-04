@@ -44,7 +44,7 @@
 
 using namespace std;
 
-void ExportToCSV(TH2D* hist, std::string filename);
+void ExportToCSV(TH2D* stdhist, TH2D* althist, TH2D* hist, std::string filename);
 
 int main(int argc, char **argv)
 {
@@ -55,6 +55,7 @@ int main(int argc, char **argv)
     //Detetcor Settings
     
     //Detector size-------------------------------------------------------------
+    int exposue = 10*10;
     double M = 10.0*MTon; //Mass in megaton units
     double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
     double MT = M*T; // Exposure [Mton*years]
@@ -132,6 +133,7 @@ int main(int argc, char **argv)
    //TH2D * TrueStd = StandardEarth.GetTrueEvents2D();
 
     std::vector< TH2D* >  TrueStd = StandardEarth.GetTrueEvents3D();
+    std::vector< TH2D* >  TrueStdth = StandardEarth.GetTrueEvents3Dth();
 
     //Alternative Earth--------------------------------------------------------- 
 
@@ -156,50 +158,61 @@ int main(int argc, char **argv)
    AlternativeEarth.flvf=nuflv;
 
    //TH2D * TrueAlt = AlternativeEarth.GetTrueEvents2D();
-    std::vector< TH2D* > TrueAlt= AlternativeEarth.GetTrueEvents3D();
+   std::vector< TH2D* > TrueAlt= AlternativeEarth.GetTrueEvents3D(); //cth binning
+    std::vector< TH2D* > TrueAltth= AlternativeEarth.GetTrueEvents3Dth(); //th binning
 
 
-   /* 
+
+   
    //Sensitivity
     std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
     std::string SenvFolder = "/SimulationResults/PreliminaryResults/IntChi2/";
     std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
     //std::string SimLabel = std::to_string(thmin)+std::to_string(thmax)+std::to_string(EnuMin)+std::to_string(EnuMax);
-    std::string chi2name  = "IntChi2LLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+".txt";
-    std::string chi2path  = NuTomoPath+SenvFolder+chi2name;
+    std::string chi2namecth  = "Int_cth_Chi2LLVP"+std::to_string(exposue)+"myrs_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+".txt";
+    std::string chi2nameth  = "Int_th_Chi2LLVP"+std::to_string(exposue)+"myrs_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+".txt";
+    std::string chi2pathcth  = NuTomoPath+SenvFolder+chi2namecth;
+    std::string chi2pathth  = NuTomoPath+SenvFolder+chi2nameth;
 
-    std::ofstream SenvData(chi2path); 
 
+    std::ofstream SenvDatacth(chi2pathcth);
+    std::ofstream SenvDatath(chi2pathth); 
 
+    
     for (int rpct = -4; rpct <= 4; ++ rpct)
     {
 
         AlternativeEarth.PileDensityContrast = rpct; //Adjust the LLVP contrats density
 
-        std::vector< TH2D* > NewAlt= AlternativeEarth.GetTrueEvents3D();
+        std::vector< TH2D* > NewAltcth= AlternativeEarth.GetTrueEvents3D();
+        std::vector< TH2D* > NewAltth= AlternativeEarth.GetTrueEvents3Dth();
 
-        double chi2tot = 0;
+        double chi2totcth = 0;
+        double chi2totth = 0;
 
         for (int n = 0; n < TrueAlt.size(); ++n)
         {
-            chi2tot += Get2DChi2( TrueStd[n] , NewAlt[n]);
+            chi2totcth += Get2DChi2( TrueStd[n] , NewAltcth[n]);
+            chi2totth += Get2DChi2( TrueStdth[n] , NewAltth[n]);
         }
 
     //std::cout << "Density %: " << rpct << " Chi2: " << chi2tot << std::endl;
 
-        SenvData << rpct << " " << chi2tot << " " << cthbins << " " << abins << " " << ebins << std::endl; 
+        SenvDatacth << rpct << " " << chi2totcth << " " << cthbins << " " << abins << " " << ebins << std::endl;
+        SenvDatath << rpct << " " << chi2totth << " " << cthbins << " " << abins << " " << ebins << std::endl;  
 
         
     }
 
-    SenvData.close();
-   */
+    SenvDatacth.close();
+    SenvDatath.close();
+   
 
    // Visualization of Events
 
    TApplication app("app", &argc, argv);
 
-
+   //cth lines
    //double cthbottom = -0.8376; 
    double cthbottom = TMath::Cos(TMath::Pi()-TMath::ASin( 3480.0/Rdet ));
    double cthmid_bottom = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+300)/Rdet ));;
@@ -223,48 +236,99 @@ int main(int argc, char **argv)
    lmid_top -> SetLineStyle(2);
    ltop -> SetLineStyle(2);
 
-   TCanvas *c1 = new TCanvas();
+   //th lines 
+   double thbottom     = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( 3480.0/Rdet ));
+   double thmid_bottom = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( (3480.0 + 300)/Rdet ));
+   double thmid_top    = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( (3480.0 + 600)/Rdet ));
+   double thtop        = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Rdet ));
 
+   TLine * lbottomth = new TLine(thbottom,EnuMin,thbottom,EnuMax);
+   TLine * lmid_bottomth = new TLine(thmid_bottom,EnuMin,thmid_bottom,EnuMax);
+   TLine * lmid_topth = new TLine(thmid_top,EnuMin,thmid_top,EnuMax);
+   TLine * ltopth = new TLine(thtop,EnuMin,thtop,EnuMax);
+
+   lbottomth -> SetLineColor(kBlue);
+   lmid_bottomth -> SetLineColor(kBlue);
+   lmid_topth -> SetLineColor(kBlue);
+   ltopth -> SetLineColor(kBlue);
+
+ 
+   TCanvas *c1 = new TCanvas();
+   gStyle->SetPalette(kBlueGreenYellow);
+   
+   TCanvas *c2 = new TCanvas();
    gStyle->SetPalette(kBlueGreenYellow);
 
+
    c1->Divide(5,5);
+   c2->Divide(5,5);
 
    for(int i = 0 ; i < 25 ; ++i )
 
    {
 
     int nhist = (51 + 2*i)-1;
-    c1->cd(i+1);
+    
+
+    std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
+    std::string eventsfile = "IntcthLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
+    std::string eventsfileth = "IntthLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
+
 
     TH2D * TrueDiff2D = new TH2D(Form("OscDiff2D%d",nhist),Form("Oscillogram%d",nhist), cthbins,cthmin,cthmax,ebins,EnuMin,EnuMax); //binning in cth 
-    GetDiff2D( TrueStd[nhist] , TrueAlt[nhist], TrueDiff2D );
+    TH2D * TrueDiff2Dth = new TH2D(Form("OscDiff2Dth%d",nhist),Form("Oscillogramth%d",nhist), cthbins,thmin,thmax,ebins,EnuMin,EnuMax); //binning in th 
+    
+    GetDiff2D( TrueStd[nhist] , TrueAlt[nhist], TrueDiff2D);
+    ExportToCSV(TrueStd[nhist] ,TrueAlt[nhist], TrueDiff2D, eventsfile);
+
+    
+    GetDiff2D( TrueStdth[nhist] , TrueAltth[nhist], TrueDiff2Dth);
+    ExportToCSV(TrueStdth[nhist] , TrueAltth[nhist], TrueDiff2Dth, eventsfileth);
+    
+    c1->cd(i+1);
     TrueDiff2D->Draw("COLZ");
     TrueDiff2D->SetStats(0);
     lbottom->Draw("same");
     lmid_bottom->Draw("same");
     lmid_top->Draw("same");
     ltop->Draw("same");
+    
 
-    std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
-    std::string eventsfile = "IntLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
-    ExportToCSV(TrueDiff2D, eventsfile);
+    c2->cd(i+1);
+    TrueDiff2Dth->Draw("COLZ");
+    TrueDiff2Dth->SetStats(0);
+    lbottomth->Draw("same");
+    lmid_bottomth->Draw("same");
+    lmid_topth->Draw("same");
+    ltopth->Draw("same");
+
+
+    //std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
+    //std::string eventsfile = "IntLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
 
  
    }
 
-    gPad->Update();
-    c1->Modified(); c1->Update();
-    TRootCanvas *rc = (TRootCanvas *)c1->GetCanvasImp();
-    rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
-    app.Run();
+   gPad->Update();
+   c1->Modified(); c1->Update();
+   TRootCanvas *rc = (TRootCanvas *)c1->GetCanvasImp();
+   rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
 
-    c1->Print("AzimuthHist.png");
+   gPad->Update();
+   c2->Modified(); c2->Update();
+   TRootCanvas *rc2 = (TRootCanvas *)c2->GetCanvasImp();
+   rc2->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+
+   app.Run();
+
+    //c1->Print("AzimuthHist.png");
 
     return 0;
 
 }
 
-void ExportToCSV(TH2D* hist, std::string filename)
+
+void ExportToCSV(TH2D* stdhist, TH2D* althist, TH2D* hist, std::string filename)
 {
     std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
     std::string IntFolder = "/SimulationResults/PreliminaryResults/IntEvents/";
@@ -273,15 +337,20 @@ void ExportToCSV(TH2D* hist, std::string filename)
     std::ofstream outfile(path2file);
 
     // Recorre los bins y guarda el contenido
+
+
     for (int i = 1; i <= hist->GetNbinsX(); ++i)
     {
         for (int j = 1; j <= hist->GetNbinsY(); ++j)
         {
             double x = hist->GetXaxis()->GetBinCenter(i);
             double y = hist->GetYaxis()->GetBinCenter(j);
-            double content = hist->GetBinContent(i, j);
 
-            outfile << x << "," << y << "," << content << std::endl;
+            double nexp = stdhist->GetBinContent(i, j);
+            double nobs = althist->GetBinContent(i, j); 
+            double diff = hist->GetBinContent(i, j);
+
+            outfile << x << "," << y << "," <<  nexp <<" , " << nobs << " , " << diff << std::endl;
         }
     }
 

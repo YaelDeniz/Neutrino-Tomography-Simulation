@@ -72,15 +72,18 @@ double AsimovObsSimulation::PDFth(double thReco, double Etrue, double thTrue){
     double pdfth = ROOT::Math::gaussian_pdf( thReco, Sigmath, thTrue) ;
     return pdfth; } //Gaussian Distribution
 
-double AsimovObsSimulation::PDFcth(double cthreco, double Etrue, double cthtrue){
+double AsimovObsSimulation::PDFcth(double threco, double Etrue, double thtrue){
 
     /// @param sigma - std. dev. in radians. Angular resolution
     /// kappa = 1/sigma^2 - VMF concentrarion parameter. 
 
     double sigmath = Ath + Bth/(sqrt(Etrue)); // Angular resolution in radians
 
-    double cos_z = cthreco;
-    double cos_z0 = cthtrue;
+    //double cos_z = cthreco;
+    //double cos_z0 = cthtrue;
+
+    double cos_z  = cos(threco);
+    double cos_z0 = cos(thtrue);
 
     double sin_z = sqrt(1 - pow(cos_z, 2));
     double sin_z0 = sqrt(1 - pow(cos_z0, 2));
@@ -112,6 +115,7 @@ double AsimovObsSimulation::PDFcth(double cthreco, double Etrue, double cthtrue)
 
     return norm * expo * bess * sin_z;} //Von Mises Fisher
 
+// Observed events in cth binning
 std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){  
 
     std::cout << "Asimov Approach Simulation for Observed Events" << std::endl;
@@ -267,6 +271,172 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
             } // End reconstructed E loop 
 
         } // End reconstructed cth loop
+
+        HistVec.push_back(RecoHist[nphi]); 
+
+    } // End Histogram loop
+   
+   return HistVec;}
+
+
+// Observed events in th binning
+std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){  
+
+    std::cout << "Asimov Approach Simulation for Observed Events" << std::endl;
+
+
+    //Observed Variables:-----------------------------------------------------------------------------------------------
+    
+    //Observed bins
+    int mbins = recobinsZen; //Number of angular bins of Observed event distribution
+    int nbins = recobinsE; //Number of Energy bins of Observed event distribution 
+    
+    //Energy[GeV]
+    double ErecoMin      = EnuMin;
+    double ErecoMax      = EnuMax;
+    
+    //Observed Angle
+    double threcoMin   = ZenMin;
+    double threcoMax   = ZenMax;
+
+    //double CthrecoMin = cos(threcoMax*TMath::Pi()/180.0); //min cth = -1 
+    //double CthrecoMax = cos(threcoMin*TMath::Pi()/180.0); // max cth = 0
+    
+
+    //True Variables:---------------------------------------------------------------------------------------------------
+
+    //True bins
+    int ibins = truebinsZen; // Number of  angular bins of True event distribution
+    int jbins = truebinsAzi;
+    int kbins = truebinsE; // Number of  energy bins of True event distribution
+    
+    //True Energy[GeV]
+    TF1 *fmin = new TF1("fmin","-1*x + [0] -4*( [1]*x+[2]*sqrt(x) )", 0, 100);
+    fmin->SetParameter(0,ErecoMin);
+    fmin->SetParameter(1,Ae);
+    fmin->SetParameter(2,Be);
+    ROOT::Math::RootFinder finder_min;
+    finder_min.Solve(*fmin,0,100);
+
+    TF1 *fmax = new TF1("fmax","-1*x + [0] + 4*( [1]*x+[2]*sqrt(x) )", 0, 100);
+    fmax->SetParameter(0,ErecoMax);
+    fmax->SetParameter(1,Ae);
+    fmax->SetParameter(2,Be);
+    ROOT::Math::RootFinder finder_max;
+    finder_max.Solve(*fmax,0,100);
+
+    double EtrueMin = finder_min.Root();
+    double EtrueMax = finder_max.Root();
+
+    //True Angle-
+    double thtrueMin_a= (threcoMin*TMath::Pi()/180.0)-4*(Ath + Bth/sqrt(EtrueMin));
+    double thtrueMin_b= 0;
+
+    double thtrueMax_a= (threcoMax*TMath::Pi()/180.0)+4*(Ath + Bth/sqrt(EtrueMin));
+    double thtrueMax_b= TMath::Pi();
+
+    // True Angular Range
+    double thtrueMin = max(thtrueMin_b,thtrueMin_a)*180.0/TMath::Pi(); //From Radians to degrees
+    double thtrueMax = min(thtrueMax_b,thtrueMax_a)*180.0/TMath::Pi(); // From radias to degrees
+
+    //Azimuthal 
+    double phiTrueMin = AziMin;
+    double phiTrueMax = AziMax;
+
+
+    std::cout << "TrueVariable | E=[ " << EtrueMin << " , " << EtrueMax << " ] Zenith= [" << thtrueMin << " , " << thtrueMax << "]" << std::endl;
+    std::cout << "RecoVariable | E=[ " << ErecoMin << " , " << ErecoMax << " ] Zenith= [" << threcoMin << " , " << threcoMax << "]" << std::endl;
+
+
+    //HISTOGRAMS--------------------------------------------------------------------------------------------------------
+     //True Histogram        
+    AsimovSimulation TrueSimulation;
+
+    TrueSimulation.PremTable = ThePremTable; //Prem Model
+    TrueSimulation.HondaTable = TheHondaTable; // Honda Table
+    TrueSimulation.SetDetectorPosition(xyzTelescope); //Detector location
+
+    //If LLVP set geometry and properties
+    TrueSimulation.MantleAnomaly = PileInModel;
+    TrueSimulation.AnomalyShape= ShapeOfPile;
+    TrueSimulation.PileHeight = ThePileHight; // LLVP mas height 
+    TrueSimulation.aperture=ThePileAperture; //Aperture
+    TrueSimulation.PileDensityContrast = ThePileDensityContrast;
+    TrueSimulation.PileChemContrast = ThePileChemicalContrast;
+
+
+    TrueSimulation.ModifyLayer(PremLayer,DensityContrast,ChemicalContrats);
+    TrueSimulation.SetIntervals(thtrueMin,thtrueMax,phiTrueMin,phiTrueMax,EtrueMin,EtrueMax);
+    TrueSimulation.SetBinning(ibins,jbins,kbins);
+    TrueSimulation.SetExposure(NnT);
+    TrueSimulation.flvf=flvf;
+    std::vector<TH2D*> TrueHist= TrueSimulation.GetTrueEvents3Dth();
+
+
+    std::vector<TH2D*> HistVec;
+    TH2D* RecoHist[jbins]; 
+
+    //Observed distribution:
+    //TH2D* RecoHist = new TH2D("RecoHist","Observed Events Histogram",mbins,CthrecoMin,CthrecoMax,nbins,ErecoMin,ErecoMax); // xbins correspond to energy values and ybins to zenith angle cost
+
+    //Loop Over Histogram in Azimuth
+    for (int nphi = 0 ; nphi < TrueHist.size(); ++nphi)
+    {
+
+        RecoHist[nphi] = new TH2D(Form("RecoHist%d",nphi),Form("ObsOscillogram%d",nphi),
+                                  mbins,threcoMin,threcoMax,
+                                  nbins,ErecoMin,ErecoMax); // xbins correspond to energy values and ybins to zenith angle cost
+
+        //Loop over Reconstructed cth
+        for (int m = 1; m <= mbins; ++m) //Observed Angular bins
+        {
+
+            double threco = RecoHist[nphi]->GetXaxis()->GetBinCenter(m); // Angular bin from the "Observed" histogram
+            double cthreco  =  cos(threco);
+
+            double dthreco= RecoHist[nphi]->GetXaxis()->GetBinWidth(m); // Angular bin width of the "Observed" histogram
+
+            //Loop over Reconstructed energy
+            for (int n = 1; n <=nbins ; ++n) //Observed Energy bins
+            {
+         
+                double Ereco = RecoHist[nphi]->GetYaxis()->GetBinCenter(n); //  Energy bin from the "Observed" histogram
+                double dEreco = RecoHist[nphi]->GetYaxis()->GetBinWidth(n); //  Energy bin width of the "Observed" histogram
+           
+                double Nsmear = 0;   // Reset total number of events.
+                
+                for(int i=1; i<= ibins ; i++) //Loop in cosT
+                {    
+                    // Get cos(theta_z) from bin center, It fix a value of L
+                    double thtrue = TrueHist[nphi]->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+                    double cthtrue = cos(thtrue);
+                    
+                    double dthtrue = TrueHist[nphi]->GetXaxis()->GetBinWidth(i); 
+
+                    for (int k = 1; k <= kbins; ++k)
+                    { 
+                        //NUMERICAL INTEGRATION
+
+                        double Etrue = TrueHist[nphi]->GetYaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
+                        double dEtrue = TrueHist[nphi]->GetYaxis()->GetBinWidth(k); 
+
+                        double NikTrue = TrueHist[nphi]->GetBinContent(i,k);
+
+                        double dEdthReco = dEreco*dthreco;
+                       
+                        Nsmear += PDFcth(threco,Etrue,thtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdthReco);
+        
+                    } // loop e
+
+                } // Loop th
+                
+                double Nmn = Nsmear;
+
+                RecoHist[nphi]->SetBinContent(m,n,Nmn); // Set events in Observed histogram. 
+             
+            } // End reconstructed E loop 
+
+        } // End reconstructed th loop
 
         HistVec.push_back(RecoHist[nphi]); 
 

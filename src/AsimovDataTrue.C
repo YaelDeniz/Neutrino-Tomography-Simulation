@@ -62,6 +62,7 @@ using namespace std;
 
 // Make oscillogram for given final flavour and MH
 
+//Simulation with binning in cos(theta)
 std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
 {  
     std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
@@ -201,6 +202,169 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
                 // Calculate Poisson mean for the current bins (N_ijk)
                 // Note : MT/mN  refers to target nucleons per year
                 double N_ijk = (MT/mN)*(Ri_nu + Ri_nubar)*dE*dcth*dphi; 
+
+                // Set the bin content in the 2D histogram
+                EventHist2D[j]->SetBinContent(i,k, N_ijk); 
+
+            } // End energy loop 
+
+        } // End zenith loop
+
+        // Add the current 2D histogram to the vector
+
+        HistVec.push_back(EventHist2D[j]);
+
+    } //End  Azimuth Loop 
+
+
+    // Close index file and return the vector of histograms      
+    IndexAzi.close();
+    return HistVec;
+}
+
+//Simulation with binning in theta
+std::vector< TH2D* > AsimovSimulation::GetTrueEvents3Dth()
+{  
+    std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
+    std::string IntFolder = "/SimulationResults/PreliminaryResults/IntEvents/";
+    std::string AziIndex = NuTomoPath+IntFolder+"TrueIndexTable.txt";
+    std::ofstream IndexAzi(AziIndex); 
+
+    // Neutrino final flavour
+    int nue        = 0;  // electron neutrino  
+    int numu       = 1; // muon neutrino
+
+    // Particle type
+    int nu         = 1; //neutrino
+    int nubar      = -1; //antineutrino
+
+    //Binning Scheme 
+
+    //double cthmin = cos(thmax); // Min value for cth (cth = -1) 
+    //double cthmax = cos(thmin); // Max value for cth (cth = 1)
+    //ibins - Total number of zenith("theta") bins | cos(theta)
+    //jbins - Total number of azimuth bins
+    //kbins - Total number of Energy bins 
+    double N_ijk = 0   ;        // Poisson mean for bin (i,j,k).
+
+    // Histogram definition (3D: cos(theta), azimuth, energy)
+    TH3D * EventHist3D = new TH3D("TrueHist","True Event Histrogram", 
+                                  ibins,thmin,thmax,
+                                  jbins,phimin,phimax,
+                                  kbins,Emin,Emax); 
+
+    //Neutrino Oscillation Probabilities calculation
+    OscProb::PMNS_Fast PMNS_H; // PMNS object
+    PMNS_H.SetStdPars();       // Set PDG 3-flavor parameters
+
+    //Load Honda flux data
+    NuFlux HondaFlux;
+    std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaTable);
+
+    //Generate flux histograms for different neutrino flavours
+    TH2D* muflux =  HondaFlux.GetFluxHist(1,FluxData); // Muon neutrino
+    TH2D* mubflux =  HondaFlux.GetFluxHist(2,FluxData);// Muon antineutrino
+    TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData);  // Electron neutrino
+    TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); // Electron antineutrino
+
+    // Set up the Earth's 3D model    
+    Earth3DModel Earth3D;
+    Earth3D.SetModel(PremTable);
+    Earth3D.SetDetector(pos);
+    Earth3D.PileThickness = PileHeight;  
+    Earth3D.aWidth = aperture;
+    Earth3D.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
+    Earth3D.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
+    
+    // Initialize vector for 2D histograms and other variables
+    std::vector< TH2D* > HistVec;
+    TH2D * EventHist2D[jbins];
+    double l,d,z;
+
+    //Loop over azimuth angles
+    for (int j = 1; j <= jbins; j++) 
+    {
+        // Get azimuth center and width for the current bin
+        double phi = EventHist3D->GetYaxis()->GetBinCenter(j); 
+        double dphi = EventHist3D-> GetYaxis()->GetBinWidth(j); 
+
+        IndexAzi << j << " " << phi*180/TMath::Pi() << " " << dphi*180/TMath::Pi() << std::endl; 
+
+        // Create a new 2D histogram for each azimuth bin
+        //char histchar[64];
+        //strcat(histchar, "truehist%d" , j);
+        //const char *histname = histchar;
+
+        TString histname = Form("OscHist%d",j);
+        EventHist2D[j] = new TH2D(histname,Form("Oscillogram%d",j), ibins,thmin,thmax,kbins,Emin,Emax); 
+
+        // Loop over zenith bins (cos(theta))
+        for(int i=1; i<= ibins ; i++) 
+        {    
+            // Get cos(theta) center and width for the current bin.
+            // The distance traveled through the earth "Baseline" is L=-2 * R_earth * cos(theta)
+
+            double th = EventHist2D[j]->GetXaxis()->GetBinCenter(i);
+            double cth = cos(th);
+            double sth = sin(th);
+            double dth = EventHist2D[j] -> GetXaxis()->GetBinWidth(i);
+
+            if(cth < -1 || cth > 1) break; // Skip unphysical cos(theta)
+
+            // Set Earth model direction and calculate Earth path
+            
+            Earth3D.SetDirection(cth,phi); 
+            std::vector<std::vector<double>> EarthPath = Earth3D.Create3DPath();
+
+            // Set PMNS neutrino oscillation path
+            l = EarthPath[0][0];
+            d = EarthPath[0][1];
+            z = EarthPath[0][2];
+            
+            PMNS_H.SetPath(l,d,z); // Initialize path
+            
+            for (int np = 1; np < EarthPath.size(); np++) 
+            { 
+                l = EarthPath[np][0];
+                d = EarthPath[np][1];
+                z = EarthPath[np][2];    
+                PMNS_H.AddPath(l,d,z);
+            } 
+            
+            // Loop over energy bins
+            for (int k = 1; k <=kbins; ++k)
+            { 
+                double e = EventHist2D[j]->GetYaxis()->GetBinCenter(k); 
+                double dE = EventHist2D[j]->GetYaxis()->GetBinWidth(k);
+                double logEi = log10(e);
+                
+
+                // Interpolate neutrino flux values
+                double logdPsiMu = muflux->Interpolate(logEi,cth);
+                double logdPsiMub = mubflux->Interpolate(logEi,cth);
+                double logdPsiE = eflux->Interpolate(logEi,cth);
+                double logdPsiEb = ebflux->Interpolate(logEi,cth);
+
+                // Convert logarithmic flux values to linear
+                double dPsiMudEdth    = sth*pow(10,logdPsiMu);     // Muon neutrino flux
+                double dPsiMubardEdth = sth*pow(10,logdPsiMub); // Muon anti-neutrino flux
+                double dPsiEdEdth     = sth*pow(10,logdPsiE);       // Electron neutrino flux
+                double dPsiEbardEdth  = sth*pow(10,logdPsiEb);   // Electron anti-neutrino flux
+
+                PMNS_H.SetIsNuBar(false);// neutrino
+                double Ri_e = XSec(e,nu)*( PMNS_H.Prob(nue,flvf,e)*dPsiEdEdth); 
+                double  Ri_mu = XSec(e,nu)*(PMNS_H.Prob(numu, flvf, e)*dPsiMudEdth); 
+                double Ri_nu = Ri_e + Ri_mu;
+                
+                PMNS_H.SetIsNuBar(true); //Antineutrino 
+                double Ri_eb=XSec(e,nubar)*(PMNS_H.Prob(nue,flvf,e)*dPsiEbardEdth ); 
+                double Ri_mub=XSec(e,nubar)*( PMNS_H.Prob(numu,flvf, e)*dPsiMubardEdth );
+                double Ri_nubar = Ri_eb + Ri_mub;
+
+                double  mN = 1.67492749804E-27; // Approximate mass of nucleon
+                // Calculate Poisson mean for the current bins (N_ijk)
+                // Note : MT/mN  refers to target nucleons per year
+                double N_ijk = (MT/mN)*(Ri_nu + Ri_nubar)*dE*dth*dphi; 
 
                 // Set the bin content in the 2D histogram
                 EventHist2D[j]->SetBinContent(i,k, N_ijk); 

@@ -84,7 +84,7 @@ class AsimovObsSimulation
 
     double PDFth(double thReco, double Etrue, double thTrue); //Gaussian
 
-    double PDFcth(double cthreco, double Etrue, double cthtrue); //Von Mises Fisher
+    double PDFcth(double threco, double Etrue, double thtrue); //Von Mises Fisher
 
 
 
@@ -148,6 +148,7 @@ class AsimovObsSimulation
     //TH2D * GetObsEvents2Dcth(); //Azimuth independet
 
     std::vector < TH2D* >  GetObsEvents3Dcth();
+    std::vector < TH2D* >  GetObsEvents3Dth();
 
 
     //TH2D * TestObsEvents2D(std::string model_std , std::string model_alt);
