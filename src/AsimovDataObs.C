@@ -259,6 +259,8 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
                         double dEdcthReco = dEreco*dcthreco;
                        
                         Nsmear += VMFth(cthreco,Etrue,cthtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdcthReco);
+
+                        std::cout << Nsmear << std::endl;
         
                     } // loop e
 
@@ -421,7 +423,9 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
                         double dEdthReco = dEreco*dthreco;
                        
                         Nsmear += VMFth(threco,Etrue,thtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdthReco);
-        
+
+                        std::cout << "******************************************************************************************************************th variable " << Nsmear << std::endl;
+
                     } // loop e
 
                 } // Loop th

@@ -73,9 +73,9 @@ int main(int argc, char **argv)
     //Simulation Setup
 
     // Binning------------------------------------------------------------------
-    int cthtruebins=100; // # Bins in zenith/cos(zenith)
+    int cthtruebins=40; // # Bins in zenith/cos(zenith)
     int atruebins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int etruebins =100; // bins in energy
+    int etruebins =40; // bins in energy
 
       // Binning------------------------------------------------------------------
     int cthrecobins=40; // # Bins in zenith/cos(zenith)
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
    std::cout << "Generating Observed events" << std::endl;
    std::vector<TH2D*>  ObsAlt = AlternativeEarth.GetObsEvents3Dth();
 
-   /*
+   
    
    //Sensitivity
     std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
@@ -181,8 +181,9 @@ int main(int argc, char **argv)
 
     SenvData.close();
    
-    */
+  
 
+   std::cout << "DATA DISPLAY" << std::endl;
 
 
    TApplication app("app", &argc, argv);
