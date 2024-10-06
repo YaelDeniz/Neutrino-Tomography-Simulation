@@ -73,14 +73,14 @@ int main(int argc, char **argv)
     //Simulation Setup
 
     // Binning------------------------------------------------------------------
-    int cthtruebins=40; // # Bins in zenith/cos(zenith)
+    int cthtruebins=60; // # Bins in zenith/cos(zenith)
     int atruebins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int etruebins =40; // bins in energy
+    int etruebins =60; // bins in energy
 
       // Binning------------------------------------------------------------------
-    int cthrecobins=40; // # Bins in zenith/cos(zenith)
+    int cthrecobins=20; // # Bins in zenith/cos(zenith)
     int arecobins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int erecobins =40; // bins in energy
+    int erecobins =20; // bins in energy
 
     //Reconstructed Energy interval (in GeV):
     double Emin = 2.0; 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     double phimin = -55.0;
     double phimax =  55.0 ;
 
-    int nuflv = 1; // neutrino  final state: nue (0), numu (1) or nutau (2)
+    int nuflv = 0; // neutrino  final state: nue (0), numu (1) or nutau (2)
     
    //Standart Earth-------------------------------------------------------------
    AsimovObsSimulation StandardEarth;
@@ -141,20 +141,22 @@ int main(int argc, char **argv)
    AlternativeEarth.flvf=nuflv;
 
 
-   std::vector<TH2D*>  ObsStd = StandardEarth.GetObsEvents3Dth();
+   std::vector<TH2D*>  ObsStd = StandardEarth.GetObsEvents3Dcth();
    std::cout << "Generating Observed events" << std::endl;
-   std::vector<TH2D*>  ObsAlt = AlternativeEarth.GetObsEvents3Dth();
+   std::vector<TH2D*>  ObsAlt = AlternativeEarth.GetObsEvents3Dcth();
 
    
    
    //Sensitivity
     std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
     std::string SenvFolder = "/SimulationResults/PreliminaryResults/ObsChi2/";
-    std::string BinLabel = std::to_string(cthrecobins)+std::to_string(arecobins)+std::to_string(erecobins);
+    std::string BinLabeltrue = std::to_string(cthtruebins)+std::to_string(atruebins)+std::to_string(etruebins);
+    std::string BinLabelreco = std::to_string(cthrecobins)+std::to_string(arecobins)+std::to_string(erecobins);
     //std::string SimLabel = std::to_string(thmin)+std::to_string(thmax)+std::to_string(EnuMin)+std::to_string(EnuMax);
-    std::string chi2nameth  = "ObsChi2_th_LLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+".txt";
+    std::string chi2nameth  = "ObsChi2_cth_LLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabelreco+"_"+BinLabeltrue+".txt";
     std::string chi2pathth  = NuTomoPath+SenvFolder+chi2nameth;
 
+    
     std::ofstream SenvData(chi2pathth); 
 
 
@@ -163,7 +165,7 @@ int main(int argc, char **argv)
 
         AlternativeEarth.ThePileDensityContrast = rpct; //Adjust the LLVP contrats density
 
-        std::vector< TH2D* > NewAlt= AlternativeEarth.GetObsEvents3Dth();
+        std::vector< TH2D* > NewAlt= AlternativeEarth.GetObsEvents3Dcth();
 
         double chi2totth = 0;
 
@@ -190,10 +192,10 @@ int main(int argc, char **argv)
 
 
    //double cthbottom = -0.8376; 
-   double thbottom     = (TMath::Pi()/180.0)*( TMath::Pi()-TMath::ASin( 3480.0/Rdet ) );
-   double thmid_bottom = (TMath::Pi()/180.0)*(TMath::Pi()-TMath::ASin( (3480.0+300)/Rdet ));;
-   double thmid_top    = (TMath::Pi()/180.0)*(TMath::Pi()-TMath::ASin( (3480.0+600)/Rdet ));;
-   double thtop        = (TMath::Pi()/180.0)*(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Rdet ));;
+   double thbottom     = cos( TMath::Pi()-TMath::ASin( 3480.0/Rdet ) );
+   double thmid_bottom = cos(TMath::Pi()-TMath::ASin( (3480.0+300)/Rdet ));;
+   double thmid_top    = cos(TMath::Pi()-TMath::ASin( (3480.0+600)/Rdet ));;
+   double thtop        = cos(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Rdet ));;
 
    TLine * lbottomth = new TLine(thbottom,Emin,thbottom,Emax);
    TLine * lmid_bottomth = new TLine(thmid_bottom,Emin,thmid_bottom,Emax);
@@ -223,7 +225,7 @@ int main(int argc, char **argv)
     int nhist = (51 + 2*i)-1;
     c1->cd(i+1);
 
-    TH2D * ObsDiff2D = new TH2D(Form("ObsDiff2D%d",nhist),Form("OscObs%d",nhist), cthrecobins,thmin,thmax,erecobins,Emin,Emax); //binning in cth 
+    TH2D * ObsDiff2D = new TH2D(Form("ObsDiff2D%d",nhist),Form("OscObs%d",nhist), cthrecobins,cthmin,cthmax,erecobins,Emin,Emax); //binning in cth 
     GetDiff2D( ObsStd[nhist] , ObsAlt[nhist], ObsDiff2D );
     ObsDiff2D->Draw("COLZ");
     ObsDiff2D->SetStats(0);
@@ -233,7 +235,7 @@ int main(int argc, char **argv)
     ltopth->Draw("same");
 
     std::string BinLabel = std::to_string(cthrecobins)+std::to_string(arecobins)+std::to_string(erecobins);
-    std::string eventsfile = "ObsthLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
+    std::string eventsfile = "Obs_cth_LLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabelreco+"_"+BinLabeltrue+"_"+std::to_string(nhist)+".txt";
     ExportToCSV(ObsDiff2D, eventsfile);
 
  

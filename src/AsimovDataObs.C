@@ -128,15 +128,15 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
     int nbins = recobinsE; //Number of Energy bins of Observed event distribution 
     
     //Energy[GeV]
-    double ErecoMin      = EnuMin;
-    double ErecoMax      = EnuMax;
+    double ErecoMin    = EnuMin;
+    double ErecoMax    = EnuMax;
     
     //Observed Angle
     double threcoMin   = ZenMin;
     double threcoMax   = ZenMax;
 
-    double CthrecoMin = cos(threcoMax*TMath::Pi()/180.0); //min cth = -1 
-    double CthrecoMax = cos(threcoMin*TMath::Pi()/180.0); // max cth = 0
+    double CthrecoMin  = cos(threcoMax*TMath::Pi()/180.0); //min cth = -1 
+    double CthrecoMax  = cos(threcoMin*TMath::Pi()/180.0); // max cth = 0
     
 
     //True Variables:---------------------------------------------------------------------------------------------------
@@ -206,7 +206,7 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
     TrueSimulation.SetBinning(ibins,jbins,kbins);
     TrueSimulation.SetExposure(MT);
     TrueSimulation.flvf=flvf;
-    std::vector<TH2D*> TrueHist= TrueSimulation.GetTrueEvents3D();
+    std::vector<TH2D*> TrueHist= TrueSimulation.GetTrueEvents3D(); //cos(theta) binning
 
 
     std::vector<TH2D*> HistVec;
@@ -229,6 +229,7 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
 
             double cthreco = RecoHist[nphi]->GetXaxis()->GetBinCenter(m); // Angular bin from the "Observed" histogram
             double threco  =  acos(cthreco);
+            double sthreco =  sin(threco); 
             double dcthreco= RecoHist[nphi]->GetXaxis()->GetBinWidth(m); // Angular bin width of the "Observed" histogram
 
             //Loop over Reconstructed energy
@@ -258,7 +259,7 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
 
                         double dEdcthReco = dEreco*dcthreco;
                        
-                        Nsmear += VMFth(cthreco,Etrue,cthtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdcthReco);
+                        Nsmear += (VMFth(threco,Etrue,thtrue)/sthreco)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdcthReco);
 
                         std::cout << Nsmear << std::endl;
         
@@ -367,7 +368,9 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
     TrueSimulation.SetIntervals(thtrueMin,thtrueMax,phiTrueMin,phiTrueMax,EtrueMin,EtrueMax);
     TrueSimulation.SetBinning(ibins,jbins,kbins);
     TrueSimulation.SetExposure(MT);
-    TrueSimulation.flvf=flvf;
+    TrueSimulation.flvf=flvf; 
+
+    //Binning in zenith angle
     std::vector<TH2D*> TrueHist= TrueSimulation.GetTrueEvents3Dth();
 
 
@@ -423,8 +426,6 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
                         double dEdthReco = dEreco*dthreco;
                        
                         Nsmear += VMFth(threco,Etrue,thtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdthReco);
-
-                        std::cout << "******************************************************************************************************************th variable " << Nsmear << std::endl;
 
                     } // loop e
 
