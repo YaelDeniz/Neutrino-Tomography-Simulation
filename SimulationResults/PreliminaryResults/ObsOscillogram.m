@@ -2,7 +2,7 @@
 
 %% Muon-like events
 clear all;  close all;  clc;
-ObsData_ithAzi_mu = 'ObsEvents/ObsLLVP_pancakenu1_2010020_90.txt';
+ObsData_ithAzi_mu = 'ObsEvents/Obs_cth_LLVP_pancakenu1_2010020_6010060_90.txt';
 obsDataMu = readmatrix(ObsData_ithAzi_mu)
 
 %create surface plot
@@ -13,7 +13,7 @@ nmu_ij= obsDataMu(:,3);
 Nmu = reshape(nmu_ij,length(cth),length(e));
 
 % electron-like events
-ObsData_ithAzi_e = 'ObsEvents/ObsLLVP_pancakenu0_2010020_90.txt';
+ObsData_ithAzi_e = 'ObsEvents/Obs_cth_LLVP_pancakenu0_2010020_6010060_90.txt';
 ObsDatae = readmatrix(ObsData_ithAzi_e)
 
 %create surface plot

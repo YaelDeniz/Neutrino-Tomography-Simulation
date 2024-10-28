@@ -61,8 +61,8 @@ int main(int argc, char **argv)
 
     //Set the Earth models
     std::string PremFolder ="/home/dehy0499/OscProb/PremTables/";
-    std::string PremName = "prem_44layers";
-    int MaxLayers = 44;
+    std::string PremName = "prem_425layers";
+    int MaxLayers = 425;
     std::string PremFile = PremName+".txt";
     std::string path2prem = PremFolder+PremFile;
     //Set Layer Density contrats
@@ -90,9 +90,9 @@ int main(int argc, char **argv)
     double phimax = 360.0 ; //Whole Earth
     
     // Number of bins
-    int cthbins=150; // # Bins in zenith/cos(zenith)
+    int cthbins=50; // # Bins in zenith/cos(zenith)
     int abins = 1;
-    int ebins=  150; // bins in energy
+    int ebins=  50; // bins in energy
 
     //TMultiGraph *Pnu = new TMultiGraph(); // Oscillations to muon neutrinos
     //TMultiGraph *Pnubar = new TMultiGraph(); // Oscillation to electron neutrinos
@@ -108,14 +108,66 @@ int main(int argc, char **argv)
 
     //Muon neutrinio like events
     TrueEvents.flvf=1;
-    std::vector< TH2D * > TrueStd_mu = TrueEvents.GetTrueEvents2D();
+    std::vector< TH2D * > TrueStd_mu = TrueEvents.GetTrueEvents3D();
 
     // Electron netrino like events
     TrueEvents.flvf=0;
-    std::vector< TH2D * > TrueStd_e = TrueEvents.GetTrueEvents2D();
-    
+    std::vector< TH2D * > TrueStd_e = TrueEvents.GetTrueEvents3D();
+
+    AsimovSimulation AlternativeEarth;
+    AlternativeEarth.SetDetectorPosition(rdet);
+    AlternativeEarth.HondaTable = FluxTable;
+    AlternativeEarth.MantleAnomaly = false;
+    AlternativeEarth.AnomalyShape="pancake";
+    AlternativeEarth.SetIntervals(thmin,thmax,phimin,phimax,Emin,Emax);
+    AlternativeEarth.SetBinning(cthbins,abins,ebins);
+    AlternativeEarth.SetExposure(MT);
     
 
+    TGraph * chi2plot = new TGraph(MaxLayers);
+
+    for (int i = 0; i < MaxLayers; ++i)
+    {
+        
+    int layer = i+1;
+
+
+    AlternativeEarth.PremTable = path2prem;
+    AlternativeEarth.ModifyLayer(layer,10,0.0);
+    
+    AlternativeEarth.flvf=1;    
+    std::vector< TH2D * > TrueAlt_mu = AlternativeEarth.GetTrueEvents3D();
+    double chi2mu = Get2DChi2(TrueStd_mu[0],TrueAlt_mu[0]);
+
+    
+    AlternativeEarth.flvf=0;
+    std::vector< TH2D * > TrueAlt_e = AlternativeEarth.GetTrueEvents3D();
+    double chi2e = Get2DChi2(TrueStd_e[0],TrueAlt_e[0]);
+    
+    
+    double chi2total = chi2e+chi2mu;
+
+    //chi2file << std::setprecision(10) << i+1 << " " << chi2e <<  " " << chi2mu << chi2total << std::endl;
+
+    chi2plot->SetPoint(i,chi2total,i+1);
+
+
+    }
+
+    TApplication app("app", &argc, argv);
+    TCanvas *c1 = new TCanvas();
+    //TColor::InvertPalette();
+    chi2plot->Draw("apl");
+    gPad->SetLogx();
+    c1->Modified(); 
+    c1->Update();
+    TRootCanvas *rc1 = (TRootCanvas *)c1->GetCanvasImp();
+
+    app.Run();
+
+    
+    
+    /*
     TH2D * hist = new TH2D("EventHist", "Charge Current events", ebins,Emin,Emax,cthbins,cthmin,cthmax);
     for (int i = 1; i <=cthbins; ++i)
     {   
@@ -178,7 +230,7 @@ int main(int argc, char **argv)
 
     app.Run();
 
-    
+    */
 
 
   return 0;

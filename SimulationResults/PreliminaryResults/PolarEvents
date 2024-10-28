@@ -1,0 +1,36 @@
+addpath VisToolBox
+clear all
+close all
+
+azi = linspace(-50,50,100);
+phi_id = 50:2:98;
+
+phi = [];
+
+
+for j = 50:2:98;
+
+phi(end+1) = azi(j)
+
+file_th_phi = "IntEvents/IntthLLVP_cakenu1_100100100_"+int2str(j)+".txt";
+
+Set_thphi = readmatrix(file_th_phi);
+
+th = unique(Set_thphi(:,1)) 
+
+for i = 1:length(th)
+
+   Nstd_thphi = sum(Set_thphi(Set_thphi(:,1) == th(i),3));
+   Nalt_thphi = sum(Set_thphi(Set_thphi(:,1) == th(i),4));
+   dN = ((Nstd_thphi-Nalt_thphi)/Nstd_thphi)*100;
+   N(i,1:3) = [Nstd_thphi,Nalt_thphi,dN]       
+
+end   
+
+
+
+end
+
+polarPcolor(th',phi,N(:,3)); % colormap is here an optional argument
+
+

@@ -56,9 +56,10 @@ int main(int argc, char **argv)
     
     //Detector size-------------------------------------------------------------
     int exposue = 10*10;
-    double M = 10.0*MTon; //Mass in megaton units
-    double T       = 10.0*years2sec; //Detector Exposure time in sec: One Year
-    double MT = M*T; // Exposure [Mton*years]
+    double M = 10.0; //Mass in megaton units
+    double T       = 10.0; //Detector Exposure time in sec: One Year
+    double MT = (M*MTon)*(T*years2sec); // Exposure [Mton*years]
+
 
     //Detector location 
     double Rdet = Rearth; //South Pole
@@ -89,13 +90,13 @@ int main(int argc, char **argv)
     //SIMULATION SET UP---------------------------------------------------------
 
     // Binning------------------------------------------------------------------
-    int cthbins=50 ; // # Bins in zenith/cos(zenith)
+    int cthbins=100 ; // # Bins in zenith/cos(zenith)
     int abins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int ebins =50; // bins in energy
+    int ebins =100; // bins in energy
 
     //Energy interval (in GeV)--------------------------------------------------
     double EnuMin=1.0 ; 
-    double EnuMax=10.0 ;
+    double EnuMax=20.0 ;
 
     //Zenith Angle Interval-----------------------------------------------------
     double thmin = 180-TMath::ASin( DepthMax/Rdet )*(180.0/TMath::Pi()) ; // min 90
@@ -115,6 +116,9 @@ int main(int argc, char **argv)
 
     //Neutrino
     int nuflv = 1; // neutrino  final state: nue (0), numu (1) or nutau (2)
+
+    //Typecasting for file label
+    int exposure = int (M*T);
     
    //Standart Earth-------------------------------------------------------------
    AsimovSimulation StandardEarth;
@@ -179,6 +183,41 @@ int main(int argc, char **argv)
     std::ofstream SenvDatath(chi2pathth); 
 
     
+   for(int nhist = 0 ; nhist < TrueAlt.size() ; ++nhist )
+
+   {    
+
+    std::string SimLabel = "MT"+std::to_string(exposue)+"E"+std::to_string(int(EnuMin))+std::to_string(int(EnuMax))+"C"+std::to_string(int(thmin))+
+                            std::to_string(int(thmax));
+
+    std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
+    std::string eventsfile = "IntcthLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+SimLabel+BinLabel+"_"+std::to_string(nhist)+".txt";
+    //std::string eventsfileth = "IntthLLVP_"+std::to_string(exposue)+"myrs_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
+
+
+    TH2D * TrueDiff2D = new TH2D(Form("OscDiff2D%d",nhist),Form("Oscillogram%d",nhist), cthbins,cthmin,cthmax,ebins,EnuMin,EnuMax); //binning in cth 
+    //TH2D * TrueDiff2Dth = new TH2D(Form("OscDiff2Dth%d",nhist),Form("Oscillogramth%d",nhist), cthbins,thmin,thmax,ebins,EnuMin,EnuMax); //binning in th 
+    
+    GetDiff2D( TrueStd[nhist] , TrueAlt[nhist], TrueDiff2D);
+    ExportToCSV(TrueStd[nhist] ,TrueAlt[nhist], TrueDiff2D, eventsfile);
+
+    
+    //GetDiff2D( TrueStdth[nhist] , TrueAltth[nhist], TrueDiff2Dth);
+    //ExportToCSV(TrueStdth[nhist] , TrueAltth[nhist], TrueDiff2Dth, eventsfileth);
+    
+    
+
+    //std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
+    //std::string eventsfile = "IntLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
+
+ 
+   }
+
+
+   //Sensitivity
+
+   /*
+    
     for (int rpct = -4; rpct <= 4; ++ rpct)
     {
 
@@ -206,9 +245,45 @@ int main(int argc, char **argv)
 
     SenvDatacth.close();
     SenvDatath.close();
-   
+    */
 
-   // Visualization of Events
+
+    return 0;
+
+}
+
+
+void ExportToCSV(TH2D* stdhist, TH2D* althist, TH2D* hist, std::string filename)
+{
+    std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
+    std::string IntFolder = "/SimulationResults/PreliminaryResults/IntEvents/";
+    std::string path2file  = NuTomoPath+IntFolder+filename;
+   
+    std::ofstream outfile(path2file);
+
+    // Recorre los bins y guarda el contenido
+
+
+    for (int i = 1; i <= hist->GetNbinsX(); ++i)
+    {
+        for (int j = 1; j <= hist->GetNbinsY(); ++j)
+        {
+            double x = hist->GetXaxis()->GetBinCenter(i);
+            double y = hist->GetYaxis()->GetBinCenter(j);
+
+            double nexp = stdhist->GetBinContent(i, j);
+            double nobs = althist->GetBinContent(i, j); 
+            double diff = hist->GetBinContent(i, j);
+
+            outfile << x << "," << y << "," <<  nexp <<" , " << nobs << " , " << diff << std::endl;
+        }
+    }
+
+    outfile.close();
+}
+
+/*
+  // Visualization of Events
 
    TApplication app("app", &argc, argv);
 
@@ -263,29 +338,9 @@ int main(int argc, char **argv)
    c1->Divide(5,5);
    c2->Divide(5,5);
 
-   for(int i = 0 ; i < 25 ; ++i )
-
-   {
-
-    int nhist = (51 + 2*i)-1;
-    
-
-    std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
-    std::string eventsfile = "IntcthLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
-    std::string eventsfileth = "IntthLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
 
 
-    TH2D * TrueDiff2D = new TH2D(Form("OscDiff2D%d",nhist),Form("Oscillogram%d",nhist), cthbins,cthmin,cthmax,ebins,EnuMin,EnuMax); //binning in cth 
-    TH2D * TrueDiff2Dth = new TH2D(Form("OscDiff2Dth%d",nhist),Form("Oscillogramth%d",nhist), cthbins,thmin,thmax,ebins,EnuMin,EnuMax); //binning in th 
-    
-    GetDiff2D( TrueStd[nhist] , TrueAlt[nhist], TrueDiff2D);
-    ExportToCSV(TrueStd[nhist] ,TrueAlt[nhist], TrueDiff2D, eventsfile);
-
-    
-    GetDiff2D( TrueStdth[nhist] , TrueAltth[nhist], TrueDiff2Dth);
-    ExportToCSV(TrueStdth[nhist] , TrueAltth[nhist], TrueDiff2Dth, eventsfileth);
-    
-    c1->cd(i+1);
+c1->cd(i+1);
     TrueDiff2D->Draw("COLZ");
     TrueDiff2D->SetStats(0);
     lbottom->Draw("same");
@@ -303,12 +358,6 @@ int main(int argc, char **argv)
     ltopth->Draw("same");
 
 
-    //std::string BinLabel = std::to_string(cthbins)+std::to_string(abins)+std::to_string(ebins);
-    //std::string eventsfile = "IntLLVP_"+shape+"nu"+std::to_string(nuflv)+"_"+BinLabel+"_"+std::to_string(nhist)+".txt";
-
- 
-   }
-
    gPad->Update();
    c1->Modified(); c1->Update();
    TRootCanvas *rc = (TRootCanvas *)c1->GetCanvasImp();
@@ -323,37 +372,7 @@ int main(int argc, char **argv)
 
     //c1->Print("AzimuthHist.png");
 
-    return 0;
-
-}
 
 
-void ExportToCSV(TH2D* stdhist, TH2D* althist, TH2D* hist, std::string filename)
-{
-    std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
-    std::string IntFolder = "/SimulationResults/PreliminaryResults/IntEvents/";
-    std::string path2file  = NuTomoPath+IntFolder+filename;
-   
-    std::ofstream outfile(path2file);
 
-    // Recorre los bins y guarda el contenido
-
-
-    for (int i = 1; i <= hist->GetNbinsX(); ++i)
-    {
-        for (int j = 1; j <= hist->GetNbinsY(); ++j)
-        {
-            double x = hist->GetXaxis()->GetBinCenter(i);
-            double y = hist->GetYaxis()->GetBinCenter(j);
-
-            double nexp = stdhist->GetBinContent(i, j);
-            double nobs = althist->GetBinContent(i, j); 
-            double diff = hist->GetBinContent(i, j);
-
-            outfile << x << "," << y << "," <<  nexp <<" , " << nobs << " , " << diff << std::endl;
-        }
-    }
-
-    outfile.close();
-}
-
+*/

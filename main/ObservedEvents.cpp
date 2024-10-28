@@ -67,20 +67,20 @@ int main(int argc, char **argv)
     double DepthMin = Rcmb-2500;
     double DepthMax = PileRadius+500; // Distance from the center of the Earth
     double PileDensityPct = 2.0; // 2% density contrats for LLVP
-    std::string shape = "pancake";
+    std::string shape = "cake";
 
 
     //Simulation Setup
 
     // Binning------------------------------------------------------------------
-    int cthtruebins=60; // # Bins in zenith/cos(zenith)
+    int cthtruebins=100; // # Bins in zenith/cos(zenith)
     int atruebins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int etruebins =60; // bins in energy
+    int etruebins =100; // bins in energy
 
       // Binning------------------------------------------------------------------
-    int cthrecobins=20; // # Bins in zenith/cos(zenith)
+    int cthrecobins=40; // # Bins in zenith/cos(zenith)
     int arecobins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int erecobins =20; // bins in energy
+    int erecobins =40; // bins in energy
 
     //Reconstructed Energy interval (in GeV):
     double Emin = 2.0; 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     double phimin = -55.0;
     double phimax =  55.0 ;
 
-    int nuflv = 0; // neutrino  final state: nue (0), numu (1) or nutau (2)
+    int nuflv = 1; // neutrino  final state: nue (0), numu (1) or nutau (2)
     
    //Standart Earth-------------------------------------------------------------
    AsimovObsSimulation StandardEarth;
