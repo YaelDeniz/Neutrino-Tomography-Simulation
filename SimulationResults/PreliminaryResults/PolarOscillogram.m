@@ -58,7 +58,7 @@ cthabs = -1.0.*cth;
 
 [~,c] = polarPcolor(piminth',phi',Npdiff,'autoOrigin','on'); % colormap is here an optional argument
 ylabel(c,"$\frac{\Delta N^{(1GeV\leq E_\nu \leq 20GeV)}}{N^{(1GeV\leq E_\nu \leq 20GeV)}}(\phi,\theta_Z)$",'FontSize', 20,Interpreter="latex");
-%title("Percentage difference in $\nu_\mu + \bar{\nu}_\mu$ detections (Perfect Detector) ",Interpreter="latex")
-
+t = title('this is  my title', 'Units', 'normalized', 'Position', [0.5, 0.75, 0]);
+t.Color = 'r'; t.FontSize = 10; % with this you can change color, font name and size
 
 
