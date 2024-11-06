@@ -25,7 +25,10 @@ LDLIBS   := -lOscProb -lMathMore  -lGeom# load specific lib
 #OBJECTS = $(SOURCES:.c=.o)
 
 OBJECTS_AsivTrue = MathTools.o PhyTools.o Earth3DModel.o AsimovDataTrue.o 
+OBJECTS_SensitivityTrue = MathTools.o PhyTools.o Earth3DModel.o AsimovDataTrue.o 
 OBJECTS_AsivObs  = MathTools.o PhyTools.o Earth3DModel.o AsimovDataTrue.o AsimovDataObs.o 
+OBJECTS_SensitivityObs  = MathTools.o PhyTools.o Earth3DModel.o AsimovDataTrue.o AsimovDataObs.o 
+
 OBJECTS_Res  = MathTools.o PhyTools.o  DetectorResolution.o 
 OBJECTS_OscProb  = MathTools.o PhyTools.o  OscProbEarth.o 
 OBJECTS_Flux = PhyTools.o
@@ -39,7 +42,7 @@ OBJECTS_EARTHMODEL = Earth3DModel.o OscProbEarth.o
 
 #TARGETS
 
-all: ObservedEvents TrueEvents  OscProbEarth HondaFlux Earth3D EarthSensitivity  #DetectorResolution   # All targets #Add StatsAnaTrue laters
+all: ObservedEvents TrueEvents  OscProbEarth HondaFlux Earth3D EarthSensitivity SensitivityTrue SensitivityObs #DetectorResolution   # All targets #Add StatsAnaTrue laters
 
 
 
@@ -50,6 +53,13 @@ TrueEvents: $(MAIN_DIR)/TrueEvents.cpp $(OBJECTS_AsivTrue)
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
 	@echo " "
 	@echo "True event generator Done"
+
+SensitivityTrue: $(MAIN_DIR)/TrueSensitivity.cpp $(OBJECTS_SensitivityTrue) 
+	@echo " "
+	@echo "Generating Application for True Events"
+	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
+	@echo " "
+	@echo "Experiment True sensitivity generator Done"
 
 EarthSensitivity: $(MAIN_DIR)/EarthTrueSensitivity.cpp $(OBJECTS_AsivTrue) 
 	@echo " "
@@ -64,6 +74,13 @@ ObservedEvents: $(MAIN_DIR)/ObservedEvents.cpp $(OBJECTS_AsivObs)
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
 	@echo " "
 	@echo "Observed event generator Done"
+
+SensitivityObs: $(MAIN_DIR)/TrueSensitivity.cpp $(OBJECTS_SensitivityObs) 
+	@echo " "
+	@echo "Generating Application for True Events"
+	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
+	@echo " "
+	@echo "Experiment Obs sensitivity generator Done"
 
 #StatsAnaTrue: $(MAIN_DIR)/StatsAnaTrue.cpp $(OBJECTS_AsivTrue)
 #	@echo " "
@@ -141,4 +158,4 @@ Earth3DModel.o: $(SRC_DIR)/Earth3DModel.C
 
 clean:
 	@echo "Removing Objects"
-	rm *.o  ObservedEvents TrueEvents   OscProbEarth HondaFlux EarthSensitivity Earth3D
+	rm *.o  ObservedEvents TrueEvents   OscProbEarth HondaFlux EarthSensitivity Earth3D SensitivityTrue SensitivityObs

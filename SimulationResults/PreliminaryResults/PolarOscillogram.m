@@ -1,3 +1,5 @@
+
+%% Data
 addpath VisToolBox
 clear all
 close all
@@ -10,13 +12,15 @@ phi=AzimuthTable(1:101,2)+50;
 
 
 
+resultPath = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/PreliminaryResults/IntEvents/"
+SimulationPath = "Events_Simulation_pancake_100Mton_1-20GeV_128-171Zen_-50-50Az/"
+
 for j = 0:1:100;
 
-Osc4Azi_name = "IntEvents/IntcthLLVP_cakenu1_MT100E120C128171100100100_";
+filename   = "IntcthLLVP_nu1_10Zen100Az10Enu_"+int2str(j)+".csv";
+eventFile  = resultPath+SimulationPath+filename;
 
-Osc4Azi_file= Osc4Azi_name+int2str(j)+".txt";
-
-Osc4Azi = readmatrix(Osc4Azi_file);
+Osc4Azi = readmatrix(eventFile);
 
 cth      = unique(Osc4Azi(:,1)); %Xaxis
 piminth  = 180 - acosd(cth); 
@@ -32,7 +36,7 @@ Nalt  = reshape(nalt,length(cth),length(ene));
 
 Npdiff_azi= sum(Nstd-Nalt)./sum(Nstd); 
 
-Npdiff(:,end + 1) = [Npdiff_azi'];
+Npdiff(end + 1, :) = [Npdiff_azi']
 %cth = unique(Set_cthphi(:,1)) 
 
 

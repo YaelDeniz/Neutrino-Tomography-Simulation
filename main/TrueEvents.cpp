@@ -72,13 +72,13 @@ int main(int argc, char **argv)
     std::string llvpShape = "pancake";
 
     // Simulation Configuration
-    int zenithBins = 10;                      // Zenith bins
+    int zenithBins = 100;                      // Zenith bins
     int azimuthBins = 100;                     // Azimuth bins
-    int energyBins = 10;                      // Energy bins
+    int energyBins = 100;                      // Energy bins
 
     // Energy [GeV]
     double enuMin = 1.0;
-    double enuMax = 20.0;
+    double enuMax = 10.0;
 
     // Zenith angle [degrees]
     double zenithMin = 180 - TMath::ASin(depthMax / detectorRadius) * (180.0 / TMath::Pi());
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
     double azimuthMax = azimuthEnd + dAzimuth;
 
     // Neutrino flavor (0: nue, 1: numu, 2: nutau)
-    int nuflv = 1;
+    int nuflv = 0;
 
     // File and folder structure configuration
     int exposureYearsLabel = static_cast<int>(detectorMassMT * detectorExposureYears);
