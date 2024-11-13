@@ -56,20 +56,20 @@ int main(int argc, char **argv)
     std::string premPath = "/home/dehy0499/OscProb/PremTables/prem_44layers.txt";
 
      //Pile Set Up---------------------------------------------------------------
-    double llvpHeight = 600; // Height of LLVP in km
+    double llvpHeight = 1000; // Height of LLVP in km
     double llvpRadius = Rcmb + llvpHeight; //km
     double depthMin = Rcmb-2500;
     double depthMax = llvpRadius+500; // Distance from the center of the Earth
     double llvpDensityContrast = 2.0; // 2% density contrats for LLVP
-    std::string llvpShape = "cake";
+    std::string llvpShape = "pancake";
 
 
     // Simulation Configuration
 
     // True binning
-    int zenithBins=60; // # Bins in zenith/cos(zenith)
+    int zenithBins=100; // # Bins in zenith/cos(zenith)
     int azimuthBins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int energyBins =60; // bins in energy
+    int energyBins =100; // bins in energy
 
     // Reco binning
     int zenithBinsReco=40; // # Bins in zenith/cos(zenith)
@@ -113,11 +113,10 @@ int main(int argc, char **argv)
     std::string pathToChiSquares = pathToResults + "ObsChi2/";
     std::string chiSquareFolderPath = pathToChiSquares + "ObsChi2_" + SimLabel + "/";
 
-    std::string chiSquareFileName = chiSquareFolderPath + "Obs_cth_Chi2LLVP" + std::to_string(exposureYearsLabel) + "myrs_" + llvpShape + 
+    std::string chiSquareFileName = chiSquareFolderPath + "Obs_cth_Chi2LLVP_densellvp_" + std::to_string(exposureYearsLabel) + "myrs_" + llvpShape + 
                                           "nu" + std::to_string(nuflv) + "_" + BinLabel + ".csv";
 
     // Create output directories if they do not exist
-    mkdir(eventFolderPath.c_str(), 0777);
     mkdir(chiSquareFolderPath.c_str(), 0777);
 
 
@@ -130,9 +129,6 @@ int main(int argc, char **argv)
    Simulation.ThePremTable = premPath;
    Simulation.TheHondaTable = fluxPath;
    Simulation.SetDetectorXYZ(detectorPos);
-   Simulation.PileInModel = false;
-
-   //Simulation of Standard Earth
    Simulation.SetIntervals(zenithMin,zenithMax,azimuthMin,azimuthMax,enuMin,enuMax);
    Simulation.SetTrueBinning(zenithBins,azimuthBins,energyBins);
    Simulation.SetRecoBinning(zenithBinsReco,azimuthBinsReco,energyBinsReco);
@@ -140,36 +136,45 @@ int main(int argc, char **argv)
    Simulation.flvf=nuflv;
 
 
+   Simulation.PileInModel = true;
+   Simulation.ShapeOfPile = llvpShape;
+   Simulation.ThePileHight = llvpHeight;
+   Simulation.ThePileAperture = 45;
+   Simulation.ThePileDensityContrast = llvpDensityContrast;
+   Simulation.ThePileChemicalContrast = 0.0;
+
+
    std::vector<TH2D*>  ObservedEventsStandard = Simulation.GetObsEvents3Dcth();
 
 
   
     
-    std::ofstream SenvData(chiSquareFolderPath); 
+    std::ofstream SenvData(chiSquareFileName); 
+
+    double  rho[7] = {-3,-2,-1,0,1, 2, 3};
 
 
-    for (int i = 1; i<= 10; ++i)
+    for (int i = 0; i < 7; ++i)
     {
 
         Simulation.ThePremTable = premPath;
         Simulation.PileInModel = true;
         Simulation.ShapeOfPile = llvpShape;
-        Simulation.ThePileHight = i*100;
+        Simulation.ThePileHight = llvpHeight;
         Simulation.ThePileAperture = 45;
-        Simulation.ThePileDensityContrast = llvpDensityContrast;
+        Simulation.ThePileDensityContrast = rho[i];
         Simulation.ThePileChemicalContrast = 0.0;
         std::vector<TH2D*>  ObservedEventsAlternative = Simulation.GetObsEvents3Dcth();
 
-        double chi2totth = 0;
+        double chi2tot = 0;
 
         for (int n = 0; n < ObservedEventsAlternative.size(); ++n)
         {
-            chi2totth += Get2DChi2( ObservedEventsStandard[n] , ObservedEventsAlternative[n]);
+            chi2tot += Get2DChi2( ObservedEventsStandard[n] , ObservedEventsAlternative[n]);
         }
 
-    //std::cout << "Density %: " << rpct << " Chi2: " << chi2tot << std::endl;
 
-        SenvData << i << " " << chi2totth << ", " << zenithBinsReco << ", " << azimuthBinsReco << ", " << energyBinsReco << ", " << Simulation.ThePileHight  <<  std::endl; 
+        SenvData << i << " , " << rho[i] << " , " << chi2tot << " , " << zenithBinsReco << " , " << azimuthBinsReco << " , " << energyBinsReco <<  std::endl; 
 
         
     }

@@ -56,10 +56,10 @@ TrueEvents: $(MAIN_DIR)/TrueEvents.cpp $(OBJECTS_AsivTrue)
 
 SensitivityTrue: $(MAIN_DIR)/TrueSensitivity.cpp $(OBJECTS_SensitivityTrue) 
 	@echo " "
-	@echo "Generating Application for True Events"
+	@echo "Generating application for true sensitivity simulations"
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
 	@echo " "
-	@echo "Experiment True sensitivity generator Done"
+	@echo "Application for true sensitivity simulation ready"
 
 EarthSensitivity: $(MAIN_DIR)/EarthTrueSensitivity.cpp $(OBJECTS_AsivTrue) 
 	@echo " "
@@ -75,12 +75,12 @@ ObservedEvents: $(MAIN_DIR)/ObservedEvents.cpp $(OBJECTS_AsivObs)
 	@echo " "
 	@echo "Observed event generator Done"
 
-SensitivityObs: $(MAIN_DIR)/TrueSensitivity.cpp $(OBJECTS_SensitivityObs) 
+SensitivityObs: $(MAIN_DIR)/ObsSensitivity.cpp $(OBJECTS_SensitivityObs) 
 	@echo " "
-	@echo "Generating Application for True Events"
+	@echo "Generating application for observed sensitivity simulations"
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
 	@echo " "
-	@echo "Experiment Obs sensitivity generator Done"
+	@echo "Application for observed sensitivity simulation ready"
 
 #StatsAnaTrue: $(MAIN_DIR)/StatsAnaTrue.cpp $(OBJECTS_AsivTrue)
 #	@echo " "

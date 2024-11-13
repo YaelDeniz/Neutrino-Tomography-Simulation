@@ -797,7 +797,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
     */
 
-  //Creat LLVP segments 
+  //Create LLVP segments 
   if (Pile /*After test, variable should be Pile*/)
   {
 
@@ -899,6 +899,8 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
   //Neutrino Propagation inside the Earth
 
   //double v = 0;
+
+  double l_LLVP = 0; // Distance traveled through LLVP
   while (!gGeoManager->IsOutside ())
   {  
          //++v;
@@ -922,6 +924,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
             break;
          
          }
+
          
 
          const char *path = gGeoManager->GetPath();
@@ -935,6 +938,21 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
          gGeoManager->FindNextBoundaryAndStep(); // Calculate distance to the next boundary and Evolve system.
           
          Double_t Li = gGeoManager->GetStep(); //Baseline Segement
+
+
+         //
+         std::cout << "*** Distance from current location to " << gGeoManager->GetCurrentNode()->GetName() << " is: " 
+              << Li << " | "<< std::endl;
+
+
+            if (strstr(gGeoManager->GetCurrentNode()->GetName(), "LLVPLayer") != nullptr) { // strstr returns nullptr if not found
+               l_LLVP += Li; // Distance traveled through LLVP
+               std::cout << "Selecting only LLVP info************************* "<< l_LLVP  << std::endl;
+
+
+        }
+
+         // 
 
          double R_i = sqrt(cpoint[0]*cpoint[0]+ cpoint[1]*cpoint[1] + cpoint[2]*cpoint[2]); //Current Radius
 

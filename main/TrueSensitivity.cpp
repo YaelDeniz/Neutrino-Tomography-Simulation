@@ -72,9 +72,9 @@ int main(int argc, char **argv)
     std::string llvpShape = "pancake";
 
     // Simulation Configuration
-    int zenithBins = 100;                      // Zenith bins
+    int zenithBins = 200;                      // Zenith bins
     int azimuthBins = 100;                     // Azimuth bins
-    int energyBins = 100;                      // Energy bins
+    int energyBins = 50;                      // Energy bins
 
     // Energy [GeV]
     double enuMin = 1.0;
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
             chi2totcth += Get2DChi2( trueEventsStandard[n] , trueEventsAnomalous[n]);
         }
     
-        SenvDatacth << i << ", " << chi2totcth << ", " << zenithBins << ", " << azimuthBins << ", " << energyBins << ", " << standardEarth.PileHeight  << std::endl;
+        SenvDatacth << i << ", " << chi2totcth <<  ", " << standardEarth.PileHeight  << ", " << zenithBins << ", " << azimuthBins << ", " << energyBins << std::endl;
 
     }
 
