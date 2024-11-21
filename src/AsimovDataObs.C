@@ -180,8 +180,8 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
     double phiTrueMax = AziMax;
 
 
-    std::cout << "TrueVariable | E=[ " << EtrueMin << " , " << EtrueMax << " ] Zenith= [" << thtrueMin << " , " << thtrueMax << "]" << std::endl;
-    std::cout << "RecoVariable | E=[ " << ErecoMin << " , " << ErecoMax << " ] Zenith= [" << threcoMin << " , " << threcoMax << "]" << std::endl;
+    //std::cout << "TrueVariable | E=[ " << EtrueMin << " , " << EtrueMax << " ] Zenith= [" << thtrueMin << " , " << thtrueMax << "]" << std::endl;
+    //std::cout << "RecoVariable | E=[ " << ErecoMin << " , " << ErecoMax << " ] Zenith= [" << threcoMin << " , " << threcoMax << "]" << std::endl;
 
 
     //HISTOGRAMS--------------------------------------------------------------------------------------------------------
@@ -192,6 +192,8 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
     TrueSimulation.HondaTable = TheHondaTable; // Honda Table
     TrueSimulation.SetDetectorPosition(xyzTelescope); //Detector location
 
+
+
     //If LLVP set geometry and properties
     TrueSimulation.MantleAnomaly = PileInModel;
     TrueSimulation.AnomalyShape= ShapeOfPile;
@@ -201,12 +203,17 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
     TrueSimulation.PileChemContrast = ThePileChemicalContrast;
 
 
+
+
     TrueSimulation.ModifyLayer(PremLayer,DensityContrast,ChemicalContrats);
     TrueSimulation.SetIntervals(thtrueMin,thtrueMax,phiTrueMin,phiTrueMax,EtrueMin,EtrueMax);
     TrueSimulation.SetBinning(ibins,jbins,kbins);
     TrueSimulation.SetExposure(MT);
     TrueSimulation.flvf=flvf;
+
+
     std::vector<TH2D*> TrueHist= TrueSimulation.GetTrueEvents3D(); //cos(theta) binning
+
 
 
     std::vector<TH2D*> HistVec;
@@ -260,8 +267,6 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
                         double dEdcthReco = dEreco*dcthreco;
                        
                         Nsmear += (VMFth(threco,Etrue,thtrue)/sthreco)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdcthReco);
-
-                        std::cout << Nsmear << std::endl;
         
                     } // loop e
 

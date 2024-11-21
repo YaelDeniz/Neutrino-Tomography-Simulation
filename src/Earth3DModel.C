@@ -883,12 +883,14 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
   gGeoManager->InitTrack(xo, yo, zo, ni, nj, nk); // d*u is the point in the sphere
 
   TPolyMarker3D *l1 = new TPolyMarker3D(2,2); //Markers indicating DetLoc and Inical Neutrino
+  TPolyMarker3D *LLVPpoints = new TPolyMarker3D(50,4);
   l1->SetPoint( 0 , o[0],o[1],o[2]); //Detector
   l1->SetPoint( 1 ,xo,yo,zo); //Incoming Neutrino
 
 
   TPolyLine3D *l2 = new TPolyLine3D(); // Lines that represent neutrino Paths.
 
+ int s = 0;
 
   int i = 0;
 
@@ -940,18 +942,30 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
          Double_t Li = gGeoManager->GetStep(); //Baseline Segement
 
 
-         //
-         std::cout << "*** Distance from current location to " << gGeoManager->GetCurrentNode()->GetName() << " is: " 
-              << Li << " | "<< std::endl;
+         
+         std::cout << "*** Distance from current location to " << gGeoManager->GetCurrentNode()->GetName() << " is: " << Li << " | "<< th*180.0/TMath::Pi() << " " << phi*180.0/TMath::Pi()  << std::endl;
 
-
+         
             if (strstr(gGeoManager->GetCurrentNode()->GetName(), "LLVPLayer") != nullptr) { // strstr returns nullptr if not found
                l_LLVP += Li; // Distance traveled through LLVP
-               std::cout << "Selecting only LLVP info************************* "<< l_LLVP  << std::endl;
+               //std::cout << "Selecting only LLVP info************************* "<< l_LLVP  << std::endl;
 
+               LLVPpoints->SetPoint( s , cpoint[0],cpoint[1],cpoint[2]); //Detector
+               s += 1;
+            }
+            else if(strstr(gGeoManager->GetCurrentNode()->GetName(), "LLVPLayer") == nullptr && l_LLVP > 0)
+            {
+               l_LLVP += Li; // Distance traveled through LLVP
+               //std::cout << " All layer crossed "<< l_LLVP  << std::endl;
 
-        }
+               LLVPpoints->SetPoint( s , cpoint[0],cpoint[1],cpoint[2]); //DetectoR
 
+               Baseline_LLVP = l_LLVP;
+
+               l_LLVP = 0;
+
+            }
+         
          // 
 
          double R_i = sqrt(cpoint[0]*cpoint[0]+ cpoint[1]*cpoint[1] + cpoint[2]*cpoint[2]); //Current Radius
@@ -979,6 +993,7 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
    
    l1->Draw("same");
    l2->Draw("same");
+   LLVPpoints->Draw("same");
 
    EarthCanvas->Modified();
    EarthCanvas->Update();

@@ -1,6 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
-
+#include <ctime>
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -38,14 +39,24 @@
 
 using namespace std;
 
+
 void ExportToCSV(TH2D* stdhist, TH2D* althist, TH2D* hist, std::string filename);
 
 int main(int argc, char **argv)
 {
+    // Get the current date and time
+    std::time_t now = std::time(0);
+    std::tm* localTime = std::localtime(&now);
+
+    // Format the date (YYYY-MM-DD)
+    char dateBuffer[11];
+    std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", localTime);
+
+
     //Detector setting 
-    double detectorMassMT = 10.0; //Mass in megaton units
+    double detectorMass = 10.0; //Mass in megaton units
     double detectorExposureYears  = 10.0; //Detector Exposure time in sec: One Year
-    double exposureMtonYears = detectorMassMT * MTon * detectorExposureYears * years2sec; // Exposure in [Mton*years]
+    double exposureMtonYears = (detectorMass * MTon )*( detectorExposureYears * years2sec); // Exposure in [Mton*years]
     
     // Detector Position
     double detectorRadius = Rearth;            // Radius at South Pole
@@ -72,9 +83,9 @@ int main(int argc, char **argv)
     int energyBins =60; // bins in energy
 
     // Reco binning
-    int zenithBinsReco=40; // # Bins in zenith/cos(zenith)
-    int azimuthBinsReco =100; // # Bins in azimuth (optimal bins are 110 or 22)
-    int energyBinsReco =40; // bins in energy
+    int zenithBinsReco=30; // # Bins in zenith/cos(zenith)
+    int azimuthBinsReco =azimuthBins; // # Bins in azimuth (optimal bins are 110 or 22)
+    int energyBinsReco =30; // bins in energy
 
     // Energy [GeV]    
     double enuMin = 2.0; 
@@ -98,28 +109,36 @@ int main(int argc, char **argv)
 
 
      // File and folder structure configuration
-    int exposureYearsLabel = static_cast<int>(detectorMassMT * detectorExposureYears);
+    int exposureYearsLabel = static_cast<int>(detectorMass * detectorExposureYears);
 
-    std::string BinLabel = "Obs"+std::to_string(zenithBinsReco)+"Zen"+ std::to_string(azimuthBinsReco)+"Az"+ std::to_string(energyBinsReco)+"Enu_"
-                        +"Int"+std::to_string(zenithBins)+"Zen"+ std::to_string(azimuthBins)+"Az"+ std::to_string(energyBins)+"Enu";
+    //std::string BinLabel = "Obs"+std::to_string(zenithBinsReco)+"Zen"+ std::to_string(azimuthBinsReco)+"Az"+ std::to_string(energyBinsReco)+"Enu_"
+                        //+"Int"+std::to_string(zenithBins)+"Zen"+ std::to_string(azimuthBins)+"Az"+ std::to_string(energyBins)+"Enu";
 
-    std::string SimLabel = "Simulation_"+llvpShape+"_"+std::to_string(exposureYearsLabel)+"Mton"+"_"+ std::to_string(static_cast<int>(enuMin)) +"-"+ 
-                                 std::to_string(static_cast<int>(enuMax))+"GeV_" + std::to_string(static_cast<int>(zenithMin)) +"-"+ 
-                                 std::to_string(static_cast<int>(zenithMax))+"Zen_"  + std::to_string(static_cast<int>(azimuthMin)) +"-"+ 
-                                 std::to_string(static_cast<int>(azimuthMax))+"Az";
+
+    std::string BinLabel = "Obs"+std::to_string(zenithBinsReco)+"-"+ std::to_string(azimuthBinsReco)+"-"+ std::to_string(energyBinsReco)+"Int"
+                        +std::to_string(zenithBins)+"-"+ std::to_string(azimuthBins)+"-"+ std::to_string(energyBins);
+
+
+    // Folder nomeclature Obs_[ "LLVP shape"][llvpHeight]_[Exposure in Mton]_[Emin-Emax]_[thmin]-[thmax]_[phimin]-[phimax] 
+    std::string folderName = "ObsN_"+llvpShape+std::to_string(static_cast<int>(llvpHeight))+"_"+std::to_string(exposureYearsLabel)+"_"+ std::to_string(static_cast<int>(enuMin)) +"-"+ 
+                                 std::to_string(static_cast<int>(enuMax))+"_" + std::to_string(static_cast<int>(zenithMin)) +"-"+ 
+                                 std::to_string(static_cast<int>(zenithMax))+"_"  + std::to_string(static_cast<int>(azimuthMin)) +"-"+ 
+                                 std::to_string(static_cast<int>(azimuthMax))+"_"+std::string(dateBuffer)+"/";
     
     std::string pathToResults = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/PreliminaryResults/";
     std::string pathToEvents = pathToResults + "ObsEvents/";
-    std::string eventFolderPath = pathToEvents + "Events_" + SimLabel + "/";
-    std::string pathToChiSquares = pathToResults + "ObsChi2/";
-    std::string chiSquareFolderPath = pathToChiSquares + "ObsChi2_" + SimLabel + "/";
+    std::string eventFolderPath = pathToEvents + folderName;
 
-    std::string chiSquareFileName = "Obs_cth_Chi2LLVP" + std::to_string(exposureYearsLabel) + "myrs_" + llvpShape + 
-                                          "nu" + std::to_string(nuflv) + "_" + BinLabel + ".csv";
+
+    //std::string pathToChiSquares = pathToResults + "ObsChi2/";
+    //std::string chiSquareFolderPath = pathToChiSquares + "ObsChi2_" + SimLabel + "/";
+
+    //std::string chiSquareFileName = "Obs_cth_Chi2LLVP" + std::to_string(exposureYearsLabel) + "myrs_" + llvpShape + 
+      //                                    "nu" + std::to_string(nuflv) + "_" + BinLabel + ".csv";
 
     // Create output directories if they do not exist
     mkdir(eventFolderPath.c_str(), 0777);
-    mkdir(chiSquareFolderPath.c_str(), 0777);
+    //mkdir(chiSquareFolderPath.c_str(), 0777);
 
 
 
@@ -141,8 +160,10 @@ int main(int argc, char **argv)
    Simulation.flvf=nuflv;
 
 
-   std::vector<TH2D*>  ObservedEventsStandard = Simulation.GetObsEvents3Dcth();
+   std::cout << "Starting first simulation***********************************************************************************************************************************************" << std::endl;
 
+   std::vector<TH2D*>  ObservedEventsStandard = Simulation.GetObsEvents3Dcth();
+    
 
    //Set LLVP
 
@@ -194,8 +215,7 @@ int main(int argc, char **argv)
 
    {
 
-    std::string eventFileName = "ObscthLLVP_nu" + std::to_string(nuflv) + "_"+ BinLabel + 
-                                          "_" + std::to_string(nhist) +".csv";
+    std::string eventFileName = "ObsN_LLVP_nu" + std::to_string(nuflv) + "_"+ BinLabel+"_phi"+ std::to_string(nhist) +".csv";
     std::string eventFilePath = eventFolderPath + eventFileName;
 
     TH2D* oscDifference = new TH2D(Form("OscDiff2D%d", nhist), Form("Oscillogram%d", nhist), zenithBinsReco, cosZenithMin, cosZenithMax, energyBinsReco, enuMin, enuMax);

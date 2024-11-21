@@ -42,46 +42,45 @@ OBJECTS_EARTHMODEL = Earth3DModel.o OscProbEarth.o
 
 #TARGETS
 
-all: ObservedEvents TrueEvents  OscProbEarth HondaFlux Earth3D EarthSensitivity SensitivityTrue SensitivityObs #DetectorResolution   # All targets #Add StatsAnaTrue laters
+all: ObsN ObsSenv IntN IntSenv EarthSenv OscProbEarth HondaFlux Earth3D    #DetectorResolution   # All targets #Add StatsAnaTrue laters
 
 
 
 
-TrueEvents: $(MAIN_DIR)/TrueEvents.cpp $(OBJECTS_AsivTrue) 
+IntN: $(MAIN_DIR)/TrueEvents.cpp $(OBJECTS_AsivTrue) 
 	@echo " "
 	@echo "Generating Application for True Events"
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
 	@echo " "
 	@echo "True event generator Done"
 
-SensitivityTrue: $(MAIN_DIR)/TrueSensitivity.cpp $(OBJECTS_SensitivityTrue) 
+IntSenv: $(MAIN_DIR)/TrueSensitivity.cpp $(OBJECTS_SensitivityTrue) 
 	@echo " "
 	@echo "Generating application for true sensitivity simulations"
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
 	@echo " "
 	@echo "Application for true sensitivity simulation ready"
 
-EarthSensitivity: $(MAIN_DIR)/EarthTrueSensitivity.cpp $(OBJECTS_AsivTrue) 
-	@echo " "
-	@echo "Generating Application for True Events"
-	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
-	@echo " "
-	@echo "True event generator Done"
-
-ObservedEvents: $(MAIN_DIR)/ObservedEvents.cpp $(OBJECTS_AsivObs) 
+ObsN: $(MAIN_DIR)/ObservedEvents.cpp $(OBJECTS_AsivObs) 
 	@echo " "
 	@echo "Generating Application for True Events"
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
 	@echo " "
 	@echo "Observed event generator Done"
 
-SensitivityObs: $(MAIN_DIR)/ObsSensitivity.cpp $(OBJECTS_SensitivityObs) 
+ObsSenv: $(MAIN_DIR)/ObsSensitivity.cpp $(OBJECTS_SensitivityObs) 
 	@echo " "
 	@echo "Generating application for observed sensitivity simulations"
 	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
 	@echo " "
 	@echo "Application for observed sensitivity simulation ready"
 
+EarthSenv: $(MAIN_DIR)/EarthTrueSensitivity.cpp $(OBJECTS_AsivTrue) 
+	@echo " "
+	@echo "Generating Application for True Events"
+	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
+	@echo " "
+	@echo "True event generator Done"
 #StatsAnaTrue: $(MAIN_DIR)/StatsAnaTrue.cpp $(OBJECTS_AsivTrue)
 #	@echo " "
 #	@echo "Generating Application for Statistical Analysis of True Events"
@@ -158,4 +157,4 @@ Earth3DModel.o: $(SRC_DIR)/Earth3DModel.C
 
 clean:
 	@echo "Removing Objects"
-	rm *.o  ObservedEvents TrueEvents   OscProbEarth HondaFlux EarthSensitivity Earth3D SensitivityTrue SensitivityObs
+	rm *.o  ObsN ObsSenv IntN IntSenv EarthSenv OscProbEarth HondaFlux Earth3D

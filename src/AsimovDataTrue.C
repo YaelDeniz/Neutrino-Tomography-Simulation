@@ -70,6 +70,7 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
     std::string AziIndex = NuTomoPath+IntFolder+"TrueIndexTable.txt";
     std::ofstream IndexAzi(AziIndex); 
 
+
     // Neutrino final flavour
     int nue        = 0;  // electron neutrino  
     int numu       = 1; // muon neutrino
@@ -106,6 +107,8 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
     TH2D* eflux =  HondaFlux.GetFluxHist(3,FluxData);  // Electron neutrino
     TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); // Electron antineutrino
 
+
+
     // Set up the Earth's 3D model    
     Earth3DModel Earth3D;
     Earth3D.SetModel(PremTable);
@@ -114,6 +117,8 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
     Earth3D.aWidth = aperture;
     Earth3D.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
     Earth3D.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
+
+
     
     // Initialize vector for 2D histograms and other variables
     std::vector< TH2D* > HistVec;
@@ -151,7 +156,11 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
             // Set Earth model direction and calculate Earth path
             
             Earth3D.SetDirection(cth,phi); 
+
+
             std::vector<std::vector<double>> EarthPath = Earth3D.Create3DPath();
+
+
 
             // Set PMNS neutrino oscillation path
             l = EarthPath[0][0];
@@ -206,11 +215,13 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
                 // Set the bin content in the 2D histogram
                 EventHist2D[j]->SetBinContent(i,k, N_ijk); 
 
+            
             } // End energy loop 
 
         } // End zenith loop
 
         // Add the current 2D histogram to the vector
+
 
         HistVec.push_back(EventHist2D[j]);
 

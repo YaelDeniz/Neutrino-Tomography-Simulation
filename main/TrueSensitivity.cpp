@@ -72,9 +72,9 @@ int main(int argc, char **argv)
     std::string llvpShape = "pancake";
 
     // Simulation Configuration
-    int zenithBins = 200;                      // Zenith bins
+    int zenithBins = 400;                      // Zenith bins
     int azimuthBins = 100;                     // Azimuth bins
-    int energyBins = 50;                      // Energy bins
+    int energyBins = 100;                      // Energy bins
 
     // Energy [GeV]
     double enuMin = 1.0;

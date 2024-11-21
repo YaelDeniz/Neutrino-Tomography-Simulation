@@ -49,6 +49,7 @@ class Earth3DModel
   double aWidth = 25.0; //LLVP Angular With
   double PileDensityContrats = 2; // 2% more dense
   double PileZoAContrats = 0.0; // 0% Chemical difference
+  double Baseline_LLVP = 0.0; 
 
   void SetPile( bool value, std::string shape, double density, double zoa ); // Activate the LLVPs
   void CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< std::vector<double> > PremMatrix);
