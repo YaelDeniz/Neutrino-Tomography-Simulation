@@ -174,7 +174,6 @@ int main(int argc, char **argv)
 
 
  
-  std::ofstream ModelPath("ModelPath.csv"); 
 
   for (int i = 0; i < EarthPath.size() ; ++i)
   {
