@@ -1,6 +1,8 @@
 #include "Earth3DModel.h"
 
 //C++
+#include <ctime>
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -125,7 +127,6 @@ int main(int argc, char **argv)
 
   //Mine
 
-  TApplication app("app", &argc, argv);
 
   Earth3DModel test;
 
@@ -148,11 +149,15 @@ int main(int argc, char **argv)
 
   std::cout << "Mine" << std::endl;
 
-
   double sumL = 0;
   double sumLup = 0;
   double sumLlow = 0;
   double  sumL_LLVP = 0;
+
+  /*
+
+  //Visualize Baselines
+
 
 
   TMultiGraph * ThePaths = new TMultiGraph();
@@ -203,7 +208,6 @@ int main(int argc, char **argv)
 
   sumLup = 0; 
 
-  std::ofstream OscProbPath("OscProbPath.csv"); 
   
   for (int i = 0; i < EarthPathPREM.size() ; ++i)
   {
@@ -272,17 +276,8 @@ int main(int argc, char **argv)
       ++kk;
     }
 
-    //TestModel2->SetPoint(2*i,sumLlow,MyModel->Eval(sumLlow)  );
-
-    //TestModel2->SetPoint(2*i+1,sumLup,MyModel->Eval(sumLup)  );
-
   }
 
-
-
-
-  OscProbPath.close();
-  ModelPath.close();
 
 
   ThePaths->Add(MyModel);
@@ -290,109 +285,9 @@ int main(int argc, char **argv)
   ThePaths->Add(TestModel1);
   ThePaths->Add(TestModel2);
 
- std::cout << " Check here " << sumGoal << " " << test.Baseline_LLVP <<  std::endl;
+  std::cout << " Check here " << sumGoal << " " << test.Baseline_LLVP <<  std::endl;
 
-
- //Histogram showig distance trough LLVP
-
-
-
-
-
-
-
-  /*
-
-
-
-    for (int i = 0; i < paths.size() ; ++i)
-  {
-
-    sumLup += paths[i].length ;
-    sumLlow = sumLup - paths[i].length ;   
-    std::cout << i << " " << sumL << " " << paths[i].length  << " " <<  paths[i].density  << " " << paths[i].zoa << std::endl;
-
-    OscProbPath << sumL << " " << paths[i].length << " " << paths[i].density << std::endl;
-
-//    apcModel->SetPoint(i,sumL,paths[i].density  );
-
-    apcModel->SetPoint(2*i,sumLlow,paths[i].density  );
-
-    apcModel->SetPoint(2*i+1,sumLup,paths[i].density  );
-
-
-
-
-  }
-
-
-
-
-
-
-
-  std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
-  
-  std::string DistanceFolder = "/SimulationResults/PreliminaryResults/BaselinesLLVPs/";
-
-  std::string BaselineFile = "BaselineLLVP_"+llvpShape+"_"+std::to_string(zenithBins)+"zenithBins"+"_"+ std::to_string(static_cast<int>(zenithMin)) +"-"+ 
-                                 std::to_string(static_cast<int>(zenithMax))+"Zen_"+ std::to_string(azimuthBins)+ std::to_string(static_cast<int>(azimuthMin)) +"-"+ 
-                                 std::to_string(static_cast<int>(azimuthMax))+"Az.csv";
-
-
-
-  TH2D* LLVPBaseLineHIst = new TH2D("LLVPBaseLine", "LLVP Base Line", zenithBins, cosZenithMin, cosZenithMax, azimuthBins, azimuthMin, azimuthMax);
-
-    for (int i = 1; i <= LLVPBaseLineHIst->GetNbinsX(); ++i)
-    {
-        for (int j = 1; j <= LLVPBaseLineHIst->GetNbinsY(); ++j)
-        {
-            double cthi = LLVPBaseLineHIst->GetXaxis()->GetBinCenter(i);
-            double phij = LLVPBaseLineHIst->GetYaxis()->GetBinCenter(j)*TMath::Pi()/180.0;
-
-            Baselines.SetModel(path2prem);
-
-            Baselines.SetDirection(cthi, phij);
-  
-            Baselines.SetPile( true, llvpShape, 3.0, 0.0);
-
-
-            std::vector<std::vector<double>> InLLVP_Path = Baselines.Create3DPath( );
-          
-            double  Lij= Baselines.Baseline_LLVP;
-
-            LLVPBaseLineHIst->SetBinContent(i, j, Lij);
-
-        }
-    }
-
-  ExportToCSV(LLVPBaseLineHIst, NuTomoPath+DistanceFolder+BaselineFile);
-
-
-  
-
-
-
-
- 
- 
-
-
-  TCanvas * c2 = new TCanvas();
-
-  LLVPBaseLineHIst->Draw("COLZ");
-
-  LLVPBaseLineHIst->SetStats(0);
-
-  c2->Modified(); c2->Update();
-  
-
-  
-  TRootCanvas *rc2 = (TRootCanvas *)c2->GetCanvasImp();
-  rc2->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
-
-  */
-
+  TApplication app("app", &argc, argv);
   TCanvas * c = test.EarthCanvas;
 
   //c->Print("./TEST.png");
@@ -414,7 +309,81 @@ int main(int argc, char **argv)
   rc1->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
 
   app.Run();
+
+  */
+
+  //Caculate Baselines
+
+  // Get the current date and time
+  std::time_t now = std::time(0);
+  std::tm* localTime = std::localtime(&now);
+
+  // Format the date (YYYY-MM-DD)
+  char dateBuffer[11];
+  std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", localTime);
+
+
+  std::string NuTomoPath= "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation";
   
+  std::string DistanceFolder = "/SimulationResults/PreliminaryResults/BaselinesLLVPs/";
+
+  std::string BaselineFile = "BaselineLLVP_"+llvpShape+"_"+std::to_string(zenithBins)+"zenithBins"+"_"+ std::to_string(static_cast<int>(zenithMin)) +"-"+ 
+                                 std::to_string(static_cast<int>(zenithMax))+"Zen_"+ std::to_string(azimuthBins)+ std::to_string(static_cast<int>(azimuthMin)) +"-"+ 
+                                 std::to_string(static_cast<int>(azimuthMax))+"Az_"+std::string(dateBuffer)+".csv";
+
+
+
+  double Ltot_up = 0;
+  double Lij = 0;
+
+  for (int i = 1; i <= LLVPBaseLineHIst->GetNbinsX(); ++i)
+  {
+        for (int j = 1; j <= LLVPBaseLineHIst->GetNbinsY(); ++j)
+        {
+            double cthi = LLVPBaseLineHIst->GetXaxis()->GetBinCenter(i);
+            double phij = LLVPBaseLineHIst->GetYaxis()->GetBinCenter(j)*TMath::Pi()/180.0;
+
+            Baselines.SetModel(path2prem);
+
+            Baselines.SetDirection(cthi, phij);
+  
+            Baselines.SetPile( true, llvpShape, 3.0, 0.0);
+
+            std::vector<std::vector<double>> EarthPathAlt = Baselines.Create3DPath( );
+
+            Baselines.SetPile( true, llvpShape, 0.0, 0.0);
+
+            std::vector<std::vector<double>> EarthPathStd = Baselines.Create3DPath( );
+
+
+            for (int i = 0; i < EarthPathStd.size() ; ++i)
+            {
+
+              Ltot_up += EarthPathStd[i][0]; 
+              double Ltot_low = Ltot_up - EarthPathStd[i][0];  
+
+              std::cout << "******Safe Check " <<EarthPathStd[i][0] << " " << Ltot_up << " " << Ltot_low << " " << (EarthPathAlt[i][1]-EarthPathStd[i][1]) << std::endl;
+
+
+              if ( 100*abs(EarthPathAlt[i][1]-EarthPathStd[i][1])/EarthPathStd[i][1] > 0.01 )
+              {
+                Lij += (Ltot_up-Ltot_low);
+
+
+              }
+
+            }
+
+          LLVPBaseLineHIst->SetBinContent(i, j, Lij);
+          Lij=0;
+          Ltot_up=0;
+
+        }
+    }
+
+  ExportToCSV(LLVPBaseLineHIst, NuTomoPath+DistanceFolder+BaselineFile);
+
+ 
 
 return 0;
 
