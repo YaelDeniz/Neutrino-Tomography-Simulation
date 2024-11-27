@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     double depthMin = Rcmb-2500;
     double depthMax = llvpRadius+500; // Distance from the center of the Earth
     double llvpDensityContrast = 2.0; // 2% density contrats for LLVP
-    std::string llvpShape = "cake";
+    std::string llvpShape = "pancake";
 
 
     // Simulation Configuration

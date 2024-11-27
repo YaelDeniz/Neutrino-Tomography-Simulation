@@ -42,10 +42,15 @@ OBJECTS_EARTHMODEL = Earth3DModel.o OscProbEarth.o
 
 #TARGETS
 
-all: ObsN ObsSenv IntN IntSenv EarthSenv OscProbEarth HondaFlux Earth3D    #DetectorResolution   # All targets #Add StatsAnaTrue laters
+all: ObsN ObsSenv IntN IntSenv EarthSenv OscProbEarth HondaFlux Earth3D MatterN   #DetectorResolution   # All targets #Add StatsAnaTrue laters
 
 
-
+MatterN: $(MAIN_DIR)/MatterEffect.cpp $(OBJECTS_AsivTrue) 
+	@echo " "
+	@echo "Generating Application for True Events"
+	$(CC) -g $^ $(ROOT_FLAGS) $(LDFLAGS) $(LDLIBS) $(CPPFLAGS) -o $@
+	@echo " "
+	@echo "Matter effect example generator Done"
 
 IntN: $(MAIN_DIR)/TrueEvents.cpp $(OBJECTS_AsivTrue) 
 	@echo " "
@@ -157,4 +162,4 @@ Earth3DModel.o: $(SRC_DIR)/Earth3DModel.C
 
 clean:
 	@echo "Removing Objects"
-	rm *.o  ObsN ObsSenv IntN IntSenv EarthSenv OscProbEarth HondaFlux Earth3D
+	rm *.o  ObsN ObsSenv IntN IntSenv EarthSenv OscProbEarth HondaFlux Earth3D MatterN

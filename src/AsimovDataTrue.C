@@ -70,6 +70,7 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
     std::string AziIndex = NuTomoPath+IntFolder+"TrueIndexTable.txt";
     std::ofstream IndexAzi(AziIndex); 
 
+    std::cout << "Not here 1" << std::endl;
 
     // Neutrino final flavour
     int nue        = 0;  // electron neutrino  
@@ -93,6 +94,8 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
                                   jbins,phimin,phimax,
                                   kbins,Emin,Emax); 
 
+    std::cout << "Not here 2" << std::endl;
+
     //Neutrino Oscillation Probabilities calculation
     OscProb::PMNS_Fast PMNS_H; // PMNS object
     PMNS_H.SetStdPars();       // Set PDG 3-flavor parameters
@@ -101,6 +104,9 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
     NuFlux HondaFlux;
     std::vector< std::vector<double> > FluxData = HondaFlux.SetFluxData(HondaTable);
 
+    std::cout << "Not here 3" << std::endl;
+
+
     //Generate flux histograms for different neutrino flavours
     TH2D* muflux =  HondaFlux.GetFluxHist(1,FluxData); // Muon neutrino
     TH2D* mubflux =  HondaFlux.GetFluxHist(2,FluxData);// Muon antineutrino
@@ -108,6 +114,7 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
     TH2D* ebflux =  HondaFlux.GetFluxHist(4,FluxData); // Electron antineutrino
 
 
+    std::cout << "Not here 4" << std::endl;
 
     // Set up the Earth's 3D model    
     Earth3DModel Earth3D;
@@ -117,6 +124,8 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
     Earth3D.aWidth = aperture;
     Earth3D.SetPile( MantleAnomaly, AnomalyShape, PileDensityContrast, PileChemContrast);
     Earth3D.SetLayerProp(PremTableNumber, DensityContrast, ChemicalContrast);
+
+    std::cout << "Not here 3" << PremTable <<  std::endl;
 
 
     
@@ -128,6 +137,10 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
     //Loop over azimuth angles
     for (int j = 1; j <= jbins; j++) 
     {
+
+        std::cout << "Not here 4 " << j <<  std::endl;
+
+
         // Get azimuth center and width for the current bin
         double phi = EventHist3D->GetYaxis()->GetBinCenter(j); 
         double dphi = EventHist3D-> GetYaxis()->GetBinWidth(j); 
@@ -139,8 +152,16 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
         //strcat(histchar, "truehist%d" , j);
         //const char *histname = histchar;
 
+        std::cout << "Not here 5 IndexTable is not a problem " << std::endl;
+
         TString histname = Form("OscHist%d",j);
+
+        std::cout << "  histname is note the problem " << std::endl;
+
         EventHist2D[j] = new TH2D(histname,Form("Oscillogram%d",j), ibins,cthmin,cthmax,kbins,Emin,Emax); 
+
+        std::cout << "  Vector is the problem  " << std::endl;
+
 
         // Loop over zenith bins (cos(theta))
         for(int i=1; i<= ibins ; i++) 
@@ -155,10 +176,13 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
 
             // Set Earth model direction and calculate Earth path
             
-            Earth3D.SetDirection(cth,phi); 
+            Earth3D.SetDirection(cth,phi);
+            std::cout << " Direction of the path  " << phi << " " << cth  << std::endl;
+ 
 
 
             std::vector<std::vector<double>> EarthPath = Earth3D.Create3DPath();
+            std::cout << " Path is the problem  " << std::endl;
 
 
 
@@ -222,6 +246,7 @@ std::vector< TH2D* > AsimovSimulation::GetTrueEvents3D()
 
         // Add the current 2D histogram to the vector
 
+        std::cout << "All good for phi " << j <<  std::endl;
 
         HistVec.push_back(EventHist2D[j]);
 
