@@ -48,12 +48,19 @@ using namespace std;
 void ExportToCSV(TH2D* stdhist, TH2D* althist, TH2D* hist, std::string filename);
 
 int main(int argc, char **argv)
-{
+{   
+    // Get the current date and time
+    std::time_t now = std::time(0);
+    std::tm* localTime = std::localtime(&now);
+
+    // Format the date (YYYY-MM-DD)
+    char dateBuffer[11];
+    std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", localTime);
 
     // Constants
-    double detectorMassMT = 10.0;              // Mass in megaton units
+    double detectorMass = 10.0;              // Mass in megaton units
     double detectorExposureYears = 10.0;       // Exposure time in years
-    double exposureMtonYears = detectorMassMT * MTon * detectorExposureYears * years2sec; // Exposure in [Mton*years]
+    double exposureMtonYears = detectorMass * MTon * detectorExposureYears * years2sec; // Exposure in [Mton*years]
 
     // Detector Position
     double detectorRadius = Rearth;            // Radius at South Pole
@@ -64,17 +71,17 @@ int main(int argc, char **argv)
     std::string premPath = "/home/dehy0499/OscProb/PremTables/prem_44layers.txt";
 
     // LLVP Configuration
-    double llvpHeight = 600;                  // LLVP height in km
+    double llvpHeight = 1000;                  // LLVP height in km
     double llvpRadius = Rcmb + llvpHeight;
     double depthMin = Rcmb - 2500;
     double depthMax = llvpRadius + 500;        // Max distance from Earth's center
-    double llvpDensityContrast = 2.0;          // LLVP density contrast percentage
-    std::string llvpShape = "pancake";
+    //double llvpDensityContrast = 2.0;          // LLVP density contrast percentage
+    std::string llvpShape = "cake";
 
     // Simulation Configuration
-    int zenithBins = 400;                      // Zenith bins
+    int zenithBins = 60;                      // Zenith bins
     int azimuthBins = 100;                     // Azimuth bins
-    int energyBins = 100;                      // Energy bins
+    int energyBins = 60;                      // Energy bins
 
     // Energy [GeV]
     double enuMin = 1.0;
@@ -94,26 +101,45 @@ int main(int argc, char **argv)
     double azimuthMin = azimuthStart - dAzimuth;
     double azimuthMax = azimuthEnd + dAzimuth;
 
-    // Neutrino flavor (0: nue, 1: numu, 2: nutau)
-    int nuflv = 1;
+    double rhosmain[3] = {1.0,2.0,3.0};
 
-    // File and folder structure configuration
-    int exposureYearsLabel = static_cast<int>(detectorMassMT * detectorExposureYears);
-    std::string BinLabel = std::to_string(zenithBins)+"Zen"+ std::to_string(azimuthBins)+"Az"+ std::to_string(energyBins)+"Enu";
-    std::string SimLabel = "Sensitivity2height_"+std::to_string(static_cast<int>(llvpHeight))+"_"+llvpShape+"_"+std::to_string(exposureYearsLabel)+"Mton"+"_"+ std::to_string(static_cast<int>(enuMin)) +"-"+ 
-                                 std::to_string(static_cast<int>(enuMax))+"GeV_" + std::to_string(static_cast<int>(zenithMin)) +"-"+ 
-                                 std::to_string(static_cast<int>(zenithMax))+"Zen_"  + std::to_string(static_cast<int>(azimuthMin)) +"-"+ 
-                                 std::to_string(static_cast<int>(azimuthMax))+"Az";
+    //for (int k = 0; k < 1; ++k)
+    //{
+        
+    int k = 1;
+    double llvpDensityContrast = rhosmain[k]; // 2% density contrats for LLVP
+
+    std::string testVariable = "-density-"+std::to_string(static_cast<int>(rhosmain[k]))+"-th-";
     
-    std::string pathToResults = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/PreliminaryResults/";
-    std::string pathToChiSquares = pathToResults + "IntChi2/";
-    std::string chiSquareFolderPath = pathToChiSquares + "Chi2_" + SimLabel + "/";
+    for (int nuflv = 0; nuflv < 2; ++nuflv)
+    {
+        
+    
+             // File and folder structure configuration
+            int exposureYearsLabel = static_cast<int>(detectorMass * detectorExposureYears);
 
-    std::string chiSquareFileName = chiSquareFolderPath+"Int_cth_Chi2LLVP" + std::to_string(exposureYearsLabel) + "myrs_" + llvpShape + 
-                                          "nu" + std::to_string(nuflv) + "_" + BinLabel + ".csv";
+            //std::string BinLabel = "Obs"+std::to_string(zenithBinsReco)+"Zen"+ std::to_string(azimuthBinsReco)+"Az"+ std::to_string(energyBinsReco)+"Enu_"
+                                //+"Int"+std::to_string(zenithBins)+"Zen"+ std::to_string(azimuthBins)+"Az"+ std::to_string(energyBins)+"Enu";
 
-    // Create output directories if they do not exist
-    mkdir(chiSquareFolderPath.c_str(), 0777);
+
+            std::string BinLabel = "Int"+std::to_string(zenithBins)+"-"+ std::to_string(azimuthBins)+"-"+ std::to_string(energyBins);
+
+
+            // Folder nomeclature Obs_[ "LLVP shape"][llvpHeight]_[Exposure in Mton]_[Emin-Emax]_[thmin]-[thmax]_[phimin]-[phimax] 
+            std::string folderName = "IntChi2_"+testVariable+llvpShape+std::to_string(static_cast<int>(llvpHeight))+"_"+std::to_string(exposureYearsLabel)+"_"+ std::to_string(static_cast<int>(enuMin)) +"-"+ 
+                                         std::to_string(static_cast<int>(enuMax))+"_" + std::to_string(static_cast<int>(zenithMin)) +"-"+ 
+                                         std::to_string(static_cast<int>(zenithMax))+"_"  + std::to_string(static_cast<int>(azimuthMin)) +"-"+ 
+                                         std::to_string(static_cast<int>(azimuthMax))+"_"+std::string(dateBuffer)+"/";
+            
+            std::string pathToResults = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/PreliminaryResults/";
+            std::string pathToChiSquares = pathToResults + "IntChi2/";
+            std::string chiSquareFolderPath = pathToChiSquares + folderName;
+
+            std::string chiSquareFileName = chiSquareFolderPath + "IntChi2_cth_"+testVariable+llvpShape+std::to_string(static_cast<int>(llvpHeight))+"_"+
+                                            std::to_string(exposureYearsLabel)+"nu" + std::to_string(nuflv) + "_" + BinLabel + ".csv";
+
+            // Create output directories if they do not exist
+            mkdir(chiSquareFolderPath.c_str(), 0777);
 
     // Initialize Simulation (Standard Earth Model)
     AsimovSimulation standardEarth;
@@ -134,31 +160,43 @@ int main(int argc, char **argv)
     standardEarth.aperture = 45;
     standardEarth.AnomalyShape = llvpShape;
     standardEarth.PileDensityContrast = llvpDensityContrast;
-    std::vector<TH2D*> trueEventsStandard = standardEarth.GetTrueEvents3D();
+    std::vector<TH2D*> trueEventsStandard = standardEarth.GetTrueEvents3Dth();
 
-    std::ofstream SenvDatacth(chiSquareFileName);
+    std::ofstream SenvData(chiSquareFileName);
     // Run simulation and generate events for Standard and Alternative
 
-    for (int i = 1; i <= 10; ++i)
+    double  rho[7] = {-3,-2,-1,0,1, 2, 3};
+            
+    double  h[8] = {100,200,300,400,500,600,700,800};
+
+    double azi[5] ={15,25,35,45,50}; 
+
+    for (int i = 0; i < 7; ++i)
     {
-        double chi2totcth = 0;
+        double chi2tot = 0;
 
         standardEarth.PremTable = premPath;
-        standardEarth.PileHeight = i*100; //km
+        //standardEarth.PileHeight = h[i]; //km
+        standardEarth.PileDensityContrast = rho[i];
+        //standardEarth.aperture = azi[i];
 
         // Generate events for the Anomalous Earth model
-        std::vector<TH2D*> trueEventsAnomalous = standardEarth.GetTrueEvents3D();
+        std::vector<TH2D*> trueEventsAnomalous = standardEarth.GetTrueEvents3Dth();
 
         for (int n = 0; n < trueEventsAnomalous.size(); ++ n)
         {   
-            chi2totcth += Get2DChi2( trueEventsStandard[n] , trueEventsAnomalous[n]);
+            chi2tot += Get2DChi2( trueEventsStandard[n] , trueEventsAnomalous[n]);
         }
     
-        SenvDatacth << i << ", " << chi2totcth <<  ", " << standardEarth.PileHeight  << ", " << zenithBins << ", " << azimuthBins << ", " << energyBins << std::endl;
+        SenvData << i <<" , "<< standardEarth.aperture << " , "<< standardEarth.PileDensityContrast << " , "  <<    standardEarth.PileHeight << " , " << chi2tot  <<  std::endl; 
 
     }
 
-    std::cout << "Simulation completed and events generated." << std::endl;
+    SenvData.close();
+
+    }//Loop over flavors
+
+    //}//Loop over densities
 
     return 0;
 }

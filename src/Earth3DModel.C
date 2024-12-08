@@ -248,7 +248,8 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
 
             LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
-            LLVPLAYER[PileId]->SetLineColor(kBlue);
+            //LLVPLAYER[PileId]->SetLineColor(kBlue);
+            LLVPLAYER[PileId]->SetLineColor(46);
 
             LAYER[i]->AddNodeOverlap(LLVPLAYER[PileId],1,rot1);  
 
@@ -287,7 +288,8 @@ void Earth3DModel::CreatePanCake(std::vector<TGeoVolume*> LAYER, std::vector< st
 
             LLVPLAYER.push_back( gGeoManager -> MakeSphere(llvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
-            LLVPLAYER[PileId]->SetLineColor(kBlue);
+            //LLVPLAYER[PileId]->SetLineColor(kBlue);
+            LLVPLAYER[PileId]->SetLineColor(46);
 
             LAYER[i]->AddNodeOverlap(LLVPLAYER[PileId],1,rot1);  
 
@@ -395,7 +397,8 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
             LLVPLAYER.push_back( gGeoManager -> MakeSphere(lowllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
-            LLVPLAYER[PileId]->SetLineColor(kBlue);
+            //LLVPLAYER[PileId]->SetLineColor(kBlue);
+            LLVPLAYER[PileId]->SetLineColor(46);
 
             LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
 
@@ -434,7 +437,8 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
             LLVPLAYER.push_back( gGeoManager -> MakeSphere(lowllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, aWidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
-            LLVPLAYER[PileId]->SetLineColor(kBlue);
+            //LLVPLAYER[PileId]->SetLineColor(kBlue);
+            LLVPLAYER[PileId]->SetLineColor(46);
 
             LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
 
@@ -512,7 +516,8 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
             LLVPLAYER.push_back( gGeoManager -> MakeSphere(midllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, midwidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
-            LLVPLAYER[PileId]->SetLineColor(kGreen);
+            //LLVPLAYER[PileId]->SetLineColor(kGreen);
+            LLVPLAYER[PileId]->SetLineColor(46);
 
             LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
 
@@ -550,7 +555,8 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
           LLVPLAYER.push_back( gGeoManager -> MakeSphere(midllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, midwidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
-          LLVPLAYER[PileId]->SetLineColor(kGreen);
+          //LLVPLAYER[PileId]->SetLineColor(kGreen);
+          LLVPLAYER[PileId]->SetLineColor(46);
 
           LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1); 
 
@@ -629,7 +635,8 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
             LLVPLAYER.push_back( gGeoManager -> MakeSphere(upllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, upwidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
-            LLVPLAYER[PileId]->SetLineColor(kRed);
+            //LLVPLAYER[PileId]->SetLineColor(kRed);
+            LLVPLAYER[PileId]->SetLineColor(46);
 
             LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
 
@@ -664,7 +671,8 @@ void Earth3DModel::CreateCake(std::vector<TGeoVolume*> LAYER, std::vector< std::
 
             LLVPLAYER.push_back( gGeoManager -> MakeSphere(upllvpLayerName, LLVPMed[PileId] , InnerR , OuterR , 0, upwidth ,0 ,360 ) ); // DEFINE LLVP Segment
 
-            LLVPLAYER[PileId]->SetLineColor(kRed);
+            //LLVPLAYER[PileId]->SetLineColor(kRed);
+            LLVPLAYER[PileId]->SetLineColor(46);
 
             LAYER[i]->AddNode(LLVPLAYER[PileId],1,rot1);  
 
@@ -772,12 +780,19 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
 
       LAYER.push_back( gGeoManager->MakeSphere(LayerName,MED[i], rmin,rmax,0,180,0,360) ); // Define Volume for the ith Layer
 
-      if (rmax == 3480.0 ) { LAYER[i]->SetVisibility(kTRUE);} //Outer Core is visible
+      if (rmax == 3480.0 ) { 
+      LAYER[i]->SetVisibility(kTRUE);
+      LAYER[i]->SetTransparency(0);
+      LAYER[i]->SetLineColor(28);
+
+
+      } //Outer Core is visible
 
       else { LAYER[i]->SetVisibility(kFALSE); }
   }
 
       LAYER[LAYER.size()-1]-> SetVisibility(kTRUE); // Crust is vissible
+      LAYER[LAYER.size()-1]-> SetTransparency(95); // Crust is vissible
 
   
   /*
@@ -820,10 +835,8 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
   }
 
   gGeoManager->CloseGeometry(); // Finish Geometry
-  gGeoManager->SetTopVisible(); // the TOP is invisible
-  top->Draw();
-  TView *view = gPad->GetView();
-  view->ShowAxis();
+  //gGeoManager->SetTopVisible(); // the TOP is invisible
+  
 
   
  
@@ -993,10 +1006,19 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
    
    l1->Draw("same");
    l2->Draw("same");
-   LLVPpoints->Draw("same");
+
+   top->Draw("ogl");
+   TView *view = gPad->GetView();
+   view->ShowAxis();
+
+   //LLVPpoints->Draw("same");
 
    EarthCanvas->Modified();
    EarthCanvas->Update();
+
+   std::cout << "Canvas is good" << std::endl;
+
+
 
    //std::cout << " PileThickness " << PileThickness << " " << aWidth << std::endl;
    //std::cout << " Direction of incoming Neutrino: " << xo << " " << yo << " " << zo << std::endl;
