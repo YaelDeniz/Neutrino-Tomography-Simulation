@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <ctime>
+#include <chrono>
 
 //Cern ROOT
 #include "TApplication.h"
@@ -42,14 +44,16 @@ void ExportToCSV(TH2D* stdhist, TH2D* althist, TH2D* hist, std::string filename)
 
 int main(int argc, char **argv)
 {
+    auto start = std::chrono::high_resolution_clock::now();
 
-    // Get the current date and time
+    // Get the current date and time; Format the date (YYYY-MM-DD)
     std::time_t now = std::time(0);
-    std::tm* localTime = std::localtime(&now);
+    std::tm* localTime_unit = std::localtime(&now);
+    char datetimeBuffer[21];
+    char dateBuffer[21];
 
-    // Format the date (YYYY-MM-DD)
-    char dateBuffer[11];
-    std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", localTime);
+    std::strftime(datetimeBuffer, sizeof(datetimeBuffer), "%Y-%m-%d_%H%M%S", localTime_unit);
+    std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", localTime_unit);
 
     
 
@@ -67,36 +71,26 @@ int main(int argc, char **argv)
     std::string premPath = "/home/dehy0499/OscProb/PremTables/prem_44layers.txt";
 
      //Pile Set Up---------------------------------------------------------------
-    double llvpHeight = 600; // Height of LLVP in km
+    double llvpHeight = 1000; // Height of LLVP in km
     double llvpRadius = Rcmb + llvpHeight; //km
     double depthMin = Rcmb-2500;
     double depthMax = llvpRadius+500; // Distance from the center of the Earth
     double Aperture = 45;
-    
-    double rhosmain[3] = {1.0,2.0,3.0};
-
-    for (int k = 0; k < 3; ++k)
-    {
-        
-    
-        double llvpDensityContrast = rhosmain[k]; // 2% density contrats for LLVP
-
-        std::string testVariable = "-h600-"+std::to_string(static_cast<int>(rhosmain[k]))+"-th-";
-
-        std::string llvpShape = "pancake";
+    double llvpDensityContrast = 2; // 2% density contrats for LLVP
+    std::string llvpShape = "cake";
 
 
         // Simulation Configuration
 
         // True binning
-        int zenithBins=60; // # Bins in zenith/cos(zenith)
-        int azimuthBins =100; // # Bins in azimuth (optimal bins are 110 or 22)
-        int energyBins =60; // bins in energy
+        int zenithBins  = 160; // # Bins in zenith/cos(zenith)
+        int azimuthBins = 40; // # Bins in azimuth (optimal bins are 110 or 22)
+        int energyBins  = 80; // bins in energy
 
         // Reco binning
-        int zenithBinsReco=30; // # Bins in zenith/cos(zenith)
-        int azimuthBinsReco =azimuthBins; // # Bins in azimuth (optimal bins are 110 or 22)
-        int energyBinsReco =30; // bins in energy
+        int zenithBinsReco  =30; // # Bins in zenith/cos(zenith)
+        int azimuthBinsReco = azimuthBins; // # Bins in azimuth (optimal bins are 110 or 22)
+        int energyBinsReco  =11; // bins in energy
 
         // Energy [GeV]    
         double enuMin = 2.0; 
@@ -115,6 +109,18 @@ int main(int argc, char **argv)
         double azimuthMin = -55.0;
         double azimuthMax =  55.0 ;
 
+        std::string binVariable = "th-log10";
+        std::string testVariable = "origin-"+llvpShape+"-"+binVariable+"_BinSizeE";
+
+        std::string BinLabel = "Obs"+std::to_string(zenithBinsReco)+"-"+ std::to_string(azimuthBinsReco)+"-"+ std::to_string(energyBinsReco)+"Int"
+                                +std::to_string(zenithBins)+"-"+ std::to_string(azimuthBins)+"-"+ std::to_string(energyBins);
+        std::string SimResultsDir = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/Single-Detector-Senv/";
+        std::string ParSenvDir = SimResultsDir + "ne_senv/";
+        std::string ExpSenvDir = ParSenvDir+"chi2_obs_"+testVariable+"_"+std::string(dateBuffer)+"/";
+        mkdir(ExpSenvDir.c_str(), 0777);
+
+
+
         for (int flv = 0; flv < 2; ++flv)
         {
         
@@ -122,7 +128,7 @@ int main(int argc, char **argv)
             int nuflv = flv;
         //---------
 
-
+            /*
              // File and folder structure configuration
             int exposureYearsLabel = static_cast<int>(detectorMass * detectorExposureYears);
 
@@ -130,8 +136,7 @@ int main(int argc, char **argv)
                                 //+"Int"+std::to_string(zenithBins)+"Zen"+ std::to_string(azimuthBins)+"Az"+ std::to_string(energyBins)+"Enu";
 
 
-            std::string BinLabel = "Obs"+std::to_string(zenithBinsReco)+"-"+ std::to_string(azimuthBinsReco)+"-"+ std::to_string(energyBinsReco)+"Int"
-                                +std::to_string(zenithBins)+"-"+ std::to_string(azimuthBins)+"-"+ std::to_string(energyBins);
+
 
 
             // Folder nomeclature Obs_[ "LLVP shape"][llvpHeight]_[Exposure in Mton]_[Emin-Emax]_[thmin]-[thmax]_[phimin]-[phimax] 
@@ -149,8 +154,9 @@ int main(int argc, char **argv)
 
             // Create output directories if they do not exist
             mkdir(chiSquareFolderPath.c_str(), 0777);
+            */
 
-
+            std::string ExpSenv = ExpSenvDir + "chi2obs_flv"+std::to_string(nuflv)+"_"+testVariable+"_"+BinLabel+"_"+std::string(datetimeBuffer)+".csv";
 
 
             
@@ -167,7 +173,7 @@ int main(int argc, char **argv)
            Simulation.flvf=nuflv;
 
 
-           Simulation.PileInModel = true;
+           Simulation.PileInModel = false;
            Simulation.ShapeOfPile = llvpShape;
            Simulation.ThePileHight = llvpHeight;
            Simulation.ThePileAperture = Aperture;
@@ -175,12 +181,12 @@ int main(int argc, char **argv)
            Simulation.ThePileChemicalContrast = 0.0;
 
 
-           std::vector<TH2D*>  ObservedEventsStandard = Simulation.GetObsEvents3Dth();
+           std::vector<TH2D*>  ObservedEventsStandard = Simulation.GetObsEvents3Dthlog10E();
 
 
           
             
-            std::ofstream SenvData(chiSquareFileName); 
+            std::ofstream SenvData(ExpSenv); 
 
             double  rho[7] = {-3,-2,-1,0,1, 2, 3};
             
@@ -190,18 +196,18 @@ int main(int argc, char **argv)
 
 
 
-            for (int i = 0; i < 8; ++i)
+            for (int i = 0; i < 7; ++i)
             {
 
                 Simulation.ThePremTable = premPath;
                 Simulation.PileInModel = true;
                 Simulation.ShapeOfPile = llvpShape;
-                //Simulation.ThePileDensityContrast = rho[i];
-                Simulation.ThePileHight = h[i];
+                Simulation.ThePileDensityContrast = rho[i];
+                //Simulation.ThePileHight = h[i];
                 //Simulation.ThePileAperture = azi[i];
 
 
-                std::vector<TH2D*>  ObservedEventsAlternative = Simulation.GetObsEvents3Dth();
+                std::vector<TH2D*>  ObservedEventsAlternative = Simulation.GetObsEvents3Dthlog10E();
 
                 double chi2tot = 0;
 
@@ -218,9 +224,19 @@ int main(int argc, char **argv)
 
             SenvData.close();
 
-        } // Loop over flavors
+            std::string DetailsFile = ExpSenvDir + "ObsExp_details_"+datetimeBuffer+".txt";
+            Simulation.GetDetails(DetailsFile);
 
-    } // Loop over densities
+    }//Loop over flavors
+
+   // Record the end time
+    auto end = std::chrono::high_resolution_clock::now();
+
+    // Calculate the duration
+    std::chrono::duration<double> duration = end - start;
+
+    // Print the execution time in seconds
+    std::cout << "Execution time: " << duration.count() << " seconds" << std::endl;
    
     return 0;
    

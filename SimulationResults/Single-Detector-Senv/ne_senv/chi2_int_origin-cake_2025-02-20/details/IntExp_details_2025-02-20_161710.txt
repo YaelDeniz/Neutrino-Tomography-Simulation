@@ -1,0 +1,34 @@
+--------------------------------------------------------------------------------
+                                Detector Details                               
+--------------------------------------------------------------------------------
+ Detector Radius: -6371 m
+ Neutrino Flux: SP_AziAveraged_solmin/spl-nu-20-01-000.d 
+ Number of Detectors: 1
+ Mass: 10 Mton
+ Time: 10 years
+ Exposure: 3.154e+18 Mton-Year
+
+--------------------------------------------------------------------------------
+                                Earth Details                                  
+--------------------------------------------------------------------------------
+ Earth Model: prem_44layers.txt
+Index of modified layer (default is 0): 44
+Density Contrast (drho/rho): 0
+ Chem Contrast (H%): 0
+
+--------------------------------------------------------------------------------
+                        Lower Mantle Anomalies (LLVP)                          
+--------------------------------------------------------------------------------
+ LLVP: 1
+ LLVP Model: pancake
+ LLVP Height: 1000 km
+ Aperture: 45
+ Density Contrast (drho/rho): 3
+ Chem Contrast (H%): 0
+
+--------------------------------------------------------------------------------
+                             Simulation Details                                
+--------------------------------------------------------------------------------
+ Neutrino Energy Range: [1 - 10] GeV | Bins: 40
+ Zenith Range: [128.587 (-0.623696) - 171.152 (-0.988099)] | Bins: 80
+ Azimuth Range: [-51.25 - 51.25] Bins: 41

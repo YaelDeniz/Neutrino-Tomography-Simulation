@@ -259,12 +259,18 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dcth(){
                     { 
                         //NUMERICAL INTEGRATION
 
+
                         double Etrue = TrueHist[nphi]->GetYaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
                         double dEtrue = TrueHist[nphi]->GetYaxis()->GetBinWidth(k); 
 
                         double NikTrue = TrueHist[nphi]->GetBinContent(i,k);
 
                         double dEdcthReco = dEreco*dcthreco;
+
+
+                         ZenithBinSize = TrueHist[nphi]->GetXaxis()->GetXmax();
+                         AzimuthBinSize =0;
+                         EnergyBinSize = TrueHist[nphi]->GetYaxis()->GetXmax();
                        
                         Nsmear += (VMFth(threco,Etrue,thtrue)/sthreco)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdcthReco);
         
@@ -392,6 +398,373 @@ std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dth(){
         RecoHist[nphi] = new TH2D(Form("RecoHist%d",nphi),Form("ObsOscillogram%d",nphi),
                                   mbins,threcoMin,threcoMax,
                                   nbins,ErecoMin,ErecoMax); // xbins correspond to energy values and ybins to zenith angle cost
+
+        //Loop over Reconstructed cth
+        for (int m = 1; m <= mbins; ++m) //Observed Angular bins
+        {
+
+            double threco = RecoHist[nphi]->GetXaxis()->GetBinCenter(m); // Angular bin from the "Observed" histogram
+            double dthreco= RecoHist[nphi]->GetXaxis()->GetBinWidth(m); // Angular bin width of the "Observed" histogram
+
+            double cthreco  =  cos(threco);
+
+            //Loop over Reconstructed energy
+            for (int n = 1; n <=nbins ; ++n) //Observed Energy bins
+            {
+         
+                double Ereco = RecoHist[nphi]->GetYaxis()->GetBinCenter(n); //  Energy bin from the "Observed" histogram
+                double dEreco = RecoHist[nphi]->GetYaxis()->GetBinWidth(n); //  Energy bin width of the "Observed" histogram
+           
+                double Nsmear = 0;   // Reset total number of events.
+                
+                for(int i=1; i<= ibins ; i++) //Loop in cosT
+                {    
+                    // Get cos(theta_z) from bin center, It fix a value of L
+                    double thtrue = TrueHist[nphi]->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+                    double dthtrue = TrueHist[nphi]->GetXaxis()->GetBinWidth(i); 
+
+                    double cthtrue = cos(thtrue);
+
+                    for (int k = 1; k <= kbins; ++k)
+                    { 
+                        //NUMERICAL INTEGRATION
+
+                        double Etrue = TrueHist[nphi]->GetYaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
+                        double dEtrue = TrueHist[nphi]->GetYaxis()->GetBinWidth(k); 
+
+                        double NikTrue = TrueHist[nphi]->GetBinContent(i,k);
+
+                        double dEdthReco = dEreco*dthreco;
+                       
+                        Nsmear += VMFth(threco,Etrue,thtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(dEdthReco);
+
+                    } // loop e
+
+                } // Loop th
+                
+                double Nmn = Nsmear;
+
+                RecoHist[nphi]->SetBinContent(m,n,Nmn); // Set events in Observed histogram. 
+             
+            } // End reconstructed E loop 
+
+        } // End reconstructed th loop
+
+        HistVec.push_back(RecoHist[nphi]); 
+
+    } // End Histogram loop
+
+    std::cout << "TrueVariable | E=[ " << EtrueMin << " , " << EtrueMax << " ] Zenith= [" << thtrueMin << " , " << thtrueMax << "]" << std::endl;
+    std::cout << "RecoVariable | E=[ " << ErecoMin << " , " << ErecoMax << " ] Zenith= [" << threcoMin << " , " << threcoMax << "]" << std::endl;
+   
+   return HistVec;}
+
+// Observed events in th binning
+std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dthlog10E(){  
+
+    std::cout << "Asimov Approach Simulation for Observed Events" << std::endl;
+
+
+    //Observed Variables:-----------------------------------------------------------------------------------------------
+    
+    //Observed bins
+    int mbins = recobinsZen; //Number of angular bins of Observed event distribution
+    int nbins = recobinsE; //Number of Energy bins of Observed event distribution 
+    
+    //Energy[GeV]
+    double ErecoMin      = EnuMin;
+    double ErecoMax      = EnuMax;
+    
+    //Observed Angle (rad)
+    double threcoMin   = ZenMin*TMath::Pi()/180.0;
+    double threcoMax   = ZenMax*TMath::Pi()/180.0;
+
+    //double CthrecoMin = cos(threcoMax*TMath::Pi()/180.0); //min cth = -1 
+    //double CthrecoMax = cos(threcoMin*TMath::Pi()/180.0); // max cth = 0
+    
+
+    //True Variables:---------------------------------------------------------------------------------------------------
+
+    //True bins
+    int ibins = truebinsZen; // Number of  angular bins of True event distribution
+    int jbins = truebinsAzi;
+    int kbins = truebinsE; // Number of  energy bins of True event distribution
+    
+    //True Energy[GeV]
+    TF1 *fmin = new TF1("fmin","-1*x + [0] -4*( [1]*x+[2]*sqrt(x) )", 0, 100);
+    fmin->SetParameter(0,ErecoMin);
+    fmin->SetParameter(1,Ae);
+    fmin->SetParameter(2,Be);
+    ROOT::Math::RootFinder finder_min;
+    finder_min.Solve(*fmin,0,100);
+
+    TF1 *fmax = new TF1("fmax","-1*x + [0] + 4*( [1]*x+[2]*sqrt(x) )", 0, 100);
+    fmax->SetParameter(0,ErecoMax);
+    fmax->SetParameter(1,Ae);
+    fmax->SetParameter(2,Be);
+    ROOT::Math::RootFinder finder_max;
+    finder_max.Solve(*fmax,0,100);
+
+    double EtrueMin = finder_min.Root();
+    double EtrueMax = finder_max.Root();
+
+    //True Angle-
+    double thtrueMin_a= threcoMin - 4*(Ath + Bth/sqrt(EtrueMin));
+    double thtrueMin_b= 0;
+
+    double thtrueMax_a= threcoMax + 4*(Ath + Bth/sqrt(EtrueMin));
+    double thtrueMax_b= TMath::Pi();
+
+    // True Angular Range
+    double thtrueMin = max(thtrueMin_b,thtrueMin_a)*180.0/TMath::Pi(); //From Radians to degrees
+    double thtrueMax = min(thtrueMax_b,thtrueMax_a)*180.0/TMath::Pi(); // From radias to degrees
+
+    //Azimuthal 
+    double phiTrueMin = AziMin;
+    double phiTrueMax = AziMax;
+    
+
+    //HISTOGRAMS--------------------------------------------------------------------------------------------------------
+     //True Histogram        
+    AsimovSimulation TrueSimulation;
+
+    TrueSimulation.PremTable = ThePremTable; //Prem Model
+    TrueSimulation.HondaTable = TheHondaTable; // Honda Table
+    TrueSimulation.SetDetectorPosition(xyzTelescope); //Detector location
+
+    //If LLVP set geometry and properties
+    TrueSimulation.MantleAnomaly = PileInModel;
+    TrueSimulation.AnomalyShape= ShapeOfPile;
+    TrueSimulation.PileHeight = ThePileHight; // LLVP mas height 
+    TrueSimulation.aperture=ThePileAperture; //Aperture
+    TrueSimulation.PileDensityContrast = ThePileDensityContrast;
+    TrueSimulation.PileChemContrast = ThePileChemicalContrast;
+
+
+    TrueSimulation.ModifyLayer(PremLayer,DensityContrast,ChemicalContrats);
+    TrueSimulation.SetIntervals(thtrueMin,thtrueMax,phiTrueMin,phiTrueMax,EtrueMin,EtrueMax);
+    TrueSimulation.SetBinning(ibins,jbins,kbins);
+    TrueSimulation.SetExposure(MT);
+    TrueSimulation.flvf=flvf; 
+
+    //Binning in zenith angle
+    std::vector<TH2D*> TrueHist= TrueSimulation.GetTrueEvents3Dthlog10E();
+
+
+    std::vector<TH2D*> HistVec;
+    TH2D* RecoHist[jbins]; 
+
+    //Observed distribution:
+    //TH2D* RecoHist = new TH2D("RecoHist","Observed Events Histogram",mbins,CthrecoMin,CthrecoMax,nbins,ErecoMin,ErecoMax); // xbins correspond to energy values and ybins to zenith angle cost
+
+    //Loop Over Histogram in Azimuth
+    for (int nphi = 0 ; nphi < TrueHist.size(); ++nphi)
+    {
+
+        RecoHist[nphi] = new TH2D(Form("RecoHist%d",nphi),Form("ObsOscillogram%d",nphi),
+                                  mbins,threcoMin,threcoMax,
+                                  nbins,ErecoMin,ErecoMax); // xbins correspond to energy values and ybins to zenith angle cost
+
+        //Loop over Reconstructed cth
+        for (int m = 1; m <= mbins; ++m) //Observed Angular bins
+        {
+
+            double threco = RecoHist[nphi]->GetXaxis()->GetBinCenter(m); // Angular bin from the "Observed" histogram
+            double dthreco= RecoHist[nphi]->GetXaxis()->GetBinWidth(m); // Angular bin width of the "Observed" histogram
+
+            double cthreco  =  cos(threco);
+
+            //Loop over Reconstructed energy
+            for (int n = 1; n <=nbins ; ++n) //Observed Energy bins
+            {
+         
+                double log10Ereco = RecoHist[nphi]->GetYaxis()->GetBinCenter(n); //  Energy bin from the "Observed" histogram
+                double Ereco = pow(10, log10Ereco);
+                double dlog10Ereco = RecoHist[nphi]->GetYaxis()->GetBinWidth(n); //  Energy bin width of the "Observed" histogram
+           
+                double Nsmear = 0;   // Reset total number of events.
+                
+                for(int i=1; i<= ibins ; i++) //Loop in cosT
+                {    
+                    // Get cos(theta_z) from bin center, It fix a value of L
+                    double thtrue = TrueHist[nphi]->GetXaxis()->GetBinCenter(i); //< This will defined a constant L por different values of ct provided Dct is Small
+                    double dthtrue = TrueHist[nphi]->GetXaxis()->GetBinWidth(i); 
+
+                    double cthtrue = cos(thtrue);
+
+                    for (int k = 1; k <= kbins; ++k)
+                    { 
+                        //NUMERICAL INTEGRATION
+
+                        double log10Etrue = TrueHist[nphi]->GetYaxis()->GetBinCenter(k); //< This will defined a constant L por different values of ct provided Dct is Small
+                        double Etrue = pow(10, log10Etrue);
+                        double dlog10Etrue = TrueHist[nphi]->GetYaxis()->GetBinWidth(k); 
+
+                        double NikTrue = TrueHist[nphi]->GetBinContent(i,k);
+
+                        double dlog10EdthReco = dlog10Ereco*dthreco;
+                       
+                        Nsmear += VMFth(threco,Etrue,thtrue)*PDFE(Ereco,Etrue)*(NikTrue)*(log(10)*Ereco)*(dlog10EdthReco);
+
+                    } // loop e
+
+                } // Loop th
+                
+                double Nmn = Nsmear;
+
+                RecoHist[nphi]->SetBinContent(m,n,Nmn); // Set events in Observed histogram. 
+             
+            } // End reconstructed E loop 
+
+        } // End reconstructed th loop
+
+        HistVec.push_back(RecoHist[nphi]); 
+
+    } // End Histogram loop
+
+    std::cout << "TrueVariable | E=[ " << EtrueMin << " , " << EtrueMax << " ] Zenith= [" << thtrueMin << " , " << thtrueMax << "]" << std::endl;
+    std::cout << "RecoVariable | E=[ " << ErecoMin << " , " << ErecoMax << " ] Zenith= [" << threcoMin << " , " << threcoMax << "]" << std::endl;
+   
+   return HistVec;}
+
+// Observed events in th binning - Variable binning
+std::vector < TH2D* >  AsimovObsSimulation::GetObsEvents3Dthvb(){  
+
+   
+    //Observed Variables:-----------------------------------------------------------------------------------------------
+    
+    //Observed bins
+    int mbins = recobinsZen; //Number of angular bins of Observed event distribution
+    //int nbins = recobinsE; //Number of Energy bins of Observed event distribution 
+    
+    //Energy[GeV]
+    double ErecoMin      = EnuMin;
+    double ErecoMax      = EnuMax;
+    
+    //Observed Angle (rad)
+    double threcoMin   = ZenMin*TMath::Pi()/180.0;
+    double threcoMax   = ZenMax*TMath::Pi()/180.0;
+
+    //double CthrecoMin = cos(threcoMax*TMath::Pi()/180.0); //min cth = -1 
+    //double CthrecoMax = cos(threcoMin*TMath::Pi()/180.0); // max cth = 0
+
+    //Create bins of variable size
+
+    std::vector<double> ErecoEdges; 
+    ErecoEdges.push_back(ErecoMin);
+    double Erecoi = ErecoMin;
+
+    while (ErecoEdges.back() < ErecoMax) 
+    {
+        //Find center
+        TF1 *frecoC = new TF1("fmin","-1*x + [0] + 0.5*( [1]*x+[2]*sqrt(x) )", 0, 100);
+        frecoC->SetParameter(0,Erecoi);
+        frecoC->SetParameter(1,Ae);
+        frecoC->SetParameter(2,Be);
+        ROOT::Math::RootFinder finder_center;
+        finder_center.Solve(*frecoC ,0,100);
+        double ErecoC = finder_center.Root();
+        
+        //Find next edge
+        double Erecoii = ErecoC + 0.5*(Ae*ErecoC + Be*sqrt(ErecoC));
+        
+        ErecoEdges.push_back(Erecoii);
+        
+        Erecoi = Erecoii;
+        
+    }
+
+    double ErecobinEdges [ErecoEdges.size()];
+        
+    for (int i=0 ; i < ErecoEdges.size(); i++ )
+    {
+          ErecobinEdges[i] = ErecoEdges[i];
+            
+    }
+    
+    int nbins = sizeof(ErecobinEdges)/sizeof(ErecobinEdges[0]) - 1; // Number of bins
+
+    //True Variables:---------------------------------------------------------------------------------------------------
+
+    //True bins
+    int ibins = truebinsZen; // Number of  angular bins of True event distribution
+    int jbins = truebinsAzi;
+    int kbins = truebinsE; // Number of  energy bins of True event distribution
+    
+    //True Energy[GeV]
+    TF1 *fmin = new TF1("fmin","-1*x + [0] -4*( [1]*x+[2]*sqrt(x) )", 0, 100);
+    fmin->SetParameter(0,ErecoMin);
+    fmin->SetParameter(1,Ae);
+    fmin->SetParameter(2,Be);
+    ROOT::Math::RootFinder finder_min;
+    finder_min.Solve(*fmin,0,100);
+
+    TF1 *fmax = new TF1("fmax","-1*x + [0] + 4*( [1]*x+[2]*sqrt(x) )", 0, 100);
+    fmax->SetParameter(0,ErecoEdges.back());
+    fmax->SetParameter(1,Ae);
+    fmax->SetParameter(2,Be);
+    ROOT::Math::RootFinder finder_max;
+    finder_max.Solve(*fmax,0,100);
+
+    double EtrueMin = finder_min.Root();
+    double EtrueMax = finder_max.Root();
+
+    //True Angle-
+    double thtrueMin_a= threcoMin - 4*(Ath + Bth/sqrt(EtrueMin));
+    double thtrueMin_b= 0;
+
+    double thtrueMax_a= threcoMax + 4*(Ath + Bth/sqrt(EtrueMin));
+    double thtrueMax_b= TMath::Pi();
+
+    // True Angular Range
+    double thtrueMin = max(thtrueMin_b,thtrueMin_a)*180.0/TMath::Pi(); //From Radians to degrees
+    double thtrueMax = min(thtrueMax_b,thtrueMax_a)*180.0/TMath::Pi(); // From radias to degrees
+
+    //Azimuthal 
+    double phiTrueMin = AziMin;
+    double phiTrueMax = AziMax;
+    
+
+    //HISTOGRAMS--------------------------------------------------------------------------------------------------------
+     //True Histogram        
+    AsimovSimulation TrueSimulation;
+
+    TrueSimulation.PremTable = ThePremTable; //Prem Model
+    TrueSimulation.HondaTable = TheHondaTable; // Honda Table
+    TrueSimulation.SetDetectorPosition(xyzTelescope); //Detector location
+
+    //If LLVP set geometry and properties
+    TrueSimulation.MantleAnomaly = PileInModel;
+    TrueSimulation.AnomalyShape= ShapeOfPile;
+    TrueSimulation.PileHeight = ThePileHight; // LLVP mas height 
+    TrueSimulation.aperture=ThePileAperture; //Aperture
+    TrueSimulation.PileDensityContrast = ThePileDensityContrast;
+    TrueSimulation.PileChemContrast = ThePileChemicalContrast;
+
+
+    TrueSimulation.ModifyLayer(PremLayer,DensityContrast,ChemicalContrats);
+    TrueSimulation.SetIntervals(thtrueMin,thtrueMax,phiTrueMin,phiTrueMax,EtrueMin,EtrueMax);
+    TrueSimulation.SetBinning(ibins,jbins,kbins);
+    TrueSimulation.SetExposure(MT);
+    TrueSimulation.flvf=flvf; 
+
+    //Binning in zenith angle
+    std::vector<TH2D*> TrueHist= TrueSimulation.GetTrueEvents3Dth();
+
+
+    std::vector<TH2D*> HistVec;
+    TH2D* RecoHist[jbins]; 
+
+    //Observed distribution:
+    //TH2D* RecoHist = new TH2D("RecoHist","Observed Events Histogram",mbins,CthrecoMin,CthrecoMax,nbins,ErecoMin,ErecoMax); // xbins correspond to energy values and ybins to zenith angle cost
+
+    //Loop Over Histogram in Azimuth
+    for (int nphi = 0 ; nphi < TrueHist.size(); ++nphi)
+    {
+
+        RecoHist[nphi] = new TH2D(Form("RecoHist%d",nphi),Form("ObsOscillogram%d",nphi),
+                                  mbins,threcoMin,threcoMax,
+                                  nbins,ErecobinEdges); // xbins correspond to energy values and ybins to zenith angle cost
 
         //Loop over Reconstructed cth
         for (int m = 1; m <= mbins; ++m) //Observed Angular bins

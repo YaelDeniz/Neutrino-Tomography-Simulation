@@ -1003,22 +1003,28 @@ std::vector<std::vector<double>> Earth3DModel::Earth3DPath( double th, double ph
    l1->SetMarkerSize(3);
    l2->SetLineColor(14);
    l2->SetLineWidth(3);
+
+
+   //Set model visibility
+   if (ModelVisibility)
+   {
+         /* code */
+      l1->Draw("same");
+      l2->Draw("same");
+
+      top->Draw("ogl");
+      TView *view = gPad->GetView();
+      view->ShowAxis();
+
+      //LLVPpoints->Draw("same");
+
+      EarthCanvas->Modified();
+      EarthCanvas->Update();
+      
+   }
+   //std::cout << "Canvas is good" << std::endl;
+
    
-   l1->Draw("same");
-   l2->Draw("same");
-
-   top->Draw("ogl");
-   TView *view = gPad->GetView();
-   view->ShowAxis();
-
-   //LLVPpoints->Draw("same");
-
-   EarthCanvas->Modified();
-   EarthCanvas->Update();
-
-   std::cout << "Canvas is good" << std::endl;
-
-
 
    //std::cout << " PileThickness " << PileThickness << " " << aWidth << std::endl;
    //std::cout << " Direction of incoming Neutrino: " << xo << " " << yo << " " << zo << std::endl;

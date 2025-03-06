@@ -9,6 +9,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <ctime>
+#include <chrono>
 
 
 //Cern ROOT
@@ -35,61 +37,66 @@
 # define myPi 3.14159265358979323846  /* pi */
 // Some Constants i need
 
-# define Rcmb 3480.0 // Core-Mantle-Boundary Radius (km)
-# define Rocean 6368.0 // Earth radius in (km)
-# define Rearth 6371.0 // Earth radius in (km)
-# define Ratm 6386.0 // Radius of the Atmosphere (km)
-# define mN   1.67492749804E-27  // Nucleons mass (~ Neutron mass) in kg
-# define MTon  1E9  //Metric MegaTon in kg
-# define years2sec 3.154E7 // Years in Seconds
+# define CMB 3480.0 // Core-Mantle-Boundary Radius (km)
+# define OCEAN_BOTTOM 6368.0 // Earth radius up to oceanic crust in (km)
+# define CONTIENTAL_CRUST 6371.0 // Earth radius in (km)
+# define ATM_RADIUS 6386.0 // Radius of the Atmosphere (km)
+# define NUCLEON_MASS   1.67492749804E-27  // Nucleons mass (~ Neutron mass) in kg
+# define MEGATON_KG  1E9  //Metric MegaTon in kg
+# define SECONDS_PER_YEAR 3.154E7 // Years in Seconds
 
 using namespace std;
 
 void ExportToCSV(TH2D* stdhist, TH2D* althist, TH2D* hist, std::string filename);
+//std::string SimulationID();
 
 int main(int argc, char **argv)
 {   
-    // Get the current date and time
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // Get the current date and time; Format the date (YYYY-MM-DD)
     std::time_t now = std::time(0);
-    std::tm* localTime = std::localtime(&now);
+    std::tm* localTime_unit = std::localtime(&now);
+    char datetimeBuffer[21];
+    char dateBuffer[21];
 
-    // Format the date (YYYY-MM-DD)
-    char dateBuffer[11];
-    std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", localTime);
+    std::strftime(datetimeBuffer, sizeof(datetimeBuffer), "%Y-%m-%d_%H%M%S", localTime_unit);
+    std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", localTime_unit);
 
-    // Constants
-    double detectorMass = 10.0;              // Mass in megaton units
-    double detectorExposureYears = 10.0;       // Exposure time in years
-    double exposureMtonYears = detectorMass * MTon * detectorExposureYears * years2sec; // Exposure in [Mton*years]
+
+    // Detector parameters
+    double Mass_unit = 10.0;              // Mass in megaton units
+    double Time_unit = 10.0;       // Exposure time in years
+    double Exposure = (Mass_unit * MEGATON_KG )*(Time_unit * SECONDS_PER_YEAR); // Exposure in [Mton*years]
 
     // Detector Position
-    double detectorRadius = Rearth;            // Radius at South Pole
-    double detectorPos[3] = {0.0, 0.0, -1.0 * detectorRadius};
+    double Detector_location = CONTIENTAL_CRUST;            // Radius at South Pole
+    double Coordinates[3] = {0.0, 0.0, -1.0 * Detector_location};
 
     // Paths for input and output files
     std::string fluxPath = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/NuFlux/SP_AziAveraged_solmin/spl-nu-20-01-000.d";
     std::string premPath = "/home/dehy0499/OscProb/PremTables/prem_44layers.txt";
 
     // LLVP Configuration
-    double llvpHeight = 1000;                  // LLVP height in km
-    double llvpRadius = Rcmb + llvpHeight;
-    double depthMin = Rcmb - 2500;
-    double depthMax = llvpRadius + 500;        // Max distance from Earth's center
+    double h_llvp = 1000;                  // LLVP height in km
+    double r_llvp = CMB + h_llvp;          // LLVP radii
+    double depthMin = CMB - 2500;
+    double depthMax = r_llvp + 500;        // Max distance from Earth's center
     //double llvpDensityContrast = 2.0;          // LLVP density contrast percentage
-    std::string llvpShape = "cake";
+    std::string mod_llvp = "pancake";
 
     // Simulation Configuration
-    int zenithBins = 60;                      // Zenith bins
-    int azimuthBins = 100;                     // Azimuth bins
-    int energyBins = 60;                      // Energy bins
+    int zenithBins = 80;                      // Zenith bins
+    int azimuthBins =80;                     // Azimuth bins
+    int energyBins = 80;                      // Energy bins
 
     // Energy [GeV]
     double enuMin = 1.0;
     double enuMax = 10.0;
 
     // Zenith angle [degrees]
-    double zenithMin = 180 - TMath::ASin(depthMax / detectorRadius) * (180.0 / TMath::Pi());
-    double zenithMax = 180 - TMath::ASin(depthMin / detectorRadius) * (180.0 / TMath::Pi());
+    double zenithMin = 180 - TMath::ASin(depthMax / Detector_location) * (180.0 / TMath::Pi());
+    double zenithMax = 180 - TMath::ASin(depthMin / Detector_location) * (180.0 / TMath::Pi());
 
     double cosZenithMin = cos(zenithMax * TMath::Pi() / 180.0);
     double cosZenithMax = cos(zenithMin * TMath::Pi() / 180.0);
@@ -101,68 +108,59 @@ int main(int argc, char **argv)
     double azimuthMin = azimuthStart - dAzimuth;
     double azimuthMax = azimuthEnd + dAzimuth;
 
-    double rhosmain[3] = {1.0,2.0,3.0};
+    //double rhosmain[3] = {1.0,2.0,3.0};
 
     //for (int k = 0; k < 1; ++k)
     //{
         
-    int k = 1;
-    double llvpDensityContrast = rhosmain[k]; // 2% density contrats for LLVP
+    //int k = 1;
+    //double llvpDensityContrast = rhosmain[k]; // 2% density contrats for LLVP
 
-    std::string testVariable = "-density-"+std::to_string(static_cast<int>(rhosmain[k]))+"-th-";
+    std::string testVariable = "origin-slab";
+    std::string binVariable = "cth";
+
+    std::string BinLabel = binVariable+std::to_string(zenithBins)+"-"+ std::to_string(azimuthBins)+"-"+ std::to_string(energyBins);
+    std::string SimResultsDir = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/Single-Detector-Senv/";
+    std::string ParSenvDir = SimResultsDir + "ne_senv/";
+    std::string ExpSenvDir = ParSenvDir+"chi2_int_"+testVariable+"_"+std::string(dateBuffer)+"/";
+    mkdir(ExpSenvDir.c_str(), 0777);
     
     for (int nuflv = 0; nuflv < 2; ++nuflv)
     {
         
     
              // File and folder structure configuration
-            int exposureYearsLabel = static_cast<int>(detectorMass * detectorExposureYears);
+            //int exposureYearsLabel = static_cast<int>(Mass_unit * Time_unit);
 
             //std::string BinLabel = "Obs"+std::to_string(zenithBinsReco)+"Zen"+ std::to_string(azimuthBinsReco)+"Az"+ std::to_string(energyBinsReco)+"Enu_"
                                 //+"Int"+std::to_string(zenithBins)+"Zen"+ std::to_string(azimuthBins)+"Az"+ std::to_string(energyBins)+"Enu";
 
-
-            std::string BinLabel = "Int"+std::to_string(zenithBins)+"-"+ std::to_string(azimuthBins)+"-"+ std::to_string(energyBins);
-
-
-            // Folder nomeclature Obs_[ "LLVP shape"][llvpHeight]_[Exposure in Mton]_[Emin-Emax]_[thmin]-[thmax]_[phimin]-[phimax] 
-            std::string folderName = "IntChi2_"+testVariable+llvpShape+std::to_string(static_cast<int>(llvpHeight))+"_"+std::to_string(exposureYearsLabel)+"_"+ std::to_string(static_cast<int>(enuMin)) +"-"+ 
-                                         std::to_string(static_cast<int>(enuMax))+"_" + std::to_string(static_cast<int>(zenithMin)) +"-"+ 
-                                         std::to_string(static_cast<int>(zenithMax))+"_"  + std::to_string(static_cast<int>(azimuthMin)) +"-"+ 
-                                         std::to_string(static_cast<int>(azimuthMax))+"_"+std::string(dateBuffer)+"/";
-            
-            std::string pathToResults = "/home/dehy0499/NuOscillation-Tomography/Neutrino-Tomography-Simulation/SimulationResults/PreliminaryResults/";
-            std::string pathToChiSquares = pathToResults + "IntChi2/";
-            std::string chiSquareFolderPath = pathToChiSquares + folderName;
-
-            std::string chiSquareFileName = chiSquareFolderPath + "IntChi2_cth_"+testVariable+llvpShape+std::to_string(static_cast<int>(llvpHeight))+"_"+
-                                            std::to_string(exposureYearsLabel)+"nu" + std::to_string(nuflv) + "_" + BinLabel + ".csv";
-
-            // Create output directories if they do not exist
-            mkdir(chiSquareFolderPath.c_str(), 0777);
+    std::string ExpSenv = ExpSenvDir + "chi2int_flv"+std::to_string(nuflv)+"_"+testVariable+"_"+BinLabel+"_"+std::string(datetimeBuffer)+".csv";
+        // Create output directories if they do not exist
+        
 
     // Initialize Simulation (Standard Earth Model)
-    AsimovSimulation standardEarth;
-    standardEarth.PremTable = premPath;
-    standardEarth.HondaTable = fluxPath;
-    standardEarth.SetDetectorPosition(detectorPos);
-    standardEarth.SetIntervals(zenithMin, zenithMax, azimuthMin, azimuthMax, enuMin, enuMax);
-    standardEarth.SetBinning(zenithBins, azimuthBins, energyBins);
-    standardEarth.SetExposure(exposureMtonYears);
-    standardEarth.flvf = nuflv;
+    AsimovSimulation experminet;
+    experminet.PremTable = premPath;
+    experminet.HondaTable = fluxPath;
+    experminet.SetDetectorPosition(Coordinates);
+    experminet.SetIntervals(zenithMin, zenithMax, azimuthMin, azimuthMax, enuMin, enuMax);
+    experminet.SetBinning(zenithBins, azimuthBins, energyBins);
+    experminet.SetExposure(Exposure);
+    experminet.flvf = nuflv;
 
     // Run simulation and generate events for Standard and Alternative
 
 
-    // Configure for Anomalous Earth Model (with LLVP)
-    standardEarth.MantleAnomaly = true;
-    standardEarth.PileHeight = llvpHeight;
-    standardEarth.aperture = 45;
-    standardEarth.AnomalyShape = llvpShape;
-    standardEarth.PileDensityContrast = llvpDensityContrast;
-    std::vector<TH2D*> trueEventsStandard = standardEarth.GetTrueEvents3Dth();
+    // Configure for Expected Earth Model 
+    experminet.MantleAnomaly = false;
+    experminet.PileHeight = h_llvp;
+    experminet.aperture = 45;
+    experminet.AnomalyShape = mod_llvp;
+    experminet.PileDensityContrast = 2;
+    std::vector<TH2D*> Nint_expected = experminet.GetTrueEvents3D();
 
-    std::ofstream SenvData(chiSquareFileName);
+    std::ofstream SenvData(ExpSenv);
     // Run simulation and generate events for Standard and Alternative
 
     double  rho[7] = {-3,-2,-1,0,1, 2, 3};
@@ -175,28 +173,43 @@ int main(int argc, char **argv)
     {
         double chi2tot = 0;
 
-        standardEarth.PremTable = premPath;
-        //standardEarth.PileHeight = h[i]; //km
-        standardEarth.PileDensityContrast = rho[i];
-        //standardEarth.aperture = azi[i];
+        // Configure for Observed Earth Model 
+
+        experminet.PremTable = premPath;
+        experminet.MantleAnomaly = true;
+
+        //experminet.PileHeight = h[i]; //km
+        experminet.PileDensityContrast = rho[i];
+        //experminet.aperture = azi[i];
 
         // Generate events for the Anomalous Earth model
-        std::vector<TH2D*> trueEventsAnomalous = standardEarth.GetTrueEvents3Dth();
+        std::vector<TH2D*> Nint_Observed = experminet.GetTrueEvents3D();
 
-        for (int n = 0; n < trueEventsAnomalous.size(); ++ n)
+        for (int n = 0; n < Nint_Observed.size(); ++ n)
         {   
-            chi2tot += Get2DChi2( trueEventsStandard[n] , trueEventsAnomalous[n]);
+            chi2tot += Get2DChi2( Nint_expected[n] , Nint_Observed[n]);
         }
     
-        SenvData << i <<" , "<< standardEarth.aperture << " , "<< standardEarth.PileDensityContrast << " , "  <<    standardEarth.PileHeight << " , " << chi2tot  <<  std::endl; 
+        SenvData << i <<" , "<< experminet.aperture << " , "<< experminet.PileDensityContrast << " , "  <<    experminet.PileHeight << " , " << chi2tot  <<  std::endl; 
 
     }
 
     SenvData.close();
+    //std::string DetailsFileName = SimulationID();
+    std::string DetailsFile = ExpSenvDir + "IntExp_details_"+datetimeBuffer+".txt";
+    experminet.GetDetails(DetailsFile);
 
     }//Loop over flavors
 
-    //}//Loop over densities
+   // Record the end time
+    auto end = std::chrono::high_resolution_clock::now();
+
+    // Calculate the duration
+    std::chrono::duration<double> duration = end - start;
+
+    // Print the execution time in seconds
+    std::cout << "Execution time: " << duration.count() << " seconds" << std::endl;
+
 
     return 0;
 }
@@ -235,16 +248,32 @@ void ExportToCSV(TH2D* stdhist, TH2D* althist, TH2D* hist, std::string filename)
 }
 
 /*
+std::string SimulationID() {
+    // Get current time
+    std::time_t now = std::time(nullptr);
+    std::tm localTime;
+    localtime_r(&localTime, &now);  // Use localtime_r(&now, &localTime) on Linux/Mac
+
+    // Format: "Simulation_YYYYMMDD_HHMMSS.txt"
+    char filename[100];
+    std::strftime(filename, sizeof(filename), "Nint_details_%Y%m%d_%H%M%S.txt", &localTime);
+
+    return std::string(filename);
+}
+*/
+
+
+/*
   // Visualization of Events
 
    TApplication app("app", &argc, argv);
 
    //cth lines
    //double cthbottom = -0.8376; 
-   double cthbottom = TMath::Cos(TMath::Pi()-TMath::ASin( 3480.0/detectorRadius ));
-   double cthmid_bottom = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+300)/detectorRadius ));;
-   double cthmid_top = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+600)/detectorRadius ));;
-   double cthtop = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/detectorRadius ));;
+   double cthbottom = TMath::Cos(TMath::Pi()-TMath::ASin( 3480.0/Detector_location ));
+   double cthmid_bottom = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+300)/Detector_location ));;
+   double cthmid_top = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0+600)/Detector_location ));;
+   double cthtop = TMath::Cos(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Detector_location ));;
 
    std::cout << cthtop << std::endl;
 
@@ -264,10 +293,10 @@ void ExportToCSV(TH2D* stdhist, TH2D* althist, TH2D* hist, std::string filename)
    ltop -> SetLineStyle(2);
 
    //th lines 
-   double thbottom     = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( 3480.0/detectorRadius ));
-   double thmid_bottom = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( (3480.0 + 300)/detectorRadius ));
-   double thmid_top    = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( (3480.0 + 600)/detectorRadius ));
-   double thtop        = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/detectorRadius ));
+   double thbottom     = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( 3480.0/Detector_location ));
+   double thmid_bottom = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( (3480.0 + 300)/Detector_location ));
+   double thmid_top    = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( (3480.0 + 600)/Detector_location ));
+   double thtop        = (180.0/TMath::Pi())*(TMath::Pi()-TMath::ASin( (3480.0 + 1000)/Detector_location ));
 
    TLine * lbottomth = new TLine(thbottom,enuMin,thbottom,enuMax);
    TLine * lmid_bottomth = new TLine(thmid_bottom,enuMin,thmid_bottom,enuMax);

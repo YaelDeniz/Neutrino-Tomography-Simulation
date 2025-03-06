@@ -5,9 +5,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <vector>
+#include <fstream>
+#include <iostream>
 
 //CERN ROOT
 #include "TH2.h"
+#include "TMath.h"
 #include "TH3.h"
 #include "TObjArray.h"
 #include "TGraph.h"
@@ -55,6 +58,10 @@ class AsimovObsSimulation
 
     double AziMin=0; // Min 0;
     double AziMax=360; //Max 360;
+
+    double ZenithBinSize;
+    double AzimuthBinSize;
+    double EnergyBinSize;
 
     //Simulation Settings
     int truebinsZen; //Bins in Zenith
@@ -150,11 +157,74 @@ class AsimovObsSimulation
 
     std::vector < TH2D* >  GetObsEvents3Dcth();
     std::vector < TH2D* >  GetObsEvents3Dth();
+    std::vector < TH2D* >  GetObsEvents3Dthvb(); //Variable bin
+    std::vector < TH2D* >  GetObsEvents3Dthlog10E();
 
 
     //TH2D * TestObsEvents2D(std::string model_std , std::string model_alt);
 
+   void GetDetails(const std::string& PATH)
+   {
 
+        std::ofstream details(PATH);
+    
+        if (!details) {
+            std::cout << "Error: Unable to open file " << PATH << std::endl;
+            return;
+        }
+
+        details << "--------------------------------------------------------------------------------\n";
+        details << "                               REALISTIC DETECTOR                               \n";
+        details << "--------------------------------------------------------------------------------\n";
+        details << "                                Detector Details                               \n";
+        details << "--------------------------------------------------------------------------------\n";
+        details << " Detector Radius: " << xyzTelescope[2] << " m\n";
+        details << " Neutrino Flux: " << FluxFile << " \n";
+        details << " Number of Detectors: 1\n";
+        details << " Mass: " << 10.0 << " Mton\n";
+        details << " Time: " << 10.0 << " years\n";
+        details << " Exposure: " << MT << " Mton-Year\n";
+        details << " Energy resolution Ae:" << Ae << " Be:" << Be << "\n";
+        details << " Zenith resolution Ath:" << Ath << " Bth:" << Bth << "\n";
+
+
+        details << "\n--------------------------------------------------------------------------------\n";
+        details << "                                Earth Details                                  \n";
+        details << "--------------------------------------------------------------------------------\n";
+        details << " Earth Model: " << PremName << "\n";
+        details << "Index of modified layer (default is 0): " << PremLayer << "\n";
+        details << "Density Contrast (drho/rho): " << DensityContrast<< "\n";
+        details << " Chem Contrast (H%): " << ChemicalContrats << "\n";
+        
+        details << "\n--------------------------------------------------------------------------------\n";
+        details << "                        Lower Mantle Anomalies (LLVP)                          \n";
+        details << "--------------------------------------------------------------------------------\n";
+        details << " LLVP: " << PileInModel << "\n";
+        details << " LLVP Model: " << ShapeOfPile << "\n";
+        details << " LLVP Height: " << ThePileHight << " km\n";
+        details << " Aperture: " << ThePileAperture << "\n";
+        details << " Density Contrast (drho/rho): " << ThePileDensityContrast << "\n";
+        details << " Chem Contrast (H%): " << ThePileChemicalContrast << "\n";
+
+        details << "\n--------------------------------------------------------------------------------\n";
+        details << "                             Simulation Details                                \n";
+        details << "--------------------------------------------------------------------------------\n";
+        
+        details << " Neutrino Energy Range: [" << EnuMin << " - " << EnuMax << "] GeV | Reco Bins: " << recobinsE << " True bins:" << truebinsE <<  "\n";
+         
+        details << " Energy bin size:" << EnergyBinSize << "\n";
+        
+        details << " Zenith Range: [" << ZenMin << " (" << cos(ZenMin*TMath::Pi()/180.0) << ") - " << ZenMax << " (" << cos(ZenMax*TMath::Pi()/180.0) << ")] | Reco Bins: " << recobinsZen << " True bins:" << truebinsZen << "\n";
+        
+        details << " Zenith bin size:" << ZenithBinSize << "\n";
+
+        details << " Azimuth Range: [" << AziMin << " - " << AziMax << "] Reco Bins: " << recobinsAzi << " True bins:" << truebinsAzi <<  "\n";
+        
+        details << " Azimuth bin size:" << AzimuthBinSize << "\n";
+        
+        details.close();
+
+   }
 
 
 };

@@ -5,6 +5,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <vector>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <cmath>
+#include <time.h>
+#include <math.h> 
+
 
 //CERN ROOT
 #include "TMath.h"
@@ -127,6 +134,7 @@ class AsimovSimulation
     
     std::vector< TH2D* >  GetTrueEvents3D();
     std::vector< TH2D* >  GetTrueEvents3Dth();
+    std::vector< TH2D* >  GetTrueEvents3Dthlog10E();
 
    // TH2D * GetOscProb2D(int flvi, int flvf, bool nunubar  ); //Azimuth independet
     
@@ -138,6 +146,55 @@ class AsimovSimulation
 
    // std::vector< std::vector<double> > GetPremMatrix( std::string path2table  );
 
+
+   void GetDetails(const std::string& PATH)
+   {
+
+        std::ofstream details(PATH);
+    
+        if (!details) {
+            std::cout << "Error: Unable to open file " << PATH << std::endl;
+            return;
+        }
+
+        details << "--------------------------------------------------------------------------------\n";
+        details << "                                Detector Details                               \n";
+        details << "--------------------------------------------------------------------------------\n";
+        details << " Detector Radius: " << pos[2] << " m\n";
+        details << " Neutrino Flux: " << FluxFile << " \n";
+        details << " Number of Detectors: 1\n";
+        details << " Mass: " << 10.0 << " Mton\n";
+        details << " Time: " << 10.0 << " years\n";
+        details << " Exposure: " << MT << " Mton-Year\n";
+
+        details << "\n--------------------------------------------------------------------------------\n";
+        details << "                                Earth Details                                  \n";
+        details << "--------------------------------------------------------------------------------\n";
+        details << " Earth Model: " << PremName << "\n";
+        details << "Index of modified layer (default is 0): " << PremTableNumber << "\n";
+        details << "Density Contrast (drho/rho): " << DensityContrast<< "\n";
+        details << " Chem Contrast (H%): " << ChemicalContrast << "\n";
+        
+        details << "\n--------------------------------------------------------------------------------\n";
+        details << "                        Lower Mantle Anomalies (LLVP)                          \n";
+        details << "--------------------------------------------------------------------------------\n";
+        details << " LLVP: " << MantleAnomaly << "\n";
+        details << " LLVP Model: " << AnomalyShape << "\n";
+        details << " LLVP Height: " << PileHeight << " km\n";
+        details << " Aperture: " << aperture << "\n";
+        details << " Density Contrast (drho/rho): " << PileDensityContrast << "\n";
+        details << " Chem Contrast (H%): " << PileChemContrast << "\n";
+
+        details << "\n--------------------------------------------------------------------------------\n";
+        details << "                             Simulation Details                                \n";
+        details << "--------------------------------------------------------------------------------\n";
+        details << " Neutrino Energy Range: [" << Emin << " - " << Emax << "] GeV | Bins: " << kbins << "\n";
+        details << " Zenith Range: [" << thmin*(180.0/TMath::Pi()) << " (" << cos(thmin) << ") - " << thmax*(180.0/TMath::Pi()) << " (" << cos(thmax) << ")] | Bins: " << ibins << "\n";
+        details << " Azimuth Range: [" << phimin*(180.0/TMath::Pi()) << " - " << phimax*(180.0/TMath::Pi()) << "] Bins: " << jbins<< "\n";
+
+        details.close();
+
+   }
 
 
 

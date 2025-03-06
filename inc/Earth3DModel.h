@@ -26,6 +26,8 @@ class Earth3DModel
 {
 
   public:
+  //Visualization
+  bool ModelVisibility = false; //By Default model is not display
 
   std::string premtable; //Prem .txt file from OscProb/PremTables
   double zenith = TMath::Pi(); //By default it considers a down going neutirno
@@ -60,6 +62,11 @@ class Earth3DModel
 
   //EARTH MODEL 
   TCanvas *EarthCanvas;
+
+  void DisplayModel( bool vis)
+  {
+    ModelVisibility = vis;   
+  }
 
   void SetModel(std::string path2table);
 
